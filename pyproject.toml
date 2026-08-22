@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=78"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gibc-v2-foundational-llm"
+version = "0.1.0"
+description = "Reproducible EXP-001 decoder-only language-model baseline"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+  "PyYAML==6.0.2",
+  "datasets==3.5.1",
+  "tokenizers==0.21.4",
+  "lm-eval==0.4.9.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==8.3.5", "git-filter-repo==2.47.0"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.setuptools.packages.find]
+where = ["src"]
