@@ -1,0 +1,49 @@
+# Python and local environments
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+secrets/
+credentials/
+
+# Data, tokenizers, checkpoints, and experiment artifacts
+/data/
+/datasets/
+/tokenized/
+/tokenizers/
+/checkpoints/
+/artifacts/
+/outputs/
+/results/*.jsonl
+/results/*.csv
+/results/*.parquet
+/results/*.pt
+/results/*.pth
+/results/*.safetensors
+/results/*.bin
+
+# Dataset and benchmark caches
+.hf_cache/
+.huggingface/
+/cache/
+/benchmark_cache/
+/lm_eval_cache/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
