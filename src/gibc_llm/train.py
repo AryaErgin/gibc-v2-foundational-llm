@@ -192,9 +192,14 @@ def load_checkpoint(
     schedule: CosineWithWarmup,
     device: torch.device,
 ) -> RunState:
-    payload = torch.load(path, map_location=device, weights_only=False)
+    # Keep serialized CPU/CUDA RNG state byte tensors on CPU; move optimizer state separately.
+    payload = torch.load(path, map_location="cpu", weights_only=False)
     model.load_state_dict(payload["model"])
     optimizer.load_state_dict(payload["optimizer"])
+    for optimizer_state in optimizer.state.values():
+        for name, value in optimizer_state.items():
+            if isinstance(value, torch.Tensor):
+                optimizer_state[name] = value.to(device)
     schedule.load_state_dict(payload["schedule"])
     _restore_rng(payload["rng"])
     return RunState(**payload["run_state"])

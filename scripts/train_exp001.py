@@ -36,6 +36,7 @@ def main() -> None:
     parser.add_argument("--config", type=Path, default=Path("configs/exp001.yaml"))
     parser.add_argument("--artifact-dir", type=Path, default=Path("artifacts/exp001a"))
     parser.add_argument("--run-dir", type=Path, default=Path("artifacts/exp001a/smoke"))
+    parser.add_argument("--profile-only", action="store_true")
     args = parser.parse_args()
     config = load_config(args.config)
     if not torch.cuda.is_available() or not torch.cuda.is_bf16_supported():
@@ -47,9 +48,14 @@ def main() -> None:
     set_global_seed(config.training.seed)
     model = DecoderOnlyTransformer(config.model).to(device)
     profile = profile_microbatches(model, train["inputs"], train["targets"], device)
+    args.run_dir.mkdir(parents=True, exist_ok=True)
+    atomic_json_write(args.run_dir / "profile.json", {"git_commit": _git_commit(), "candidates": profile})
     stable = [record for record in profile if record["status"] == "ok"]
     if not stable:
         raise RuntimeError("No approved microbatch candidate completed the bounded CUDA profile.")
+    if args.profile_only:
+        print(json.dumps({"profile_candidates": profile}, indent=2, sort_keys=True))
+        return
     selected = max(stable, key=lambda record: float(record["tokens_per_second"]))
     microbatch = int(selected["microbatch_sequences"])
     accumulation = int(selected["gradient_accumulation_steps"])

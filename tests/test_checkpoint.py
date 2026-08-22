@@ -3,6 +3,7 @@ from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
+import pytest
 import torch
 
 from gibc_llm.model import DecoderOnlyTransformer
@@ -43,3 +44,28 @@ def test_checkpoint_round_trip_restores_outputs_counters_rng_and_resume(tmp_path
     assert (random.random(), float(np.random.rand()), torch.rand(1).item()) == expected_rng
     optimizer_update(restored_model, restored_optimizer, restored_schedule, [(inputs, targets)], torch.device("cpu"), 1.0)
     assert restored_schedule.step_count == 2
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA checkpoint regression requires the EXP-001A GPU")
+def test_checkpoint_round_trip_keeps_cpu_rng_state_when_model_is_cuda(tmp_path: Path) -> None:
+    """Breaks if CUDA map-location moves the CPU RNG state and prevents checkpoint restore."""
+    device = torch.device("cuda")
+    set_global_seed(42)
+    model = _tiny_model().to(device)
+    optimizer = build_optimizer(model, 6e-4, 0.1, (0.9, 0.95), 1e-8)
+    schedule = CosineWithWarmup(optimizer, 6e-4, 6e-5, 100, 3052)
+    inputs = torch.arange(8, dtype=torch.long).unsqueeze(0) % 32
+    targets = (inputs + 1) % 32
+    optimizer_update(model, optimizer, schedule, [(inputs, targets)], device, 1.0)
+    expected = model(inputs.to(device)).detach().cpu()
+    path = tmp_path / "cuda-state.pt"
+    save_checkpoint(path, model, optimizer, schedule, RunState(step=1, tokens=8), {"name": "cuda"})
+    restored_model = _tiny_model().to(device)
+    restored_optimizer = build_optimizer(restored_model, 6e-4, 0.1, (0.9, 0.95), 1e-8)
+    restored_schedule = CosineWithWarmup(restored_optimizer, 6e-4, 6e-5, 100, 3052)
+
+    restored = load_checkpoint(path, restored_model, restored_optimizer, restored_schedule, device)
+
+    assert restored == RunState(step=1, tokens=8)
+    assert torch.equal(expected, restored_model(inputs.to(device)).detach().cpu())
+    optimizer_update(restored_model, restored_optimizer, restored_schedule, [(inputs, targets)], device, 1.0)
