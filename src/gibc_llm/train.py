@@ -1,0 +1,324 @@
+"""BF16-autocast training, validation, and resumable checkpoints for EXP-001."""
+
+from __future__ import annotations
+
+import contextlib
+import json
+import math
+import os
+import random
+import tempfile
+import time
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any, Iterable
+
+import numpy as np
+import torch
+from torch import Tensor, nn
+
+from .model import DecoderOnlyTransformer, RMSNorm
+
+
+@dataclass
+class RunState:
+    step: int = 0
+    tokens: int = 0
+
+
+@dataclass(frozen=True)
+class ValidationResult:
+    loss: float
+    perplexity: float
+    token_count: int
+
+
+class CosineWithWarmup:
+    """Approved full-horizon schedule; smoke runs use its early, uncompressed part."""
+
+    def __init__(self, optimizer: torch.optim.Optimizer, peak_lr: float, min_lr: float, warmup_steps: int, total_steps: int) -> None:
+        self.optimizer = optimizer
+        self.peak_lr = peak_lr
+        self.min_lr = min_lr
+        self.warmup_steps = warmup_steps
+        self.total_steps = total_steps
+        self.step_count = 0
+        self._set_lr(self.lr_at_step(0))
+
+    def lr_at_step(self, step: int) -> float:
+        if step <= 0:
+            return 0.0
+        if step <= self.warmup_steps:
+            return self.peak_lr * step / self.warmup_steps
+        progress = min(1.0, (step - self.warmup_steps) / (self.total_steps - self.warmup_steps))
+        return self.min_lr + 0.5 * (self.peak_lr - self.min_lr) * (1.0 + math.cos(math.pi * progress))
+
+    def _set_lr(self, value: float) -> None:
+        for group in self.optimizer.param_groups:
+            group["lr"] = value
+
+    def step(self) -> float:
+        self.step_count += 1
+        value = self.lr_at_step(self.step_count)
+        self._set_lr(value)
+        return value
+
+    def state_dict(self) -> dict[str, Any]:
+        return {"step_count": self.step_count}
+
+    def load_state_dict(self, state: dict[str, Any]) -> None:
+        self.step_count = int(state["step_count"])
+        self._set_lr(self.lr_at_step(self.step_count))
+
+
+def build_optimizer(
+    model: nn.Module, peak_learning_rate: float, weight_decay: float, betas: tuple[float, float], eps: float
+) -> torch.optim.AdamW:
+    """Decay matrices (including tied embeddings), not one-dimensional RMSNorm scales."""
+    decay, no_decay = [], []
+    for parameter in model.parameters():
+        if not parameter.requires_grad:
+            continue
+        (decay if parameter.ndim >= 2 else no_decay).append(parameter)
+    return torch.optim.AdamW(
+        [{"params": decay, "weight_decay": weight_decay}, {"params": no_decay, "weight_decay": 0.0}],
+        lr=peak_learning_rate,
+        betas=betas,
+        eps=eps,
+    )
+
+
+def _autocast(device: torch.device) -> contextlib.AbstractContextManager[Any]:
+    if device.type == "cuda":
+        return torch.autocast(device_type="cuda", dtype=torch.bfloat16)
+    return contextlib.nullcontext()
+
+
+@torch.no_grad()
+def evaluate(model: DecoderOnlyTransformer, inputs: Tensor, targets: Tensor, batch_size: int, device: torch.device) -> ValidationResult:
+    was_training = model.training
+    model.eval()
+    total_loss = 0.0
+    token_count = 0
+    for start in range(0, inputs.shape[0], batch_size):
+        batch_inputs = inputs[start : start + batch_size].to(device)
+        batch_targets = targets[start : start + batch_size].to(device)
+        with _autocast(device):
+            loss = model.loss(batch_inputs, batch_targets)
+        tokens = batch_targets.numel()
+        total_loss += float(loss.detach().float()) * tokens
+        token_count += tokens
+    if was_training:
+        model.train()
+    average_loss = total_loss / token_count
+    return ValidationResult(loss=average_loss, perplexity=math.exp(average_loss), token_count=token_count)
+
+
+def optimizer_update(
+    model: DecoderOnlyTransformer,
+    optimizer: torch.optim.Optimizer,
+    schedule: CosineWithWarmup,
+    microbatches: Iterable[tuple[Tensor, Tensor]],
+    device: torch.device,
+    gradient_clip_norm: float,
+) -> dict[str, float]:
+    batches = list(microbatches)
+    if not batches:
+        raise ValueError("An optimizer update requires at least one microbatch.")
+    model.train()
+    optimizer.zero_grad(set_to_none=True)
+    loss_sum = 0.0
+    tokens = 0
+    for inputs, targets in batches:
+        inputs, targets = inputs.to(device), targets.to(device)
+        with _autocast(device):
+            loss = model.loss(inputs, targets)
+        (loss / len(batches)).backward()
+        loss_sum += float(loss.detach().float())
+        tokens += targets.numel()
+    gradient_norm = float(torch.nn.utils.clip_grad_norm_(model.parameters(), gradient_clip_norm))
+    learning_rate = schedule.step()
+    optimizer.step()
+    return {"loss": loss_sum / len(batches), "tokens": float(tokens), "gradient_norm": gradient_norm, "learning_rate": learning_rate}
+
+
+def _rng_state() -> dict[str, Any]:
+    return {
+        "python": random.getstate(),
+        "numpy": np.random.get_state(),
+        "torch_cpu": torch.get_rng_state(),
+        "torch_cuda": torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None,
+    }
+
+
+def _restore_rng(state: dict[str, Any]) -> None:
+    random.setstate(state["python"])
+    np.random.set_state(state["numpy"])
+    torch.set_rng_state(state["torch_cpu"])
+    if state["torch_cuda"] is not None and torch.cuda.is_available():
+        torch.cuda.set_rng_state_all(state["torch_cuda"])
+
+
+def save_checkpoint(
+    path: Path,
+    model: DecoderOnlyTransformer,
+    optimizer: torch.optim.Optimizer,
+    schedule: CosineWithWarmup,
+    state: RunState,
+    config: dict[str, Any],
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "model": model.state_dict(),
+        "optimizer": optimizer.state_dict(),
+        "schedule": schedule.state_dict(),
+        "run_state": asdict(state),
+        "rng": _rng_state(),
+        "config": config,
+    }
+    with tempfile.NamedTemporaryFile(dir=path.parent, delete=False, suffix=".pt") as handle:
+        temporary = Path(handle.name)
+    try:
+        torch.save(payload, temporary)
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def load_checkpoint(
+    path: Path,
+    model: DecoderOnlyTransformer,
+    optimizer: torch.optim.Optimizer,
+    schedule: CosineWithWarmup,
+    device: torch.device,
+) -> RunState:
+    payload = torch.load(path, map_location=device, weights_only=False)
+    model.load_state_dict(payload["model"])
+    optimizer.load_state_dict(payload["optimizer"])
+    schedule.load_state_dict(payload["schedule"])
+    _restore_rng(payload["rng"])
+    return RunState(**payload["run_state"])
+
+
+def tiny_overfit(
+    model: DecoderOnlyTransformer, inputs: Tensor, targets: Tensor, steps: int, learning_rate: float, device: torch.device
+) -> list[float]:
+    model.to(device)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=0.0)
+    losses: list[float] = []
+    for _ in range(steps):
+        optimizer.zero_grad(set_to_none=True)
+        with _autocast(device):
+            loss = model.loss(inputs.to(device), targets.to(device))
+        loss.backward()
+        optimizer.step()
+        losses.append(float(loss.detach().float()))
+    return losses
+
+
+class JsonlLogger:
+    def __init__(self, path: Path) -> None:
+        self.path = path
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+
+    def log(self, record: dict[str, Any]) -> None:
+        with self.path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(record, sort_keys=True) + "\n")
+
+
+def train_smoke(
+    model: DecoderOnlyTransformer,
+    train_inputs: Tensor,
+    train_targets: Tensor,
+    validation_inputs: Tensor,
+    validation_targets: Tensor,
+    optimizer: torch.optim.Optimizer,
+    schedule: CosineWithWarmup,
+    state: RunState,
+    device: torch.device,
+    microbatch_sequences: int,
+    accumulation_steps: int,
+    steps: int,
+    gradient_clip_norm: float,
+    logger: JsonlLogger | None = None,
+) -> list[dict[str, float]]:
+    if microbatch_sequences * accumulation_steps * train_targets.shape[1] != 32_768:
+        raise ValueError("EXP-001 smoke updates must contain exactly 32,768 prediction tokens.")
+    model.to(device)
+    records: list[dict[str, float]] = []
+    total_sequences = microbatch_sequences * accumulation_steps
+    for local_step in range(steps):
+        indices = torch.arange(local_step * total_sequences, (local_step + 1) * total_sequences) % train_inputs.shape[0]
+        batches = [
+            (train_inputs[indices[offset : offset + microbatch_sequences]], train_targets[indices[offset : offset + microbatch_sequences]])
+            for offset in range(0, total_sequences, microbatch_sequences)
+        ]
+        start = time.perf_counter()
+        metrics = optimizer_update(model, optimizer, schedule, batches, device, gradient_clip_norm)
+        elapsed = time.perf_counter() - start
+        state.step += 1
+        state.tokens += int(metrics["tokens"])
+        metrics.update({"step": float(state.step), "cumulative_tokens": float(state.tokens), "wall_seconds": elapsed, "tokens_per_second": metrics["tokens"] / elapsed})
+        if device.type == "cuda":
+            metrics["peak_allocated_bytes"] = float(torch.cuda.max_memory_allocated(device))
+            metrics["peak_reserved_bytes"] = float(torch.cuda.max_memory_reserved(device))
+        records.append(metrics)
+        if logger is not None:
+            logger.log(metrics)
+    return records
+
+
+def profile_microbatches(
+    model: DecoderOnlyTransformer,
+    inputs: Tensor,
+    targets: Tensor,
+    device: torch.device,
+    candidates: tuple[int, ...] = (8, 16, 32, 64),
+) -> list[dict[str, float | int | str]]:
+    """Bounded physical-batch comparison; each candidate preserves 64 x 512 tokens/update."""
+    if device.type != "cuda":
+        raise RuntimeError("EXP-001A microbatch profiling requires CUDA.")
+    records: list[dict[str, float | int | str]] = []
+    for microbatch_sequences in candidates:
+        if 64 % microbatch_sequences:
+            continue
+        accumulation_steps = 64 // microbatch_sequences
+        try:
+            model.to(device)
+            optimizer = build_optimizer(model, 6e-4, 0.1, (0.9, 0.95), 1e-8)
+            schedule = CosineWithWarmup(optimizer, 6e-4, 6e-5, 100, 3052)
+            batches = [
+                (inputs[offset : offset + microbatch_sequences], targets[offset : offset + microbatch_sequences])
+                for offset in range(0, 64, microbatch_sequences)
+            ]
+            torch.cuda.empty_cache()
+            torch.cuda.reset_peak_memory_stats(device)
+            optimizer_update(model, optimizer, schedule, batches, device, 1.0)
+            torch.cuda.synchronize(device)
+            start = time.perf_counter()
+            timed_updates = 3
+            for _ in range(timed_updates):
+                optimizer_update(model, optimizer, schedule, batches, device, 1.0)
+            torch.cuda.synchronize(device)
+            elapsed = time.perf_counter() - start
+            records.append(
+                {
+                    "microbatch_sequences": microbatch_sequences,
+                    "gradient_accumulation_steps": accumulation_steps,
+                    "timed_updates": timed_updates,
+                    "tokens_per_second": timed_updates * 32_768 / elapsed,
+                    "peak_allocated_bytes": torch.cuda.max_memory_allocated(device),
+                    "peak_reserved_bytes": torch.cuda.max_memory_reserved(device),
+                    "status": "ok",
+                }
+            )
+        except torch.cuda.OutOfMemoryError:
+            torch.cuda.empty_cache()
+            records.append(
+                {
+                    "microbatch_sequences": microbatch_sequences,
+                    "gradient_accumulation_steps": accumulation_steps,
+                    "status": "out_of_memory",
+                }
+            )
+    return records
