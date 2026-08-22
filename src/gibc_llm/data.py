@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 import unicodedata
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Iterator, Sequence
@@ -158,6 +160,29 @@ def _row_to_benchmark_text(task: str, row: dict[str, Any]) -> str:
     raise ValueError(f"Unsupported benchmark task: {task}")
 
 
+def _stream_piqa_texts(cache_dir: Path) -> Iterator[str]:
+    """Read PIQA's documented static files without executing its dataset loader."""
+    import requests
+
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    archive_path = cache_dir / "physicaliqa-train-dev.zip"
+    if not archive_path.exists():
+        response = requests.get(
+            "https://storage.googleapis.com/ai2-mosaic/public/physicaliqa/physicaliqa-train-dev.zip", timeout=120
+        )
+        response.raise_for_status()
+        archive_path.write_bytes(response.content)
+    with zipfile.ZipFile(archive_path) as archive:
+        with archive.open("physicaliqa-train-dev/dev.jsonl") as handle:
+            for raw_line in handle:
+                row = json.loads(raw_line)
+                yield _row_to_benchmark_text("piqa", row)
+    test_response = requests.get("https://yonatanbisk.com/piqa/data/tests.jsonl", timeout=120)
+    test_response.raise_for_status()
+    for raw_line in test_response.text.splitlines():
+        yield _row_to_benchmark_text("piqa", json.loads(raw_line))
+
+
 def build_benchmark_filter(cache_dir: Path, ngram_size: int) -> tuple[NgramContaminationFilter, list[dict[str, str]]]:
     """Build a local-only index; returned metadata deliberately excludes benchmark contents."""
     from datasets import load_dataset
@@ -166,18 +191,32 @@ def build_benchmark_filter(cache_dir: Path, ngram_size: int) -> tuple[NgramConta
     sources = [
         ("hellaswag", "hellaswag", None, ["validation"]),
         ("arc_easy", "ai2_arc", "ARC-Easy", ["validation", "test"]),
-        ("piqa", "piqa", None, ["validation"]),
         ("winogrande", "winogrande", "winogrande_xl", ["validation"]),
         ("wikitext103", "wikitext", "wikitext-103-raw-v1", ["validation", "test"]),
     ]
     texts: list[str] = []
     metadata: list[dict[str, str]] = []
     api = HfApi()
+    piqa_info = api.dataset_info("piqa")
+    metadata.append(
+        {
+            "task": "piqa",
+            "repo": "piqa",
+            "config": "plain_text",
+            "revision": piqa_info.sha or "unknown",
+            "loader": "official_static_urls_without_remote_code",
+        }
+    )
+    texts.extend(_stream_piqa_texts(cache_dir / "piqa"))
     for task, repo, config, splits in sources:
         info = api.dataset_info(repo)
-        metadata.append({"task": task, "repo": repo, "config": config or "default", "revision": info.sha or "unknown"})
+        metadata.append(
+            {"task": task, "repo": repo, "config": config or "default", "revision": info.sha or "unknown", "loader": "datasets_streaming"}
+        )
         for split in splits:
-            dataset = load_dataset(repo, name=config, split=split, revision=info.sha, cache_dir=str(cache_dir))
+            dataset = load_dataset(
+                repo, name=config, split=split, revision=info.sha, cache_dir=str(cache_dir), streaming=True
+            )
             texts.extend(_row_to_benchmark_text(task, row) for row in dataset)
     return NgramContaminationFilter.from_texts(texts, ngram_size=ngram_size), metadata
 
