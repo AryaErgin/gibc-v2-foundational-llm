@@ -7,6 +7,7 @@ import pytest
 import torch
 
 from gibc_llm.model import DecoderOnlyTransformer
+from gibc_llm.data import write_token_stream
 from gibc_llm.train import CosineWithWarmup, RunState, build_optimizer, load_checkpoint, optimizer_update, save_checkpoint, train_smoke
 from gibc_llm.utils import load_config, set_global_seed
 
@@ -113,3 +114,36 @@ def test_uninterrupted_and_reconstructed_resume_consume_identical_sequences_and_
             assert torch.equal(value, resumed_value) if isinstance(value, torch.Tensor) else value == resumed_value
     for uninterrupted, resumed in zip(full_model.parameters(), resumed_model.parameters(), strict=True):
         assert torch.equal(uninterrupted, resumed)
+
+
+def test_full_stream_path_resume_preserves_the_next_contiguous_sequence_batch(tmp_path: Path) -> None:
+    """Breaks if the full-run mmap path resumes from a different 64-sequence cursor."""
+    device = torch.device("cpu")
+    stream = (torch.arange(64 * 2 * 512 + 1, dtype=torch.long) % 32).tolist()
+    dataset = write_token_stream(tmp_path / "full.uint16", stream, len(stream))
+
+    def build():
+        model_config = replace(_tiny_model().config, context_length=512)
+        model = DecoderOnlyTransformer(model_config)
+        optimizer = build_optimizer(model, 6e-4, 0.1, (0.9, 0.95), 1e-8)
+        schedule = CosineWithWarmup(optimizer, 6e-4, 6e-5, 100, 3052)
+        return model, optimizer, schedule
+
+    set_global_seed(42)
+    uninterrupted_model, uninterrupted_optimizer, uninterrupted_schedule = build()
+    uninterrupted = RunState()
+    train_smoke(uninterrupted_model, dataset, None, torch.zeros((1, 512), dtype=torch.long), torch.zeros((1, 512), dtype=torch.long), uninterrupted_optimizer, uninterrupted_schedule, uninterrupted, device, 64, 1, 2, 1.0)
+
+    set_global_seed(42)
+    first_model, first_optimizer, first_schedule = build()
+    first = RunState()
+    train_smoke(first_model, dataset, None, torch.zeros((1, 512), dtype=torch.long), torch.zeros((1, 512), dtype=torch.long), first_optimizer, first_schedule, first, device, 64, 1, 1, 1.0)
+    checkpoint = tmp_path / "full-path-resume.pt"
+    save_checkpoint(checkpoint, first_model, first_optimizer, first_schedule, first, {"training": {"effective_batch_tokens": 32768, "sequence_predictions": 512}})
+    resumed_model, resumed_optimizer, resumed_schedule = build()
+    resumed = load_checkpoint(checkpoint, resumed_model, resumed_optimizer, resumed_schedule, device)
+    train_smoke(resumed_model, dataset, None, torch.zeros((1, 512), dtype=torch.long), torch.zeros((1, 512), dtype=torch.long), resumed_optimizer, resumed_schedule, resumed, device, 64, 1, 1, 1.0)
+
+    assert resumed == uninterrupted == RunState(step=2, tokens=65_536, next_sequence_index=128)
+    for expected, actual in zip(uninterrupted_model.parameters(), resumed_model.parameters(), strict=True):
+        assert torch.equal(expected, actual)

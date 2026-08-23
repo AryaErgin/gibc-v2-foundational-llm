@@ -71,3 +71,15 @@ def test_uint16_token_stream_matches_packed_input_target_reference(tmp_path) -> 
         inputs, targets = dataset[index]
         assert torch.equal(inputs, reference_inputs[index])
         assert torch.equal(targets, reference_targets[index])
+
+
+def test_uint16_contiguous_batch_matches_individual_shifted_views(tmp_path) -> None:
+    """Breaks if the full-run fast path changes token order or target shifting."""
+    stream = torch.arange(3_073, dtype=torch.long) % 8192
+    dataset = write_token_stream(tmp_path / "tokens.uint16", stream.tolist(), token_count=3_073, context_length=512)
+
+    inputs, targets = dataset.get_contiguous_batch(1, 4)
+    individual = [dataset[index] for index in range(1, 5)]
+
+    assert torch.equal(inputs, torch.stack([item[0] for item in individual]))
+    assert torch.equal(targets, torch.stack([item[1] for item in individual]))

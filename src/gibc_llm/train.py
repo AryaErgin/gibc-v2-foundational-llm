@@ -284,16 +284,18 @@ def train_smoke(
         for offset in range(0, total_sequences, microbatch_sequences):
             batch_indices = indices[offset : offset + microbatch_sequences].tolist()
             if isinstance(train_inputs, TokenStreamDataset):
-                examples = [train_inputs[index] for index in batch_indices]
-                batch_inputs = torch.stack([example[0] for example in examples])
-                batch_targets = torch.stack([example[1] for example in examples])
+                batch_inputs, batch_targets = train_inputs.get_contiguous_batch(batch_indices[0], len(batch_indices))
             else:
                 assert train_targets is not None
                 batch_inputs = train_inputs[batch_indices]
                 batch_targets = train_targets[batch_indices]
             batches.append((batch_inputs, batch_targets))
+        if device.type == "cuda":
+            torch.cuda.synchronize(device)
         start = time.perf_counter()
         metrics = optimizer_update(model, optimizer, schedule, batches, device, gradient_clip_norm)
+        if device.type == "cuda":
+            torch.cuda.synchronize(device)
         elapsed = time.perf_counter() - start
         state.step += 1
         state.tokens += int(metrics["tokens"])

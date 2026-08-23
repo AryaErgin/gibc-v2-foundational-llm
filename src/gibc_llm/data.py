@@ -7,6 +7,7 @@ import itertools
 import json
 import re
 import sqlite3
+import time
 import unicodedata
 import zipfile
 from dataclasses import dataclass
@@ -174,6 +175,7 @@ class TokenStreamDataset:
         self.path = Path(path)
         self.token_count = token_count
         self.context_length = context_length
+        self._token_ids: np.memmap | None = None
 
     def __len__(self) -> int:
         return (self.token_count - 1) // self.context_length
@@ -182,11 +184,28 @@ class TokenStreamDataset:
         if not 0 <= index < len(self):
             raise IndexError(index)
         start = index * self.context_length
-        token_ids = np.memmap(self.path, mode="r", dtype=np.uint16, shape=(self.token_count,))
+        token_ids = self._open()
         # Copy avoids retaining a read-only memmap warning while safely promoting
         # exactly the requested 513 tokens for PyTorch's embedding input.
         window = np.array(token_ids[start : start + self.context_length + 1], dtype=np.int64, copy=True)
         return torch.from_numpy(window[:-1]), torch.from_numpy(window[1:])
+
+    def _open(self) -> np.memmap:
+        """Open the immutable stream once per dataset instance (including on Windows)."""
+        if self._token_ids is None:
+            self._token_ids = np.memmap(self.path, mode="r", dtype=np.uint16, shape=(self.token_count,))
+        return self._token_ids
+
+    def get_contiguous_batch(self, start_sequence: int, sequence_count: int) -> tuple[torch.Tensor, torch.Tensor]:
+        """Return consecutive shifted examples from one contiguous underlying slice."""
+        if sequence_count <= 0 or start_sequence < 0 or start_sequence + sequence_count > len(self):
+            raise IndexError((start_sequence, sequence_count))
+        start = start_sequence * self.context_length
+        stop = (start_sequence + sequence_count) * self.context_length + 1
+        window = np.array(self._open()[start:stop], dtype=np.int64, copy=True)
+        inputs = torch.from_numpy(window[:-1].reshape(sequence_count, self.context_length))
+        targets = torch.from_numpy(window[1:].reshape(sequence_count, self.context_length))
+        return inputs, targets
 
 
 def write_token_stream(
@@ -353,6 +372,7 @@ def prepare_exp001(config: ExperimentConfig, artifact_dir: Path, full_run: bool 
     """Prepare bounded EXP-001A tensors or the non-cycled full-run token stream."""
     from .tokenizer import train_tokenizer
 
+    started = time.perf_counter()
     artifact_dir.mkdir(parents=True, exist_ok=True)
     cache_dir = artifact_dir / "cache"
     revision = resolve_fineweb_revision(config.data)
@@ -440,13 +460,21 @@ def prepare_exp001(config: ExperimentConfig, artifact_dir: Path, full_run: bool 
             token_count=full_token_count,
             context_length=config.data.context_length,
         )
+        validation_stream, validation_docs_used = _stream_token_ids(
+            tokenizer_artifact.tokenizer, validation_documents, eod_id, config.training.smoke_validation_tokens
+        )
+        validation_inputs, validation_targets = make_packed_examples(validation_stream, config.data.context_length)
+        validation_path = artifact_dir / "validation.pt"
+        torch.save({"inputs": validation_inputs, "targets": validation_targets}, validation_path)
         manifest = {
             "experiment_id": config.experiment_id,
             "dataset": {"repo": config.data.dataset_repo, "config": config.data.dataset_config, "revision": revision, "field": config.data.text_field},
             "split": {"method": "sha256(seed:canonical_content_sha256) modulo buckets", "seed": config.data.split_seed, "validation_buckets": config.data.validation_bucket_cutoff, "modulus": config.data.validation_bucket_modulus},
             "contamination": {"method": "NFKC+casefold+tokenized normalized 13-gram SHA-256 overlap", "ngram_size": config.data.contamination_ngram_size, "scanned_documents": scanned, "accepted_documents": accepted, "rejected_documents": rejected, "benchmark_sources": benchmark_sources},
             "tokenizer": {"vocab_size": tokenizer_artifact.vocab_size, "special_tokens": tokenizer_artifact.special_tokens, "sha256": tokenizer_artifact.sha256, "bytes_per_token": len(held_out_sample.encode("utf-8")) / max(1, len(held_out_ids)), "characters_per_token": len(held_out_sample) / max(1, len(held_out_ids)), "tokens_per_word": len(held_out_ids) / max(1, len(words))},
-            "packed": {"representation": "one-dimensional uint16 token stream with on-demand torch.long 513-token views", "context_length": config.data.context_length, "prediction_tokens_per_example": 512, "eod_token_id": eod_id, "cross_document_loss": "permitted only across an explicit EOD token", "train_examples": len(stream), "train_prediction_tokens": config.training.full_training_tokens, "train_token_count_including_final_target": full_token_count, "train_stream_sha256": sha256_file(stream_path), "train_documents_contributed": documents_contributed, "non_cycled": True},
+            "packed": {"representation": "one-dimensional uint16 token stream with on-demand torch.long 513-token views", "storage_dtype": "uint16", "context_length": config.data.context_length, "prediction_tokens_per_example": 512, "eod_token_id": eod_id, "cross_document_loss": "permitted only across an explicit EOD token", "train_examples": len(stream), "train_prediction_tokens": config.training.full_training_tokens, "train_token_count_including_final_target": full_token_count, "train_stream_file": stream_path.name, "train_stream_bytes": stream_path.stat().st_size, "train_stream_sha256": sha256_file(stream_path), "train_documents_contributed": documents_contributed, "non_cycled": True},
+            "validation": {"file": validation_path.name, "examples": int(validation_inputs.shape[0]), "prediction_tokens": int(validation_targets.numel()), "documents_used": validation_docs_used, "inputs_sha256": tensor_sha256(validation_inputs), "targets_sha256": tensor_sha256(validation_targets)},
+            "preparation_wall_seconds": time.perf_counter() - started,
         }
         atomic_json_write(artifact_dir / "manifest.json", manifest)
         manifest["manifest_sha256"] = sha256_file(artifact_dir / "manifest.json")
