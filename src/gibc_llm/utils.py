@@ -140,12 +140,14 @@ def _validate_exp001(config: ExperimentConfig) -> None:
         raise ValueError("EXP-001 effective batch is 64 x 512 prediction tokens.")
     if training.default_microbatch_sequences * training.default_gradient_accumulation_steps * 512 != 32768:
         raise ValueError("Configured microbatch/accumulation does not preserve effective batch tokens.")
-    if training.full_training_tokens != 100_000_000 or training.smoke_steps != 60 or training.smoke_training_tokens != 1_966_080:
+    if training.full_training_tokens != training.full_schedule_steps * training.effective_batch_tokens or training.full_training_tokens != 100_007_936 or training.smoke_steps != 60 or training.smoke_training_tokens != 1_966_080:
         raise ValueError("EXP-001 full/smoke token budget invariant is violated.")
     if training.seed != 42 or data.split_seed != 42:
         raise ValueError("EXP-001 requires fixed seed 42.")
     if data.dataset_repo != "HuggingFaceFW/fineweb" or data.dataset_config != "sample-10BT":
         raise ValueError("EXP-001 must use the approved FineWeb source/configuration.")
+    if data.dataset_revision != "9bb295ddab0e05d785b879661af7260fed5140fc":
+        raise ValueError("EXP-001 must use the pinned FineWeb revision measured in EXP-001A.")
     if data.tokenizer_vocab_size != 8192 or data.eod_token != "<|endoftext|>":
         raise ValueError("EXP-001 tokenizer invariants are violated.")
 

@@ -17,4 +17,5 @@ def test_exp001_config_preserves_approved_control_values() -> None:
     assert config.model.context_length == 512
     assert config.training.effective_batch_tokens == 32768
     assert config.training.warmup_steps == 100
-    assert config.training.full_training_tokens == 100_000_000
+    assert config.training.full_training_tokens == 100_007_936
+    assert config.data.dataset_revision == "9bb295ddab0e05d785b879661af7260fed5140fc"

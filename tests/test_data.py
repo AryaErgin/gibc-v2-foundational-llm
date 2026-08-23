@@ -4,11 +4,13 @@ import torch
 
 from gibc_llm.data import (
     NgramContaminationFilter,
+    TokenStreamDataset,
     assign_split,
     make_packed_examples,
     pack_documents,
     stable_document_id,
     tensor_sha256,
+    write_token_stream,
 )
 
 
@@ -54,3 +56,18 @@ def test_normalized_ngram_filter_rejects_overlap_without_exposing_text() -> None
     assert not clean_result.rejected
     assert benchmark not in str(contaminated_result.as_dict())
     assert contaminated not in str(contaminated_result.as_dict())
+
+
+def test_uint16_token_stream_matches_packed_input_target_reference(tmp_path) -> None:
+    """Breaks if memmapped sequence views change the approved 513-token shift semantics."""
+    stream = torch.arange(1_537, dtype=torch.long) % 8192
+    reference_inputs, reference_targets = make_packed_examples(stream, context_length=512)
+    dataset = write_token_stream(tmp_path / "tokens.uint16", stream.tolist(), token_count=1_537, context_length=512)
+
+    assert isinstance(dataset, TokenStreamDataset)
+    assert dataset.storage_dtype == "uint16"
+    assert len(dataset) == reference_inputs.shape[0]
+    for index in range(len(dataset)):
+        inputs, targets = dataset[index]
+        assert torch.equal(inputs, reference_inputs[index])
+        assert torch.equal(targets, reference_targets[index])

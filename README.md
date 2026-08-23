@@ -4,7 +4,7 @@ Reproducible, from-scratch decoder-only language-model research infrastructure f
 
 ## Status
 
-EXP-001A infrastructure is validated. The approved 100M-token EXP-001 training run must not start without research-chat review.
+EXP-001A infrastructure is validated. EXP-001B is readiness hardening; it prepares but does not start the exact 100,007,936-prediction-token baseline. The full EXP-001 run must not start without research-chat authorization.
 
 ## Repository rules
 
@@ -19,6 +19,7 @@ See `AGENTS.md`, `PROJECT_PLAN.md`, `AI_ASSISTANCE.md`, and `results/EXP-001A-su
 .\.venv\Scripts\python.exe -m pytest -q
 .\.venv\Scripts\python.exe scripts\count_parameters.py
 .\.venv\Scripts\python.exe scripts\prepare_exp001.py
+.\.venv\Scripts\python.exe scripts\prepare_exp001.py --full-data  # preparation only; no training
 .\.venv\Scripts\python.exe scripts\train_exp001.py
 .\.venv\Scripts\python.exe scripts\generate.py "The" --max-new-tokens 16
 .\.venv\Scripts\python.exe scripts\eval_exp001.py --tasks hellaswag --limit 1

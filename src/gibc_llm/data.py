@@ -3,14 +3,17 @@
 from __future__ import annotations
 
 import hashlib
+import itertools
 import json
 import re
+import sqlite3
 import unicodedata
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Iterator, Sequence
 
+import numpy as np
 import torch
 
 from .utils import DataConfig, ExperimentConfig, atomic_json_write, sha256_file
@@ -57,12 +60,12 @@ def normalize_for_ngrams(text: str) -> str:
     return " ".join(re.findall(r"\w+|[^\w\s]", normalized, flags=re.UNICODE))
 
 
-def _ngram_hashes(text: str, ngram_size: int) -> set[str]:
+def _ngram_hashes(text: str, ngram_size: int) -> set[bytes]:
     tokens = normalize_for_ngrams(text).split()
     if len(tokens) < ngram_size:
         return set()
     return {
-        hashlib.sha256("\u241f".join(tokens[index : index + ngram_size]).encode("utf-8")).hexdigest()
+        hashlib.sha256("\u241f".join(tokens[index : index + ngram_size]).encode("utf-8")).digest()
         for index in range(len(tokens) - ngram_size + 1)
     }
 
@@ -70,14 +73,21 @@ def _ngram_hashes(text: str, ngram_size: int) -> set[str]:
 class NgramContaminationFilter:
     """Privacy-preserving normalized n-gram overlap index."""
 
-    def __init__(self, ngram_hashes: set[str], ngram_size: int, benchmark_source_hashes: list[str] | None = None) -> None:
+    def __init__(
+        self,
+        ngram_hashes: set[bytes] | None,
+        ngram_size: int,
+        benchmark_source_hashes: list[str] | None = None,
+        sqlite_path: Path | None = None,
+    ) -> None:
         self.ngram_hashes = ngram_hashes
         self.ngram_size = ngram_size
         self.benchmark_source_hashes = benchmark_source_hashes or []
+        self.sqlite_path = sqlite_path
 
     @classmethod
     def from_texts(cls, texts: Iterable[str], ngram_size: int = 13) -> "NgramContaminationFilter":
-        hashes: set[str] = set()
+        hashes: set[bytes] = set()
         source_hashes: list[str] = []
         for text in texts:
             canonical = normalize_for_ngrams(text)
@@ -85,8 +95,41 @@ class NgramContaminationFilter:
             hashes.update(_ngram_hashes(text, ngram_size))
         return cls(hashes, ngram_size, source_hashes)
 
+    @classmethod
+    def from_sqlite_texts(cls, texts: Iterable[str], path: Path, ngram_size: int = 13) -> "NgramContaminationFilter":
+        """Build a hash-only on-disk index without retaining benchmark text in RAM."""
+        target = Path(path)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with sqlite3.connect(target) as connection:
+            connection.execute("PRAGMA journal_mode = OFF")
+            connection.execute("PRAGMA synchronous = OFF")
+            connection.execute("CREATE TABLE IF NOT EXISTS ngram_hashes (value BLOB PRIMARY KEY)")
+            pending: list[tuple[bytes]] = []
+            for text in texts:
+                pending.extend((value,) for value in _ngram_hashes(text, ngram_size))
+                if len(pending) >= 20_000:
+                    connection.executemany("INSERT OR IGNORE INTO ngram_hashes(value) VALUES (?)", pending)
+                    pending.clear()
+            if pending:
+                connection.executemany("INSERT OR IGNORE INTO ngram_hashes(value) VALUES (?)", pending)
+        return cls(None, ngram_size, sqlite_path=target)
+
     def screen(self, text: str) -> ContaminationDecision:
-        overlap = sorted(_ngram_hashes(text, self.ngram_size) & self.ngram_hashes)
+        candidates = _ngram_hashes(text, self.ngram_size)
+        if self.ngram_hashes is not None:
+            overlap = sorted(value.hex() for value in (candidates & self.ngram_hashes))
+        elif self.sqlite_path is not None:
+            matched: set[bytes] = set()
+            with sqlite3.connect(self.sqlite_path) as connection:
+                candidate_list = list(candidates)
+                for start in range(0, len(candidate_list), 900):
+                    chunk = candidate_list[start : start + 900]
+                    if chunk:
+                        placeholders = ",".join("?" for _ in chunk)
+                        matched.update(row[0] for row in connection.execute(f"SELECT value FROM ngram_hashes WHERE value IN ({placeholders})", chunk))
+            overlap = sorted(value.hex() for value in matched)
+        else:
+            raise RuntimeError("Contamination filter has neither in-memory nor on-disk index.")
         return ContaminationDecision(
             rejected=bool(overlap),
             document_sha256=stable_document_id(text),
@@ -112,6 +155,62 @@ def make_packed_examples(stream: torch.Tensor, context_length: int) -> tuple[tor
     if not inputs:
         raise ValueError("Packed stream does not contain one 512-prediction example.")
     return torch.stack(inputs), torch.stack(targets)
+
+
+class TokenStreamDataset:
+    """Read-only 1-D uint16 token storage exposing 513-token shifted examples.
+
+    The representation stores every token once.  It deliberately creates
+    ``torch.long`` inputs only for the requested training microbatch, immediately
+    before embedding lookup, rather than materializing duplicate input/target
+    tensors for a full training corpus.
+    """
+
+    storage_dtype = "uint16"
+
+    def __init__(self, path: Path, token_count: int, context_length: int = 512) -> None:
+        if token_count < context_length + 1:
+            raise ValueError("Token stream does not contain one complete next-token example.")
+        self.path = Path(path)
+        self.token_count = token_count
+        self.context_length = context_length
+
+    def __len__(self) -> int:
+        return (self.token_count - 1) // self.context_length
+
+    def __getitem__(self, index: int) -> tuple[torch.Tensor, torch.Tensor]:
+        if not 0 <= index < len(self):
+            raise IndexError(index)
+        start = index * self.context_length
+        token_ids = np.memmap(self.path, mode="r", dtype=np.uint16, shape=(self.token_count,))
+        # Copy avoids retaining a read-only memmap warning while safely promoting
+        # exactly the requested 513 tokens for PyTorch's embedding input.
+        window = np.array(token_ids[start : start + self.context_length + 1], dtype=np.int64, copy=True)
+        return torch.from_numpy(window[:-1]), torch.from_numpy(window[1:])
+
+
+def write_token_stream(
+    path: Path, token_ids: Iterable[int], token_count: int, context_length: int = 512
+) -> TokenStreamDataset:
+    """Write one exact uint16 stream and reject short/overflowing token feeds."""
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    values = np.memmap(target, mode="w+", dtype=np.uint16, shape=(token_count,))
+    written = 0
+    try:
+        for token_id in token_ids:
+            if written >= token_count:
+                raise ValueError("Token stream source exceeds the declared exact token count.")
+            if not 0 <= int(token_id) < 8192:
+                raise ValueError("EXP-001 uint16 token stream received an out-of-vocabulary token ID.")
+            values[written] = token_id
+            written += 1
+        if written != token_count:
+            raise ValueError(f"Token stream source ended at {written} tokens; expected {token_count}.")
+        values.flush()
+    finally:
+        del values
+    return TokenStreamDataset(target, token_count, context_length)
 
 
 def tensor_sha256(values: torch.Tensor) -> str:
@@ -173,52 +272,68 @@ def _stream_piqa_texts(cache_dir: Path) -> Iterator[str]:
         response.raise_for_status()
         archive_path.write_bytes(response.content)
     with zipfile.ZipFile(archive_path) as archive:
-        with archive.open("physicaliqa-train-dev/dev.jsonl") as handle:
-            for raw_line in handle:
-                row = json.loads(raw_line)
-                yield _row_to_benchmark_text("piqa", row)
+        for member in ("physicaliqa-train-dev/train.jsonl", "physicaliqa-train-dev/dev.jsonl"):
+            with archive.open(member) as handle:
+                for raw_line in handle:
+                    row = json.loads(raw_line)
+                    yield _row_to_benchmark_text("piqa", row)
     test_response = requests.get("https://yonatanbisk.com/piqa/data/tests.jsonl", timeout=120)
     test_response.raise_for_status()
     for raw_line in test_response.text.splitlines():
         yield _row_to_benchmark_text("piqa", json.loads(raw_line))
 
 
-def build_benchmark_filter(cache_dir: Path, ngram_size: int) -> tuple[NgramContaminationFilter, list[dict[str, str]]]:
-    """Build a local-only index; returned metadata deliberately excludes benchmark contents."""
-    from datasets import load_dataset
-    from huggingface_hub import HfApi
+def benchmark_sources_for_index(lock_path: Path | None = None) -> list[dict[str, Any]]:
+    """Return the committed, immutable benchmark revisions and public splits."""
+    if lock_path is None:
+        lock_path = Path(__file__).resolve().parents[2] / "provenance" / "exp001-benchmark-revisions.json"
+    raw = json.loads(Path(lock_path).read_text(encoding="utf-8"))
+    required = {"hellaswag", "arc_easy", "piqa", "winogrande", "wikitext103"}
+    if set(raw) != required:
+        raise ValueError("EXP-001 benchmark provenance lock is incomplete.")
+    sources = []
+    for task in ("hellaswag", "arc_easy", "piqa", "winogrande", "wikitext103"):
+        source = dict(raw[task])
+        source["task"] = task
+        if not isinstance(source.get("revision"), str) or len(source["revision"]) != 40:
+            raise ValueError(f"Benchmark revision for {task} is not an immutable Git SHA.")
+        sources.append(source)
+    return sources
 
-    sources = [
-        ("hellaswag", "hellaswag", None, ["validation"]),
-        ("arc_easy", "ai2_arc", "ARC-Easy", ["validation", "test"]),
-        ("winogrande", "winogrande", "winogrande_xl", ["validation"]),
-        ("wikitext103", "wikitext", "wikitext-103-raw-v1", ["validation", "test"]),
-    ]
-    texts: list[str] = []
-    metadata: list[dict[str, str]] = []
-    api = HfApi()
-    piqa_info = api.dataset_info("piqa")
-    metadata.append(
-        {
-            "task": "piqa",
-            "repo": "piqa",
-            "config": "plain_text",
-            "revision": piqa_info.sha or "unknown",
-            "loader": "official_static_urls_without_remote_code",
-        }
-    )
-    texts.extend(_stream_piqa_texts(cache_dir / "piqa"))
-    for task, repo, config, splits in sources:
-        info = api.dataset_info(repo)
+
+def build_benchmark_filter(cache_dir: Path, ngram_size: int) -> tuple[NgramContaminationFilter, list[dict[str, Any]]]:
+    """Build a local-only index from every public MC split and WikiText held-out text."""
+    from datasets import load_dataset
+
+    metadata: list[dict[str, Any]] = []
+    sources = benchmark_sources_for_index()
+    for source in sources:
+        task = source["task"]
         metadata.append(
-            {"task": task, "repo": repo, "config": config or "default", "revision": info.sha or "unknown", "loader": "datasets_streaming"}
+            {
+                "task": task,
+                "repo": source["repo"],
+                "config": source["config"] or "default",
+                "revision": source["revision"],
+                "splits": source["splits"],
+                "loader": "official_static_urls_without_remote_code" if task == "piqa" else "datasets_streaming",
+            }
         )
-        for split in splits:
-            dataset = load_dataset(
-                repo, name=config, split=split, revision=info.sha, cache_dir=str(cache_dir), streaming=True
-            )
-            texts.extend(_row_to_benchmark_text(task, row) for row in dataset)
-    return NgramContaminationFilter.from_texts(texts, ngram_size=ngram_size), metadata
+    def benchmark_texts() -> Iterator[str]:
+        for source in sources:
+            task = source["task"]
+            if task == "piqa":
+                yield from _stream_piqa_texts(cache_dir / "piqa")
+                continue
+            for split in source["splits"]:
+                dataset = load_dataset(
+                    source["repo"], name=source["config"], split=split, revision=source["revision"], cache_dir=str(cache_dir), streaming=True
+                )
+                yield from (_row_to_benchmark_text(task, row) for row in dataset)
+
+    return NgramContaminationFilter.from_sqlite_texts(
+        benchmark_texts(), cache_dir / "benchmark-ngrams.sqlite", ngram_size=ngram_size
+    ), metadata
 
 
 def _stream_token_ids(tokenizer: Any, documents: Iterable[Document], eod_id: int, required_tokens: int) -> tuple[torch.Tensor, int]:
@@ -234,8 +349,8 @@ def _stream_token_ids(tokenizer: Any, documents: Iterable[Document], eod_id: int
     return torch.tensor(tokens[: usable + 1], dtype=torch.long), consumed
 
 
-def prepare_exp001(config: ExperimentConfig, artifact_dir: Path) -> dict[str, Any]:
-    """Materialize only bounded, ignored EXP-001A token tensors and provenance metadata."""
+def prepare_exp001(config: ExperimentConfig, artifact_dir: Path, full_run: bool = False) -> dict[str, Any]:
+    """Prepare bounded EXP-001A tensors or the non-cycled full-run token stream."""
     from .tokenizer import train_tokenizer
 
     artifact_dir.mkdir(parents=True, exist_ok=True)
@@ -243,11 +358,13 @@ def prepare_exp001(config: ExperimentConfig, artifact_dir: Path) -> dict[str, An
     revision = resolve_fineweb_revision(config.data)
     contamination_filter, benchmark_sources = build_benchmark_filter(cache_dir / "benchmarks", config.data.contamination_ngram_size)
     training_documents: list[Document] = []
+    initial_training_documents: list[Document] = []
     validation_documents: list[Document] = []
     scanned = accepted = rejected = 0
     train_bytes = validation_bytes = 0
     validation_byte_floor = max(2 * 1024 * 1024, config.training.smoke_validation_tokens * 8)
-    for text in iter_fineweb_documents(config.data, revision, cache_dir / "fineweb"):
+    source_documents = iter(iter_fineweb_documents(config.data, revision, cache_dir / "fineweb"))
+    for text in source_documents:
         scanned += 1
         document_id = stable_document_id(text)
         split = assign_split(
@@ -263,9 +380,11 @@ def prepare_exp001(config: ExperimentConfig, artifact_dir: Path) -> dict[str, An
         accepted += 1
         document = Document(document_id=document_id, text=text, split=split)
         encoded_bytes = len(text.encode("utf-8"))
-        if split == "train" and train_bytes < config.data.tokenizer_training_text_bytes:
-            training_documents.append(document)
-            train_bytes += encoded_bytes
+        if split == "train":
+            initial_training_documents.append(document)
+            if train_bytes < config.data.tokenizer_training_text_bytes:
+                training_documents.append(document)
+                train_bytes += encoded_bytes
         elif split == "validation" and validation_bytes < validation_byte_floor:
             validation_documents.append(document)
             validation_bytes += encoded_bytes
@@ -282,6 +401,56 @@ def prepare_exp001(config: ExperimentConfig, artifact_dir: Path) -> dict[str, An
     eod_id = tokenizer_artifact.tokenizer.token_to_id(config.data.eod_token)
     if eod_id is None:
         raise RuntimeError("Serialized EXP-001 tokenizer is missing the EOD ID.")
+    held_out_sample = validation_documents[0].text[:100_000]
+    held_out_ids = tokenizer_artifact.tokenizer.encode(held_out_sample).ids
+    words = re.findall(r"\S+", held_out_sample)
+    if full_run:
+        full_token_count = config.training.full_training_tokens + 1
+        documents_contributed = 0
+
+        def full_train_token_ids() -> Iterator[int]:
+            nonlocal scanned, accepted, rejected, documents_contributed
+            for document in initial_training_documents:
+                documents_contributed += 1
+                yield from tokenizer_artifact.tokenizer.encode(document.text).ids
+                yield eod_id
+            for text in source_documents:
+                scanned += 1
+                document_id = stable_document_id(text)
+                split = assign_split(
+                    document_id,
+                    config.data.split_seed,
+                    config.data.validation_bucket_modulus,
+                    config.data.validation_bucket_cutoff,
+                )
+                decision = contamination_filter.screen(text)
+                if decision.rejected:
+                    rejected += 1
+                    continue
+                accepted += 1
+                if split == "train":
+                    documents_contributed += 1
+                    yield from tokenizer_artifact.tokenizer.encode(text).ids
+                    yield eod_id
+
+        stream_path = artifact_dir / "train-token-stream.uint16"
+        stream = write_token_stream(
+            stream_path,
+            itertools.islice(full_train_token_ids(), full_token_count),
+            token_count=full_token_count,
+            context_length=config.data.context_length,
+        )
+        manifest = {
+            "experiment_id": config.experiment_id,
+            "dataset": {"repo": config.data.dataset_repo, "config": config.data.dataset_config, "revision": revision, "field": config.data.text_field},
+            "split": {"method": "sha256(seed:canonical_content_sha256) modulo buckets", "seed": config.data.split_seed, "validation_buckets": config.data.validation_bucket_cutoff, "modulus": config.data.validation_bucket_modulus},
+            "contamination": {"method": "NFKC+casefold+tokenized normalized 13-gram SHA-256 overlap", "ngram_size": config.data.contamination_ngram_size, "scanned_documents": scanned, "accepted_documents": accepted, "rejected_documents": rejected, "benchmark_sources": benchmark_sources},
+            "tokenizer": {"vocab_size": tokenizer_artifact.vocab_size, "special_tokens": tokenizer_artifact.special_tokens, "sha256": tokenizer_artifact.sha256, "bytes_per_token": len(held_out_sample.encode("utf-8")) / max(1, len(held_out_ids)), "characters_per_token": len(held_out_sample) / max(1, len(held_out_ids)), "tokens_per_word": len(held_out_ids) / max(1, len(words))},
+            "packed": {"representation": "one-dimensional uint16 token stream with on-demand torch.long 513-token views", "context_length": config.data.context_length, "prediction_tokens_per_example": 512, "eod_token_id": eod_id, "cross_document_loss": "permitted only across an explicit EOD token", "train_examples": len(stream), "train_prediction_tokens": config.training.full_training_tokens, "train_token_count_including_final_target": full_token_count, "train_stream_sha256": sha256_file(stream_path), "train_documents_contributed": documents_contributed, "non_cycled": True},
+        }
+        atomic_json_write(artifact_dir / "manifest.json", manifest)
+        manifest["manifest_sha256"] = sha256_file(artifact_dir / "manifest.json")
+        return manifest
     train_stream, train_docs_used = _stream_token_ids(
         tokenizer_artifact.tokenizer, training_documents, eod_id, config.training.smoke_training_tokens
     )
@@ -292,9 +461,6 @@ def prepare_exp001(config: ExperimentConfig, artifact_dir: Path) -> dict[str, An
     validation_inputs, validation_targets = make_packed_examples(validation_stream, config.data.context_length)
     torch.save({"inputs": train_inputs, "targets": train_targets}, artifact_dir / "train.pt")
     torch.save({"inputs": validation_inputs, "targets": validation_targets}, artifact_dir / "validation.pt")
-    held_out_sample = validation_documents[0].text[:100_000]
-    held_out_ids = tokenizer_artifact.tokenizer.encode(held_out_sample).ids
-    words = re.findall(r"\S+", held_out_sample)
     manifest = {
         "experiment_id": config.experiment_id,
         "dataset": {"repo": config.data.dataset_repo, "config": config.data.dataset_config, "revision": revision, "field": config.data.text_field},

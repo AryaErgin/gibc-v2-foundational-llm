@@ -1,0 +1,32 @@
+{
+  "arc_easy": {
+    "config": "ARC-Easy",
+    "repo": "ai2_arc",
+    "revision": "210d026faf9955653af8916fad021475a3f00453",
+    "splits": ["train", "validation", "test"]
+  },
+  "hellaswag": {
+    "config": null,
+    "repo": "hellaswag",
+    "revision": "218ec52e09a7e7462a5400043bb9a69a41d06b76",
+    "splits": ["train", "validation", "test"]
+  },
+  "piqa": {
+    "config": "plain_text",
+    "repo": "piqa",
+    "revision": "2e8ac2dffd59bac8c3c6714948f4c551a0848bb0",
+    "splits": ["train", "dev", "test"]
+  },
+  "wikitext103": {
+    "config": "wikitext-103-raw-v1",
+    "repo": "wikitext",
+    "revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
+    "splits": ["validation", "test"]
+  },
+  "winogrande": {
+    "config": "winogrande_xl",
+    "repo": "winogrande",
+    "revision": "01e74176c63542e6b0bcb004dcdea22d94fb67b5",
+    "splits": ["train", "validation", "test"]
+  }
+}

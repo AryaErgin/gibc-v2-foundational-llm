@@ -1,19 +1,26 @@
-"""Transparent lm-evaluation-harness likelihood adapter for the custom causal LM."""
+"""lm-evaluation-harness v0.4.9.1 adapter for the custom causal LM."""
 
 from __future__ import annotations
 
-import math
 from typing import Any
 
 import torch
 
-from lm_eval.api.model import LM
+from lm_eval.api.model import TemplateLM
+from lm_eval import utils as lm_eval_utils
 
 from .generation import generate
 
 
-class CustomCausalLM(LM):
-    def __init__(self, model, tokenizer, device: torch.device, batch_size: int = 1) -> None:
+class CustomCausalLM(TemplateLM):
+    """Causal likelihood adapter without a pretrained-model wrapper.
+
+    ``TemplateLM`` owns request tokenization. Its ``_encode_pair`` moves trailing
+    context whitespace into the continuation and takes continuation IDs as the
+    suffix of the joint byte-level-BPE encoding, matching lm-eval 0.4.9.1.
+    """
+
+    def __init__(self, model: Any, tokenizer: Any, device: torch.device, batch_size: int = 1) -> None:
         super().__init__()
         self.model = model.to(device).eval()
         self.tokenizer = tokenizer
@@ -23,35 +30,57 @@ class CustomCausalLM(LM):
         if self.eod_token_id is None:
             raise ValueError("Custom adapter requires the EXP-001 EOD token.")
 
-    def _encode(self, text: str) -> list[int]:
+    @property
+    def eot_token_id(self) -> int:
+        return self.eod_token_id
+
+    @property
+    def max_length(self) -> int:
+        return self.model.config.context_length
+
+    def tok_encode(self, text: str, **kwargs: Any) -> list[int]:
+        # EXP-001 has no automatic special tokens. kwargs are accepted solely for
+        # TemplateLM interface compatibility and never alter the tokenizer.
         return self.tokenizer.encode(text).ids
 
     @torch.no_grad()
     def _score_tokens(self, prefix: list[int], continuation: list[int]) -> tuple[float, bool]:
-        history = prefix or [self.eod_token_id]
+        history = list(prefix) or [self.prefix_token_id]
         score = 0.0
         greedy = True
         for token in continuation:
-            context = torch.tensor(history[-self.model.config.context_length :], dtype=torch.long, device=self.device).unsqueeze(0)
+            context = torch.tensor(history[-self.max_length :], dtype=torch.long, device=self.device).unsqueeze(0)
             logits = self.model(context)[0, -1].float()
             score += float(torch.log_softmax(logits, dim=-1)[token])
             greedy = greedy and int(logits.argmax()) == token
             history.append(token)
         return score, greedy
 
-    def loglikelihood(self, requests) -> list[tuple[float, bool]]:
-        outputs = []
-        for request in requests:
-            context, continuation = request.args
-            outputs.append(self._score_tokens(self._encode(context), self._encode(continuation)))
+    def _loglikelihood_tokens(self, requests, **kwargs: Any) -> list[tuple[float, bool]]:
+        """Score TemplateLM triplets after its canonical joint tokenization."""
+        outputs: list[tuple[float, bool]] = []
+        for _, context_ids, continuation_ids in requests:
+            if not continuation_ids:
+                raise ValueError("lm-eval causal likelihood requests require a non-empty continuation.")
+            if len(continuation_ids) > self.max_length:
+                raise ValueError("lm-eval continuation exceeds the EXP-001 512-token context length.")
+            outputs.append(self._score_tokens(context_ids, continuation_ids))
         return outputs
 
     def loglikelihood_rolling(self, requests) -> list[float]:
         outputs = []
         for request in requests:
             text = request.args[0]
-            score, _ = self._score_tokens([self.eod_token_id], self._encode(text))
-            outputs.append(score)
+            windows = map(
+                lm_eval_utils.make_disjoint_window,
+                lm_eval_utils.get_rolling_token_windows(
+                    token_list=self.tok_encode(text),
+                    prefix_token=self.prefix_token_id,
+                    max_seq_len=self.max_length,
+                    context_len=1,
+                ),
+            )
+            outputs.append(sum(self._score_tokens(context, continuation)[0] for context, continuation in windows))
         return outputs
 
     def generate_until(self, requests) -> list[str]:

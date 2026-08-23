@@ -40,7 +40,7 @@ training:
   sequence_predictions: 512
   default_microbatch_sequences: 16
   default_gradient_accumulation_steps: 4
-  full_training_tokens: 100000000
+  full_training_tokens: 100007936
   smoke_steps: 60
   smoke_training_tokens: 1966080
   smoke_validation_tokens: 131072
@@ -48,7 +48,7 @@ training:
 data:
   dataset_repo: HuggingFaceFW/fineweb
   dataset_config: sample-10BT
-  dataset_revision: null
+  dataset_revision: 9bb295ddab0e05d785b879661af7260fed5140fc
   text_field: text
   split_seed: 42
   validation_bucket_modulus: 10000

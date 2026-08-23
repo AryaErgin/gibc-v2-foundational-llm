@@ -17,6 +17,7 @@ import numpy as np
 import torch
 from torch import Tensor, nn
 
+from .data import TokenStreamDataset
 from .model import DecoderOnlyTransformer, RMSNorm
 
 
@@ -24,6 +25,7 @@ from .model import DecoderOnlyTransformer, RMSNorm
 class RunState:
     step: int = 0
     tokens: int = 0
+    next_sequence_index: int = 0
 
 
 @dataclass(frozen=True)
@@ -173,6 +175,7 @@ def save_checkpoint(
         "optimizer": optimizer.state_dict(),
         "schedule": schedule.state_dict(),
         "run_state": asdict(state),
+        "data_cursor": {"next_sequence_index": state.next_sequence_index, "mechanism": "sequential_example_index"},
         "rng": _rng_state(),
         "config": config,
     }
@@ -202,7 +205,16 @@ def load_checkpoint(
                 optimizer_state[name] = value.to(device)
     schedule.load_state_dict(payload["schedule"])
     _restore_rng(payload["rng"])
-    return RunState(**payload["run_state"])
+    saved_state = dict(payload["run_state"])
+    if "next_sequence_index" not in saved_state:
+        training = payload.get("config", {}).get("training", {})
+        sequences_per_update = int(training.get("effective_batch_tokens", 0)) // int(
+            training.get("sequence_predictions", 1)
+        )
+        if sequences_per_update <= 0:
+            raise RuntimeError("Legacy checkpoint lacks a recoverable deterministic training-data cursor.")
+        saved_state["next_sequence_index"] = int(saved_state["step"]) * sequences_per_update
+    return RunState(**saved_state)
 
 
 def tiny_overfit(
@@ -233,8 +245,8 @@ class JsonlLogger:
 
 def train_smoke(
     model: DecoderOnlyTransformer,
-    train_inputs: Tensor,
-    train_targets: Tensor,
+    train_inputs: Tensor | TokenStreamDataset,
+    train_targets: Tensor | None,
     validation_inputs: Tensor,
     validation_targets: Tensor,
     optimizer: torch.optim.Optimizer,
@@ -247,22 +259,45 @@ def train_smoke(
     gradient_clip_norm: float,
     logger: JsonlLogger | None = None,
 ) -> list[dict[str, float]]:
-    if microbatch_sequences * accumulation_steps * train_targets.shape[1] != 32_768:
+    if isinstance(train_inputs, TokenStreamDataset):
+        if train_inputs.context_length != 512 or train_targets is not None:
+            raise ValueError("TokenStreamDataset training expects 512-token views and no duplicate target tensor.")
+        train_example_count = len(train_inputs)
+    else:
+        if train_targets is None:
+            raise ValueError("Tensor training inputs require a matching target tensor.")
+        train_example_count = train_inputs.shape[0]
+    if microbatch_sequences * accumulation_steps * 512 != 32_768:
         raise ValueError("EXP-001 smoke updates must contain exactly 32,768 prediction tokens.")
     model.to(device)
     records: list[dict[str, float]] = []
     total_sequences = microbatch_sequences * accumulation_steps
-    for local_step in range(steps):
-        indices = torch.arange(local_step * total_sequences, (local_step + 1) * total_sequences) % train_inputs.shape[0]
-        batches = [
-            (train_inputs[indices[offset : offset + microbatch_sequences]], train_targets[indices[offset : offset + microbatch_sequences]])
-            for offset in range(0, total_sequences, microbatch_sequences)
-        ]
+    expected_cursor = state.step * total_sequences
+    if state.next_sequence_index != expected_cursor:
+        raise ValueError("RunState data cursor must equal global optimizer step times sequences per update.")
+    for _ in range(steps):
+        next_cursor = state.next_sequence_index + total_sequences
+        if next_cursor > train_example_count:
+            raise ValueError("Sequential training data exhausted; EXP-001 never cycles a prepared corpus.")
+        indices = torch.arange(state.next_sequence_index, next_cursor)
+        batches = []
+        for offset in range(0, total_sequences, microbatch_sequences):
+            batch_indices = indices[offset : offset + microbatch_sequences].tolist()
+            if isinstance(train_inputs, TokenStreamDataset):
+                examples = [train_inputs[index] for index in batch_indices]
+                batch_inputs = torch.stack([example[0] for example in examples])
+                batch_targets = torch.stack([example[1] for example in examples])
+            else:
+                assert train_targets is not None
+                batch_inputs = train_inputs[batch_indices]
+                batch_targets = train_targets[batch_indices]
+            batches.append((batch_inputs, batch_targets))
         start = time.perf_counter()
         metrics = optimizer_update(model, optimizer, schedule, batches, device, gradient_clip_norm)
         elapsed = time.perf_counter() - start
         state.step += 1
         state.tokens += int(metrics["tokens"])
+        state.next_sequence_index = next_cursor
         metrics.update({"step": float(state.step), "cumulative_tokens": float(state.tokens), "wall_seconds": elapsed, "tokens_per_second": metrics["tokens"] / elapsed})
         if device.type == "cuda":
             metrics["peak_allocated_bytes"] = float(torch.cuda.max_memory_allocated(device))
