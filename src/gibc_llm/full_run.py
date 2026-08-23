@@ -18,6 +18,8 @@ class FullRunArtifact:
     train: TokenStreamDataset
     validation_inputs: torch.Tensor
     validation_targets: torch.Tensor
+    edu_validation_inputs: torch.Tensor | None
+    edu_validation_targets: torch.Tensor | None
     manifest: dict[str, Any]
     manifest_sha256: str
 
@@ -57,14 +59,17 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if manifest.get("experiment_id") != config.experiment_id:
         raise RuntimeError("Full-run manifest experiment identity differs from the supplied configuration.")
+    if config.experiment_id == "EXP-003" and manifest.get("preparation_mode") != "full_stream":
+        raise RuntimeError("EXP-003 full runner requires a complete stream materialization, not validation-only preparation.")
     dataset = manifest.get("dataset", {})
-    if dataset != {
+    expected_dataset = {
         "repo": config.data.dataset_repo,
         "config": config.data.dataset_config,
         "revision": config.data.dataset_revision,
         "field": config.data.text_field,
-    }:
-        raise RuntimeError("Full-run manifest dataset provenance differs from the pinned EXP-001 configuration.")
+    }
+    if any(dataset.get(key) != value for key, value in expected_dataset.items()):
+        raise RuntimeError("Full-run manifest dataset provenance differs from the pinned experiment configuration.")
     tokenizer = manifest.get("tokenizer", {})
     if (
         tokenizer.get("vocab_size") != config.data.tokenizer_vocab_size
@@ -72,6 +77,8 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
         or not tokenizer.get("sha256")
     ):
         raise RuntimeError("Full-run manifest has no exact frozen 8192-entry tokenizer hash.")
+    if config.experiment_id == "EXP-003" and tokenizer.get("sha256") != "c5592fba176c3d2f7915a3812559a24d7a669206f4a22484b053c8a9ce08be14":
+        raise RuntimeError("EXP-003 full runner requires the exact frozen tokenizer hash.")
     tokenizer_path = artifact_dir / "tokenizer" / "tokenizer.json"
     if not tokenizer_path.is_file() or sha256_file(tokenizer_path) != tokenizer["sha256"]:
         raise RuntimeError("Frozen tokenizer artifact is absent or does not match its manifest SHA-256.")
@@ -96,7 +103,8 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
         raise RuntimeError("Full-run uint16 token stream does not match manifest provenance.")
     if config.experiment_id == "EXP-002" and manifest.get("exp001_prefix", {}).get("prefix_match") is not True:
         raise RuntimeError("EXP-002 artifact lacks a verified byte-identical EXP-001 training prefix.")
-    validation = manifest.get("validation", {})
+    validation_key = "general_validation" if config.experiment_id == "EXP-003" else "validation"
+    validation = manifest.get(validation_key, {})
     validation_path = artifact_dir / validation.get("file", "")
     if not validation_path.is_file():
         raise RuntimeError("Full-run artifact is missing deterministic held-out validation data.")
@@ -112,10 +120,35 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
         or validation.get("targets_sha256") != tensor_sha256(targets)
     ):
         raise RuntimeError("Full-run validation material does not match required held-out manifest invariants.")
+    edu_inputs = edu_targets = None
+    if config.experiment_id == "EXP-003":
+        if (
+            validation.get("inputs_sha256") != "f721fda2a0a0ca11a580178dba6c2592af4dd9324da3ed7120624b7364d653f7"
+            or validation.get("targets_sha256") != "2ca518affa0b36d15c7c427de84b4c7d761926e1e993c03724d75f396934f13e"
+        ):
+            raise RuntimeError("EXP-003 general validation must be the frozen EXP-001/002 artifact.")
+        edu_validation = manifest.get("edu_validation", {})
+        edu_path = artifact_dir / edu_validation.get("file", "")
+        if not edu_path.is_file() or edu_validation.get("contamination_screened") is not True:
+            raise RuntimeError("EXP-003 artifact lacks a contamination-screened educational validation set.")
+        edu_values = torch.load(edu_path, map_location="cpu", weights_only=True)
+        edu_inputs, edu_targets = edu_values["inputs"], edu_values["targets"]
+        if (
+            edu_inputs.shape != edu_targets.shape
+            or edu_inputs.ndim != 2
+            or edu_inputs.shape[1] != config.data.context_length
+            or edu_validation.get("prediction_tokens") != int(edu_targets.numel())
+            or edu_validation.get("prediction_tokens") != config.training.smoke_validation_tokens
+            or edu_validation.get("inputs_sha256") != tensor_sha256(edu_inputs)
+            or edu_validation.get("targets_sha256") != tensor_sha256(edu_targets)
+        ):
+            raise RuntimeError("EXP-003 educational validation material does not match its held-out manifest invariants.")
     return FullRunArtifact(
         train=TokenStreamDataset(stream_path, expected_stored, config.data.context_length),
         validation_inputs=inputs,
         validation_targets=targets,
+        edu_validation_inputs=edu_inputs,
+        edu_validation_targets=edu_targets,
         manifest=manifest,
         manifest_sha256=sha256_file(manifest_path),
     )

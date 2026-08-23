@@ -80,10 +80,14 @@ def main() -> None:
     parser.add_argument("--max-steps", type=int, help="Explicit bounded override. Logs DRY RUN / INCOMPLETE TRAINING.")
     parser.add_argument("--microbatch-sequences", type=int, default=32)
     parser.add_argument("--gradient-accumulation-steps", type=int, default=2)
-    parser.add_argument("--checkpoint-interval", type=int, default=500)
-    parser.add_argument("--validation-interval", type=int, default=500)
+    parser.add_argument("--checkpoint-interval", type=int)
+    parser.add_argument("--validation-interval", type=int)
     args = parser.parse_args()
     config = load_config(args.config)
+    if args.checkpoint_interval is None:
+        args.checkpoint_interval = 3052 if config.experiment_id == "EXP-003" else 500
+    if args.validation_interval is None:
+        args.validation_interval = 3052 if config.experiment_id == "EXP-003" else 500
     if not torch.cuda.is_available() or not torch.cuda.is_bf16_supported():
         raise RuntimeError("EXP-001 full runner requires a BF16-capable CUDA device.")
     if args.microbatch_sequences * args.gradient_accumulation_steps != sequences_per_update(config):
@@ -146,10 +150,19 @@ def main() -> None:
     )
     initial_validation = evaluate(model, artifact.validation_inputs, artifact.validation_targets, args.microbatch_sequences, device)
     _log_validation(logger, "before_training", initial_validation, state, common)
+    initial_edu_validation = None
+    if artifact.edu_validation_inputs is not None and artifact.edu_validation_targets is not None:
+        initial_edu_validation = evaluate(
+            model, artifact.edu_validation_inputs, artifact.edu_validation_targets, args.microbatch_sequences, device
+        )
+        _log_validation(logger, "edu_before_training", initial_edu_validation, state, common)
     torch.cuda.reset_peak_memory_stats(device)
     started = time.perf_counter()
     records: list[dict[str, float]] = []
     validation_records: list[dict[str, float]] = [{"step": float(state.step), "loss": initial_validation.loss, "ppl": initial_validation.perplexity}]
+    edu_validation_records: list[dict[str, float]] = []
+    if initial_edu_validation is not None:
+        edu_validation_records.append({"step": float(state.step), "loss": initial_edu_validation.loss, "ppl": initial_edu_validation.perplexity})
     checkpoint_paths: list[str] = []
     while state.step < planned_end:
         next_validation = ((state.step // args.validation_interval) + 1) * args.validation_interval
@@ -185,6 +198,12 @@ def main() -> None:
             result = evaluate(model, artifact.validation_inputs, artifact.validation_targets, args.microbatch_sequences, device)
             _log_validation(logger, "milestone" if state.step % args.validation_interval == 0 else "end", result, state, common)
             validation_records.append({"step": float(state.step), "loss": result.loss, "ppl": result.perplexity})
+            if artifact.edu_validation_inputs is not None and artifact.edu_validation_targets is not None:
+                edu_result = evaluate(
+                    model, artifact.edu_validation_inputs, artifact.edu_validation_targets, args.microbatch_sequences, device
+                )
+                _log_validation(logger, "edu_milestone" if state.step % args.validation_interval == 0 else "edu_end", edu_result, state, common)
+                edu_validation_records.append({"step": float(state.step), "loss": edu_result.loss, "ppl": edu_result.perplexity})
         if state.step % args.checkpoint_interval == 0 or state.step == planned_end:
             checkpoint = args.run_dir / "checkpoints" / f"checkpoint-step-{state.step:04d}.pt"
             save_checkpoint(checkpoint, model, optimizer, schedule, state, provenance)
@@ -220,6 +239,7 @@ def main() -> None:
         "wall_seconds": elapsed,
         "checkpoints": checkpoint_paths,
         "validation_records": validation_records,
+        "edu_validation_records": edu_validation_records,
     }
     atomic_json_write(args.run_dir / "summary.json", summary)
     logger.log({**common, "event": "run_end", **summary})

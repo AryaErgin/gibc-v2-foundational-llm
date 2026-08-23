@@ -118,15 +118,15 @@ def load_config(path: Path | str) -> ExperimentConfig:
         training=_construct("training", TrainingConfig, raw["training"]),
         data=_construct("data", DataConfig, raw["data"]),
     )
-    _validate_exp001(config)
+    _validate_controlled_experiment(config)
     return config
 
 
-def _validate_exp001(config: ExperimentConfig) -> None:
+def _validate_controlled_experiment(config: ExperimentConfig) -> None:
     model, training, data = config.model, config.training, config.data
-    horizons = {"EXP-001": (3052, 100_007_936), "EXP-002": (9156, 300_023_808)}
+    horizons = {"EXP-001": (3052, 100_007_936), "EXP-002": (9156, 300_023_808), "EXP-003": (9156, 300_023_808)}
     if config.experiment_id not in horizons:
-        raise ValueError("Only EXP-001 and EXP-002 controlled configurations are supported.")
+        raise ValueError("Only EXP-001, EXP-002, and EXP-003 controlled configurations are supported.")
     if (model.vocab_size, model.d_model, model.n_layers, model.n_heads, model.head_dim, model.d_ff) != (8192, 256, 8, 8, 32, 1024):
         raise ValueError("EXP-001 model dimensions differ from the approved control.")
     if model.d_model != model.n_heads * model.head_dim or model.rotary_dim != model.head_dim:
@@ -146,10 +146,13 @@ def _validate_exp001(config: ExperimentConfig) -> None:
         raise ValueError(f"{config.experiment_id} full/smoke token budget invariant is violated.")
     if training.seed != 42 or data.split_seed != 42:
         raise ValueError("EXP-001 requires fixed seed 42.")
-    if data.dataset_repo != "HuggingFaceFW/fineweb" or data.dataset_config != "sample-10BT":
-        raise ValueError("EXP-001 must use the approved FineWeb source/configuration.")
-    if data.dataset_revision != "9bb295ddab0e05d785b879661af7260fed5140fc":
-        raise ValueError("EXP-001 must use the pinned FineWeb revision measured in EXP-001A.")
+    expected_data = (
+        ("HuggingFaceFW/fineweb-edu", "default", "87f09149ef4734204d70ed1d046ddc9ca3f2b8f9")
+        if config.experiment_id == "EXP-003"
+        else ("HuggingFaceFW/fineweb", "sample-10BT", "9bb295ddab0e05d785b879661af7260fed5140fc")
+    )
+    if (data.dataset_repo, data.dataset_config, data.dataset_revision) != expected_data:
+        raise ValueError(f"{config.experiment_id} dataset pin is invalid.")
     if data.tokenizer_vocab_size != 8192 or data.eod_token != "<|endoftext|>":
         raise ValueError("EXP-001 tokenizer invariants are violated.")
 
