@@ -56,20 +56,49 @@ class CustomCausalLM(TemplateLM):
             history.append(token)
         return score, greedy
 
+    @torch.no_grad()
+    def _score_many(self, pairs: list[tuple[int, list[int], list[int]]], output_count: int) -> list[tuple[float, bool]]:
+        """Batch exact causal token events; right padding follows each scored position."""
+        scores = [0.0] * output_count
+        greedy = [True] * output_count
+        events: list[tuple[int, list[int], int]] = []
+        for output_index, prefix, continuation in pairs:
+            history = list(prefix) or [self.prefix_token_id]
+            for token in continuation:
+                events.append((output_index, history[-self.max_length :], token))
+                history.append(token)
+        batch_size = max(1, int(self.batch_size))
+        for start in range(0, len(events), batch_size):
+            batch = events[start : start + batch_size]
+            lengths = torch.tensor([len(context) for _, context, _ in batch], device=self.device)
+            width = int(lengths.max())
+            input_ids = torch.full((len(batch), width), self.prefix_token_id, dtype=torch.long, device=self.device)
+            for row, (_, context, _) in enumerate(batch):
+                input_ids[row, : len(context)] = torch.tensor(context, dtype=torch.long, device=self.device)
+            logits = self.model(input_ids).float()
+            row_ids = torch.arange(len(batch), device=self.device)
+            final_logits = logits[row_ids, lengths - 1]
+            target_ids = torch.tensor([token for _, _, token in batch], device=self.device)
+            token_scores = torch.log_softmax(final_logits, dim=-1)[row_ids, target_ids]
+            predictions = final_logits.argmax(dim=-1)
+            for event, value, prediction in zip(batch, token_scores, predictions, strict=True):
+                output_index, _, token = event
+                scores[output_index] += float(value)
+                greedy[output_index] = greedy[output_index] and int(prediction) == token
+        return list(zip(scores, greedy, strict=True))
+
     def _loglikelihood_tokens(self, requests, **kwargs: Any) -> list[tuple[float, bool]]:
         """Score TemplateLM triplets after its canonical joint tokenization."""
-        outputs: list[tuple[float, bool]] = []
-        for _, context_ids, continuation_ids in requests:
+        pairs = []
+        for index, (_, context_ids, continuation_ids) in enumerate(requests):
             if not continuation_ids:
                 raise ValueError("lm-eval causal likelihood requests require a non-empty continuation.")
-            if len(continuation_ids) > self.max_length:
-                raise ValueError("lm-eval continuation exceeds the EXP-001 512-token context length.")
-            outputs.append(self._score_tokens(context_ids, continuation_ids))
-        return outputs
+            pairs.append((index, context_ids, continuation_ids))
+        return self._score_many(pairs, len(pairs))
 
     def loglikelihood_rolling(self, requests) -> list[float]:
-        outputs = []
-        for request in requests:
+        pairs = []
+        for index, request in enumerate(requests):
             text = request.args[0]
             windows = map(
                 lm_eval_utils.make_disjoint_window,
@@ -80,8 +109,8 @@ class CustomCausalLM(TemplateLM):
                     context_len=1,
                 ),
             )
-            outputs.append(sum(self._score_tokens(context, continuation)[0] for context, continuation in windows))
-        return outputs
+            pairs.extend((index, context, continuation) for context, continuation in windows)
+        return [score for score, _ in self._score_many(pairs, len(requests))]
 
     def generate_until(self, requests) -> list[str]:
         outputs = []
