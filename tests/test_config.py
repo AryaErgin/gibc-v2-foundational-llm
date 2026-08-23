@@ -31,3 +31,4 @@ def test_exp002_configuration_changes_only_horizon_and_token_budget() -> None:
     assert scaled.training.full_schedule_steps == 9_156
     assert scaled.training.full_training_tokens == 300_023_808
     assert scaled.training.full_training_tokens == scaled.training.full_schedule_steps * scaled.training.effective_batch_tokens
+    assert (scaled.training.default_microbatch_sequences, scaled.training.default_gradient_accumulation_steps) == (32, 2)

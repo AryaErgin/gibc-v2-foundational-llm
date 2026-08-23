@@ -55,6 +55,8 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
     if not manifest_path.is_file():
         raise RuntimeError("Full-run artifact is missing manifest.json.")
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if manifest.get("experiment_id") != config.experiment_id:
+        raise RuntimeError("Full-run manifest experiment identity differs from the supplied configuration.")
     dataset = manifest.get("dataset", {})
     if dataset != {
         "repo": config.data.dataset_repo,
@@ -92,6 +94,8 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
         raise RuntimeError("Full-run uint16 token stream is missing or has the wrong exact size.")
     if packed.get("train_stream_bytes") != stream_path.stat().st_size or packed.get("train_stream_sha256") != sha256_file(stream_path):
         raise RuntimeError("Full-run uint16 token stream does not match manifest provenance.")
+    if config.experiment_id == "EXP-002" and manifest.get("exp001_prefix", {}).get("prefix_match") is not True:
+        raise RuntimeError("EXP-002 artifact lacks a verified byte-identical EXP-001 training prefix.")
     validation = manifest.get("validation", {})
     validation_path = artifact_dir / validation.get("file", "")
     if not validation_path.is_file():

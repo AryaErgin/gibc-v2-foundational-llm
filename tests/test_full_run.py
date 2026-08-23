@@ -26,6 +26,7 @@ def _full_artifact(tmp_path: Path) -> Path:
     validation_targets = (validation_inputs + 1) % 8192
     torch.save({"inputs": validation_inputs, "targets": validation_targets}, artifact / "validation.pt")
     manifest = {
+        "experiment_id": "EXP-001",
         "dataset": {"repo": config.data.dataset_repo, "config": config.data.dataset_config, "revision": config.data.dataset_revision, "field": config.data.text_field},
         "tokenizer": {"vocab_size": 8192, "special_tokens": ["<|endoftext|>"], "sha256": "tokenizer-fixture-hash"},
         "packed": {"representation": "one-dimensional uint16 token stream with on-demand torch.long 513-token views", "storage_dtype": "uint16", "context_length": 512, "prediction_tokens_per_example": 512, "train_prediction_tokens": 100_007_936, "train_token_count_including_final_target": stored, "train_examples": 195_328, "train_stream_file": stream_path.name, "train_stream_bytes": stream_path.stat().st_size, "train_stream_sha256": "stream-fixture-hash", "non_cycled": True},

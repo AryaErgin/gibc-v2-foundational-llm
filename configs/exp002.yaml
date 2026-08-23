@@ -38,8 +38,8 @@ training:
   gradient_clip_norm: 1.0
   effective_batch_tokens: 32768
   sequence_predictions: 512
-  default_microbatch_sequences: 16
-  default_gradient_accumulation_steps: 4
+  default_microbatch_sequences: 32
+  default_gradient_accumulation_steps: 2
   full_training_tokens: 300023808
   smoke_steps: 60
   smoke_training_tokens: 1966080
