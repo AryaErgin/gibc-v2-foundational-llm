@@ -8,4 +8,4 @@ The approved run at `fd99d1035c6c3d1e677620875426eb8a4cfcda93` completed 3,052 u
 
 ## EXP-003
 
-Status: preparation only; neither 300M-token materialization nor training is authorized by this record. The controlled FineWeb-Edu protocol, frozen tokenizer/general-validation controls, dual-validation milestones, provenance statement, and decision criteria are recorded in `experiments/EXP-003.md` and `configs/exp003.yaml`.
+Status: completed and accepted. The pure FineWeb-Edu run completed 9,156 updates / 300,023,808 prediction tokens at source commit `95b782156220c6747f02a526dd7fb64d182e8eb3`. It improved educational validation but exceeded the predeclared general-validation regression limit. See `results/EXP-003-summary.md`; do not resume, modify, or benchmark its checkpoint.
