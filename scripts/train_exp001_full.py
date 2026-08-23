@@ -91,9 +91,9 @@ def main() -> None:
     args = parser.parse_args()
     config = load_config(args.config)
     if args.checkpoint_interval is None:
-        args.checkpoint_interval = 3052 if config.experiment_id == "EXP-003" else 500
+        args.checkpoint_interval = 3052 if config.experiment_id in {"EXP-003", "EXP-004"} else 500
     if args.validation_interval is None:
-        args.validation_interval = 3052 if config.experiment_id == "EXP-003" else 500
+        args.validation_interval = 3052 if config.experiment_id in {"EXP-003", "EXP-004"} else 500
     if not torch.cuda.is_available() or not torch.cuda.is_bf16_supported():
         raise RuntimeError("EXP-001 full runner requires a BF16-capable CUDA device.")
     assert_physical_batch_control(config, args.microbatch_sequences, args.gradient_accumulation_steps)

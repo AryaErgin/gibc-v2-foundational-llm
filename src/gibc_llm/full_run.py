@@ -36,11 +36,11 @@ def assert_physical_batch_control(config: ExperimentConfig, microbatch_sequences
     """Preserve the explicit physical batch where an experiment fixes it."""
     if microbatch_sequences * accumulation_steps != sequences_per_update(config):
         raise RuntimeError("Full runner must retain exactly 64 sequences / 32,768 prediction tokens per update.")
-    if config.experiment_id == "EXP-003" and (
+    if config.experiment_id in {"EXP-003", "EXP-004"} and (
         microbatch_sequences != config.training.default_microbatch_sequences
         or accumulation_steps != config.training.default_gradient_accumulation_steps
     ):
-        raise RuntimeError("EXP-003 full runner requires the fixed physical batch: 32 sequences x 2 accumulation steps.")
+        raise RuntimeError(f"{config.experiment_id} full runner requires the fixed physical batch: 32 sequences x 2 accumulation steps.")
 
 
 def dry_run_plan(config: ExperimentConfig, start_step: int, max_steps: int | None) -> tuple[int, bool]:
@@ -70,8 +70,9 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if manifest.get("experiment_id") != config.experiment_id:
         raise RuntimeError("Full-run manifest experiment identity differs from the supplied configuration.")
-    if config.experiment_id == "EXP-003" and manifest.get("preparation_mode") != "full_stream":
-        raise RuntimeError("EXP-003 full runner requires a complete stream materialization, not validation-only preparation.")
+    dual_validation_experiment = config.experiment_id in {"EXP-003", "EXP-004"}
+    if dual_validation_experiment and manifest.get("preparation_mode") != "full_stream":
+        raise RuntimeError(f"{config.experiment_id} full runner requires a complete stream materialization, not validation-only preparation.")
     dataset = manifest.get("dataset", {})
     expected_dataset = {
         "repo": config.data.dataset_repo,
@@ -88,8 +89,8 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
         or not tokenizer.get("sha256")
     ):
         raise RuntimeError("Full-run manifest has no exact frozen 8192-entry tokenizer hash.")
-    if config.experiment_id == "EXP-003" and tokenizer.get("sha256") != "c5592fba176c3d2f7915a3812559a24d7a669206f4a22484b053c8a9ce08be14":
-        raise RuntimeError("EXP-003 full runner requires the exact frozen tokenizer hash.")
+    if dual_validation_experiment and tokenizer.get("sha256") != "c5592fba176c3d2f7915a3812559a24d7a669206f4a22484b053c8a9ce08be14":
+        raise RuntimeError(f"{config.experiment_id} full runner requires the exact frozen tokenizer hash.")
     tokenizer_path = artifact_dir / "tokenizer" / "tokenizer.json"
     if not tokenizer_path.is_file() or sha256_file(tokenizer_path) != tokenizer["sha256"]:
         raise RuntimeError("Frozen tokenizer artifact is absent or does not match its manifest SHA-256.")
@@ -114,7 +115,7 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
         raise RuntimeError("Full-run uint16 token stream does not match manifest provenance.")
     if config.experiment_id == "EXP-002" and manifest.get("exp001_prefix", {}).get("prefix_match") is not True:
         raise RuntimeError("EXP-002 artifact lacks a verified byte-identical EXP-001 training prefix.")
-    validation_key = "general_validation" if config.experiment_id == "EXP-003" else "validation"
+    validation_key = "general_validation" if dual_validation_experiment else "validation"
     validation = manifest.get(validation_key, {})
     validation_path = artifact_dir / validation.get("file", "")
     if not validation_path.is_file():
@@ -132,16 +133,16 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
     ):
         raise RuntimeError("Full-run validation material does not match required held-out manifest invariants.")
     edu_inputs = edu_targets = None
-    if config.experiment_id == "EXP-003":
+    if dual_validation_experiment:
         if (
             validation.get("inputs_sha256") != "f721fda2a0a0ca11a580178dba6c2592af4dd9324da3ed7120624b7364d653f7"
             or validation.get("targets_sha256") != "2ca518affa0b36d15c7c427de84b4c7d761926e1e993c03724d75f396934f13e"
         ):
-            raise RuntimeError("EXP-003 general validation must be the frozen EXP-001/002 artifact.")
+            raise RuntimeError(f"{config.experiment_id} general validation must be the frozen EXP-001/002 artifact.")
         edu_validation = manifest.get("edu_validation", {})
         edu_path = artifact_dir / edu_validation.get("file", "")
         if not edu_path.is_file() or edu_validation.get("contamination_screened") is not True:
-            raise RuntimeError("EXP-003 artifact lacks a contamination-screened educational validation set.")
+            raise RuntimeError(f"{config.experiment_id} artifact lacks a contamination-screened educational validation set.")
         edu_values = torch.load(edu_path, map_location="cpu", weights_only=True)
         edu_inputs, edu_targets = edu_values["inputs"], edu_values["targets"]
         if (
@@ -153,7 +154,25 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
             or edu_validation.get("inputs_sha256") != tensor_sha256(edu_inputs)
             or edu_validation.get("targets_sha256") != tensor_sha256(edu_targets)
         ):
-            raise RuntimeError("EXP-003 educational validation material does not match its held-out manifest invariants.")
+            raise RuntimeError(f"{config.experiment_id} educational validation material does not match its held-out manifest invariants.")
+        expected_edu_hashes = (
+            ("cc75580b854b69846b1ff15385fbb87adf5bdf1701c1bfe9e8e8d5fdb651fb1a", "300608bc74e052f1580d78e3ad5e1174312360a766f3278c6ce2bdf3336a48b4")
+            if config.experiment_id == "EXP-004"
+            else (edu_validation["inputs_sha256"], edu_validation["targets_sha256"])
+        )
+        if (edu_validation["inputs_sha256"], edu_validation["targets_sha256"]) != expected_edu_hashes:
+            raise RuntimeError(f"{config.experiment_id} educational validation is not the frozen approved tensor.")
+    if config.experiment_id == "EXP-004":
+        mixture = manifest.get("mixture", {})
+        expected_mixture = config.mixture or {}
+        if (
+            mixture.get("target_prediction_tokens") != expected_mixture.get("target_prediction_tokens")
+            or mixture.get("global_deduplication") != "canonical_content_sha256"
+            or mixture.get("sources") != expected_mixture.get("sources")
+            or sum(mixture.get("actual_prediction_token_contributions", {}).values()) != expected_tokens
+            or mixture.get("unique_document_count", 0) <= 0
+        ):
+            raise RuntimeError("EXP-004 mixture provenance, deduplication, or source-token accounting is invalid.")
     return FullRunArtifact(
         train=TokenStreamDataset(stream_path, expected_stored, config.data.context_length),
         validation_inputs=inputs,

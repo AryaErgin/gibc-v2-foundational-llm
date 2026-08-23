@@ -91,6 +91,7 @@ class ExperimentConfig:
     model: ModelConfig
     training: TrainingConfig
     data: DataConfig
+    mixture: dict[str, Any] | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -110,13 +111,14 @@ def load_config(path: Path | str) -> ExperimentConfig:
     """Load the complete explicit EXP-001 configuration and reject drift."""
     with Path(path).open("r", encoding="utf-8") as handle:
         raw = yaml.safe_load(handle)
-    if not isinstance(raw, dict) or set(raw) != {"experiment_id", "model", "training", "data"}:
-        raise ValueError("Configuration must contain only experiment_id, model, training, and data.")
+    if not isinstance(raw, dict) or set(raw) not in ({"experiment_id", "model", "training", "data"}, {"experiment_id", "model", "training", "data", "mixture"}):
+        raise ValueError("Configuration must contain experiment_id, model, training, data, and optional mixture.")
     config = ExperimentConfig(
         experiment_id=str(raw["experiment_id"]),
         model=_construct("model", ModelConfig, raw["model"]),
         training=_construct("training", TrainingConfig, raw["training"]),
         data=_construct("data", DataConfig, raw["data"]),
+        mixture=raw.get("mixture"),
     )
     _validate_controlled_experiment(config)
     return config
@@ -124,9 +126,9 @@ def load_config(path: Path | str) -> ExperimentConfig:
 
 def _validate_controlled_experiment(config: ExperimentConfig) -> None:
     model, training, data = config.model, config.training, config.data
-    horizons = {"EXP-001": (3052, 100_007_936), "EXP-002": (9156, 300_023_808), "EXP-003": (9156, 300_023_808)}
+    horizons = {"EXP-001": (3052, 100_007_936), "EXP-002": (9156, 300_023_808), "EXP-003": (9156, 300_023_808), "EXP-004": (9156, 300_023_808)}
     if config.experiment_id not in horizons:
-        raise ValueError("Only EXP-001, EXP-002, and EXP-003 controlled configurations are supported.")
+        raise ValueError("Only EXP-001 through EXP-004 controlled configurations are supported.")
     if (model.vocab_size, model.d_model, model.n_layers, model.n_heads, model.head_dim, model.d_ff) != (8192, 256, 8, 8, 32, 1024):
         raise ValueError("EXP-001 model dimensions differ from the approved control.")
     if model.d_model != model.n_heads * model.head_dim or model.rotary_dim != model.head_dim:
@@ -153,6 +155,19 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
     )
     if (data.dataset_repo, data.dataset_config, data.dataset_revision) != expected_data:
         raise ValueError(f"{config.experiment_id} dataset pin is invalid.")
+    if config.experiment_id == "EXP-004":
+        expected_mixture = {
+            "target_prediction_tokens": {"fineweb": 200_015_872, "fineweb_edu": 100_007_936},
+            "global_deduplication": "canonical_content_sha256",
+            "sources": {
+                "fineweb": {"repo": "HuggingFaceFW/fineweb", "config": "sample-10BT", "revision": "9bb295ddab0e05d785b879661af7260fed5140fc", "field": "text"},
+                "fineweb_edu": {"repo": "HuggingFaceFW/fineweb-edu", "config": "default", "revision": "87f09149ef4734204d70ed1d046ddc9ca3f2b8f9", "field": "text"},
+            },
+        }
+        if config.mixture != expected_mixture:
+            raise ValueError("EXP-004 mixture specification is not the approved deduplicated 2:1 data control.")
+    elif config.mixture is not None:
+        raise ValueError("Only EXP-004 may declare a mixture data specification.")
     if data.tokenizer_vocab_size != 8192 or data.eod_token != "<|endoftext|>":
         raise ValueError("EXP-001 tokenizer invariants are violated.")
 
