@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Iterable
 
 import torch
 
@@ -57,19 +57,16 @@ class CustomCausalLM(TemplateLM):
         return score, greedy
 
     @torch.no_grad()
-    def _score_many(self, pairs: list[tuple[int, list[int], list[int]]], output_count: int) -> list[tuple[float, bool]]:
+    def _score_many(self, pairs: Iterable[tuple[int, list[int], list[int]]], output_count: int) -> list[tuple[float, bool]]:
         """Batch exact causal token events; right padding follows each scored position."""
         scores = [0.0] * output_count
         greedy = [True] * output_count
         events: list[tuple[int, list[int], int]] = []
-        for output_index, prefix, continuation in pairs:
-            history = list(prefix) or [self.prefix_token_id]
-            for token in continuation:
-                events.append((output_index, history[-self.max_length :], token))
-                history.append(token)
         batch_size = max(1, int(self.batch_size))
-        for start in range(0, len(events), batch_size):
-            batch = events[start : start + batch_size]
+
+        def score_batch(batch: list[tuple[int, list[int], int]]) -> None:
+            if not batch:
+                return
             lengths = torch.tensor([len(context) for _, context, _ in batch], device=self.device)
             width = int(lengths.max())
             input_ids = torch.full((len(batch), width), self.prefix_token_id, dtype=torch.long, device=self.device)
@@ -85,6 +82,16 @@ class CustomCausalLM(TemplateLM):
                 output_index, _, token = event
                 scores[output_index] += float(value)
                 greedy[output_index] = greedy[output_index] and int(prediction) == token
+
+        for output_index, prefix, continuation in pairs:
+            history = list(prefix) or [self.prefix_token_id]
+            for token in continuation:
+                events.append((output_index, history[-self.max_length :], token))
+                history.append(token)
+                if len(events) == batch_size:
+                    score_batch(events)
+                    events.clear()
+        score_batch(events)
         return list(zip(scores, greedy, strict=True))
 
     def _loglikelihood_tokens(self, requests, **kwargs: Any) -> list[tuple[float, bool]]:
@@ -97,20 +104,12 @@ class CustomCausalLM(TemplateLM):
         return self._score_many(pairs, len(pairs))
 
     def loglikelihood_rolling(self, requests) -> list[float]:
-        pairs = []
-        for index, request in enumerate(requests):
-            text = request.args[0]
-            windows = map(
-                lm_eval_utils.make_disjoint_window,
-                lm_eval_utils.get_rolling_token_windows(
-                    token_list=self.tok_encode(text),
-                    prefix_token=self.prefix_token_id,
-                    max_seq_len=self.max_length,
-                    context_len=1,
-                ),
-            )
-            pairs.extend((index, context, continuation) for context, continuation in windows)
-        return [score for score, _ in self._score_many(pairs, len(requests))]
+        def pairs() -> Iterable[tuple[int, list[int], list[int]]]:
+            for index, request in enumerate(requests):
+                text = request.args[0]
+                windows = map(lm_eval_utils.make_disjoint_window, lm_eval_utils.get_rolling_token_windows(token_list=self.tok_encode(text), prefix_token=self.prefix_token_id, max_seq_len=self.max_length, context_len=1))
+                yield from ((index, context, continuation) for context, continuation in windows)
+        return [score for score, _ in self._score_many(pairs(), len(requests))]
 
     def generate_until(self, requests) -> list[str]:
         outputs = []
