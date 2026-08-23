@@ -4,7 +4,7 @@ Reproducible, from-scratch decoder-only language-model research infrastructure f
 
 ## Status
 
-EXP-001A infrastructure is validated. EXP-001B is readiness hardening; it prepares but does not start the exact 100,007,936-prediction-token baseline. The full EXP-001 run must not start without research-chat authorization.
+EXP-001 training is complete at 3,052 updates / 100,007,936 prediction tokens. Exact local training evidence is recorded in `results/EXP-001-summary.md`; final-checkpoint benchmark evaluation is pending EXP-001D. The final local checkpoint must not be resumed or modified.
 
 ## Repository rules
 
