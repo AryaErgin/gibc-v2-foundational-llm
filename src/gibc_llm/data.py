@@ -237,12 +237,10 @@ def tensor_sha256(values: torch.Tensor) -> str:
 
 
 def resolve_fineweb_revision(data_config: DataConfig) -> str:
-    from huggingface_hub import HfApi
-
-    info = HfApi().dataset_info(data_config.dataset_repo, revision=data_config.dataset_revision)
-    if not info.sha:
-        raise RuntimeError("Hugging Face did not return an immutable FineWeb dataset revision.")
-    return info.sha
+    """Use the approved immutable SHA directly; never resolve a moving dataset HEAD."""
+    if not data_config.dataset_revision:
+        raise RuntimeError("EXP-001 requires an explicit immutable FineWeb dataset revision.")
+    return data_config.dataset_revision
 
 
 def iter_fineweb_documents(data_config: DataConfig, revision: str, cache_dir: Path) -> Iterator[str]:
