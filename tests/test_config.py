@@ -19,3 +19,15 @@ def test_exp001_config_preserves_approved_control_values() -> None:
     assert config.training.warmup_steps == 100
     assert config.training.full_training_tokens == 100_007_936
     assert config.data.dataset_revision == "9bb295ddab0e05d785b879661af7260fed5140fc"
+
+
+def test_exp002_configuration_changes_only_horizon_and_token_budget() -> None:
+    """Breaks if EXP-002 drifts a frozen EXP-001 scientific variable."""
+    baseline = load_config(Path("configs/exp001.yaml"))
+    scaled = load_config(Path("configs/exp002.yaml"))
+    assert scaled.experiment_id == "EXP-002"
+    assert scaled.model == baseline.model
+    assert scaled.data == baseline.data
+    assert scaled.training.full_schedule_steps == 9_156
+    assert scaled.training.full_training_tokens == 300_023_808
+    assert scaled.training.full_training_tokens == scaled.training.full_schedule_steps * scaled.training.effective_batch_tokens

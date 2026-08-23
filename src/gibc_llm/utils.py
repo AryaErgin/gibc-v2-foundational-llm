@@ -124,8 +124,9 @@ def load_config(path: Path | str) -> ExperimentConfig:
 
 def _validate_exp001(config: ExperimentConfig) -> None:
     model, training, data = config.model, config.training, config.data
-    if config.experiment_id != "EXP-001":
-        raise ValueError("Only EXP-001 is supported by this baseline configuration.")
+    horizons = {"EXP-001": (3052, 100_007_936), "EXP-002": (9156, 300_023_808)}
+    if config.experiment_id not in horizons:
+        raise ValueError("Only EXP-001 and EXP-002 controlled configurations are supported.")
     if (model.vocab_size, model.d_model, model.n_layers, model.n_heads, model.head_dim, model.d_ff) != (8192, 256, 8, 8, 32, 1024):
         raise ValueError("EXP-001 model dimensions differ from the approved control.")
     if model.d_model != model.n_heads * model.head_dim or model.rotary_dim != model.head_dim:
@@ -140,8 +141,9 @@ def _validate_exp001(config: ExperimentConfig) -> None:
         raise ValueError("EXP-001 effective batch is 64 x 512 prediction tokens.")
     if training.default_microbatch_sequences * training.default_gradient_accumulation_steps * 512 != 32768:
         raise ValueError("Configured microbatch/accumulation does not preserve effective batch tokens.")
-    if training.full_training_tokens != training.full_schedule_steps * training.effective_batch_tokens or training.full_training_tokens != 100_007_936 or training.smoke_steps != 60 or training.smoke_training_tokens != 1_966_080:
-        raise ValueError("EXP-001 full/smoke token budget invariant is violated.")
+    expected_steps, expected_tokens = horizons[config.experiment_id]
+    if training.full_schedule_steps != expected_steps or training.full_training_tokens != expected_tokens or training.full_training_tokens != training.full_schedule_steps * training.effective_batch_tokens or training.smoke_steps != 60 or training.smoke_training_tokens != 1_966_080:
+        raise ValueError(f"{config.experiment_id} full/smoke token budget invariant is violated.")
     if training.seed != 42 or data.split_seed != 42:
         raise ValueError("EXP-001 requires fixed seed 42.")
     if data.dataset_repo != "HuggingFaceFW/fineweb" or data.dataset_config != "sample-10BT":
