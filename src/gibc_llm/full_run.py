@@ -32,6 +32,17 @@ def expected_full_sequences(config: ExperimentConfig) -> int:
     return config.training.full_training_tokens // config.training.sequence_predictions
 
 
+def assert_physical_batch_control(config: ExperimentConfig, microbatch_sequences: int, accumulation_steps: int) -> None:
+    """Preserve the explicit physical batch where an experiment fixes it."""
+    if microbatch_sequences * accumulation_steps != sequences_per_update(config):
+        raise RuntimeError("Full runner must retain exactly 64 sequences / 32,768 prediction tokens per update.")
+    if config.experiment_id == "EXP-003" and (
+        microbatch_sequences != config.training.default_microbatch_sequences
+        or accumulation_steps != config.training.default_gradient_accumulation_steps
+    ):
+        raise RuntimeError("EXP-003 full runner requires the fixed physical batch: 32 sequences x 2 accumulation steps.")
+
+
 def dry_run_plan(config: ExperimentConfig, start_step: int, max_steps: int | None) -> tuple[int, bool]:
     """Return requested updates and whether this invocation is explicitly incomplete."""
     remaining = config.training.full_schedule_steps - start_step

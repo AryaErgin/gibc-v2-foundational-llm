@@ -11,7 +11,13 @@ from typing import Any
 
 import torch
 
-from gibc_llm.full_run import dry_run_plan, expected_full_sequences, load_full_run_artifact, sequences_per_update
+from gibc_llm.full_run import (
+    assert_physical_batch_control,
+    dry_run_plan,
+    expected_full_sequences,
+    load_full_run_artifact,
+    sequences_per_update,
+)
 from gibc_llm.model import DecoderOnlyTransformer, parameter_breakdown
 from gibc_llm.train import (
     CosineWithWarmup,
@@ -90,8 +96,7 @@ def main() -> None:
         args.validation_interval = 3052 if config.experiment_id == "EXP-003" else 500
     if not torch.cuda.is_available() or not torch.cuda.is_bf16_supported():
         raise RuntimeError("EXP-001 full runner requires a BF16-capable CUDA device.")
-    if args.microbatch_sequences * args.gradient_accumulation_steps != sequences_per_update(config):
-        raise RuntimeError("EXP-001 full runner must retain exactly 64 sequences / 32,768 prediction tokens per update.")
+    assert_physical_batch_control(config, args.microbatch_sequences, args.gradient_accumulation_steps)
     if args.checkpoint_interval <= 0 or args.validation_interval <= 0:
         raise ValueError("Checkpoint and validation intervals must be positive.")
     artifact = load_full_run_artifact(args.artifact_dir, config)

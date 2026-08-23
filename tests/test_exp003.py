@@ -6,7 +6,13 @@ import pytest
 import torch
 
 from gibc_llm.data import tensor_sha256
-from gibc_llm.full_run import dry_run_plan, expected_full_sequences, expected_run_state, load_full_run_artifact
+from gibc_llm.full_run import (
+    assert_physical_batch_control,
+    dry_run_plan,
+    expected_full_sequences,
+    expected_run_state,
+    load_full_run_artifact,
+)
 from gibc_llm.model import DecoderOnlyTransformer, parameter_breakdown
 from gibc_llm.utils import load_config
 
@@ -38,6 +44,9 @@ def test_exp003_fixed_model_and_full_path_dry_run_arithmetic() -> None:
     assert dry_run_plan(config, start_step=0, max_steps=5) == (5, True)
     assert expected_run_state(config, 0, 5) == (5, 163_840, 320)
     assert dry_run_plan(config, start_step=0, max_steps=None) == (9156, False)
+    assert_physical_batch_control(config, microbatch_sequences=32, accumulation_steps=2)
+    with pytest.raises(RuntimeError, match="physical batch"):
+        assert_physical_batch_control(config, microbatch_sequences=16, accumulation_steps=4)
 
 
 def test_exp003_frozen_artifacts_reject_wrong_tokenizer_or_general_validation(tmp_path: Path, monkeypatch) -> None:
