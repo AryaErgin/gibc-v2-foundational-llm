@@ -12,4 +12,4 @@ Status: completed and accepted. The pure FineWeb-Edu run completed 9,156 updates
 
 ## EXP-004
 
-Status: completed and accepted as Data Recipe v1. The 2:1 globally content-hash-deduplicated mixture completed 9,156 updates / 300,023,808 prediction tokens and met both predeclared internal-validation thresholds. See `results/EXP-004-summary.md`. Only its final checkpoint is authorized for the EXP-004A promoted evaluation; do not resume or modify it.
+Status: completed and accepted as Data Recipe v1. The 2:1 globally content-hash-deduplicated mixture completed 9,156 updates / 300,023,808 prediction tokens and met both predeclared internal-validation thresholds. See `results/EXP-004-summary.md`. Its separately authorized final-checkpoint EXP-004A evaluation completed under lm-eval `0.4.9.1`, zero shot, batch size 16; see `results/EXP-004A-summary.md`. Do not resume or modify the checkpoint.
