@@ -15,7 +15,7 @@ from gibc_llm.evaluation_output import evaluation_output_record
 from gibc_llm.model import DecoderOnlyTransformer
 from gibc_llm.tokenizer import load_tokenizer
 from gibc_llm.train import CosineWithWarmup, build_optimizer, load_checkpoint
-from gibc_llm.utils import load_config
+from gibc_llm.utils import load_config, sha256_file
 
 
 def main() -> None:
@@ -43,6 +43,8 @@ def main() -> None:
     output = evaluation_output_record(
         task=args.tasks,
         checkpoint=str(args.checkpoint),
+        tokenizer=str(args.tokenizer),
+        tokenizer_sha256=sha256_file(args.tokenizer),
         batch_size=args.batch_size,
         lm_eval_version=lm_eval.__version__,
         num_fewshot=args.num_fewshot,

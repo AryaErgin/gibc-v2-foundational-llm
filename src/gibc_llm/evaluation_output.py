@@ -9,6 +9,8 @@ def evaluation_output_record(
     *,
     task: str,
     checkpoint: str,
+    tokenizer: str,
+    tokenizer_sha256: str,
     batch_size: int,
     lm_eval_version: str,
     num_fewshot: int,
@@ -20,6 +22,8 @@ def evaluation_output_record(
         "metadata": {
             "task": task,
             "checkpoint": checkpoint,
+            "tokenizer": tokenizer,
+            "tokenizer_sha256": tokenizer_sha256,
             "batch_size": batch_size,
             "lm_eval_version": lm_eval_version,
             "num_fewshot": num_fewshot,
