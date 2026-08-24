@@ -11,6 +11,7 @@ import lm_eval
 import torch
 
 from gibc_llm.evaluation import CustomCausalLM
+from gibc_llm.evaluation_output import evaluation_output_record
 from gibc_llm.model import DecoderOnlyTransformer
 from gibc_llm.tokenizer import load_tokenizer
 from gibc_llm.train import CosineWithWarmup, build_optimizer, load_checkpoint
@@ -21,7 +22,9 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--tasks", default="hellaswag,arc_easy,piqa,winogrande,wikitext")
     parser.add_argument("--limit", type=float, default=1)
+    parser.add_argument("--full", action="store_true", help="Evaluate every available task example; overrides --limit.")
     parser.add_argument("--batch-size", type=int, default=1)
+    parser.add_argument("--num-fewshot", type=int, default=0)
     parser.add_argument("--checkpoint", type=Path, default=Path("artifacts/exp001a/smoke/checkpoint-final.pt"))
     parser.add_argument("--tokenizer", type=Path, default=Path("artifacts/exp001a/tokenizer/tokenizer.json"))
     parser.add_argument("--output", type=Path, default=Path("artifacts/exp001a/smoke/lm-eval-integration.json"))
@@ -34,11 +37,21 @@ def main() -> None:
     schedule = CosineWithWarmup(optimizer, config.training.peak_learning_rate, config.training.min_learning_rate, config.training.warmup_steps, config.training.full_schedule_steps)
     load_checkpoint(args.checkpoint, model, optimizer, schedule, device)
     started = time.perf_counter()
-    result = lm_eval.simple_evaluate(model=CustomCausalLM(model, load_tokenizer(args.tokenizer), device, args.batch_size), tasks=args.tasks.split(","), num_fewshot=0, batch_size=args.batch_size, limit=args.limit)
+    limit = None if args.full else args.limit
+    result = lm_eval.simple_evaluate(model=CustomCausalLM(model, load_tokenizer(args.tokenizer), device, args.batch_size), tasks=args.tasks.split(","), num_fewshot=args.num_fewshot, batch_size=args.batch_size, limit=limit)
     wall_seconds = time.perf_counter() - started
+    output = evaluation_output_record(
+        task=args.tasks,
+        checkpoint=str(args.checkpoint),
+        batch_size=args.batch_size,
+        lm_eval_version=lm_eval.__version__,
+        num_fewshot=args.num_fewshot,
+        wall_seconds=wall_seconds,
+        raw_result=result,
+    )
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(result, indent=2, default=str), encoding="utf-8")
-    print(json.dumps({"integration_only": True, "tasks": args.tasks, "limit": args.limit, "batch_size": args.batch_size, "wall_seconds": wall_seconds, "lm_eval_version": lm_eval.__version__, "result_keys": list(result.keys())}, indent=2))
+    args.output.write_text(json.dumps(output, indent=2, default=str), encoding="utf-8")
+    print(json.dumps({"tasks": args.tasks, "limit": limit, **output["metadata"], "result_keys": list(result.keys())}, indent=2))
 
 
 if __name__ == "__main__":
