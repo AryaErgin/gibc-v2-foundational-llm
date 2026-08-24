@@ -13,3 +13,7 @@ Status: completed and accepted. The pure FineWeb-Edu run completed 9,156 updates
 ## EXP-004
 
 Status: completed and accepted as Data Recipe v1. The 2:1 globally content-hash-deduplicated mixture completed 9,156 updates / 300,023,808 prediction tokens and met both predeclared internal-validation thresholds. See `results/EXP-004-summary.md`. Its separately authorized final-checkpoint EXP-004A evaluation completed under lm-eval `0.4.9.1`, zero shot, batch size 16; see `results/EXP-004A-summary.md`. Do not resume or modify the checkpoint.
+
+## EXP-005
+
+Status: architecture preflight passed. EXP-005A deep/thin and EXP-005B wide/shallow each completed only the authorized equal 60-update engineering run plus a fresh-process one-update resume against the exact frozen EXP-004 Data Recipe v1 stream. See `results/EXP-005-preflight.md`. Full 300M-token training and official benchmark evaluation remain unauthorized.
