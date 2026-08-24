@@ -16,4 +16,4 @@ Status: completed and accepted as Data Recipe v1. The 2:1 globally content-hash-
 
 ## EXP-005
 
-Status: architecture preflight passed. EXP-005A deep/thin and EXP-005B wide/shallow each completed only the authorized equal 60-update engineering run plus a fresh-process one-update resume against the exact frozen EXP-004 Data Recipe v1 stream. See `results/EXP-005-preflight.md`. Full 300M-token training and official benchmark evaluation remain unauthorized.
+Status: completed. Under the exact frozen EXP-004 Data Recipe v1 stream, EXP-005B wide/shallow beat EXP-005A deep/thin by 0.08317044377326965 nats on final combined validation, above the predeclared 0.02-nat tie threshold, and also used less wall time and peak VRAM. EXP-005B is accepted as Architecture Recipe v1; see `results/EXP-005-summary.md`. Do not resume or benchmark EXP-005A. Only the separately authorized final EXP-005B checkpoint evaluation may proceed; EXP-006 remains unauthorized.
