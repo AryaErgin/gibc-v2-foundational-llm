@@ -1,4 +1,4 @@
-"""Run the fixed EXP-001 full baseline, or an explicit bounded full-path dry run."""
+"""Run a controlled full-horizon experiment, or an explicit bounded full-path dry run."""
 
 from __future__ import annotations
 
@@ -15,6 +15,7 @@ from gibc_llm.full_run import (
     assert_physical_batch_control,
     dry_run_plan,
     expected_full_sequences,
+    full_run_milestones,
     load_full_run_artifact,
     sequences_per_update,
 )
@@ -90,10 +91,11 @@ def main() -> None:
     parser.add_argument("--validation-interval", type=int)
     args = parser.parse_args()
     config = load_config(args.config)
+    fixed_milestone_experiment = config.experiment_id in {"EXP-003", "EXP-004", "EXP-005A", "EXP-005B"}
     if args.checkpoint_interval is None:
-        args.checkpoint_interval = 3052 if config.experiment_id in {"EXP-003", "EXP-004"} else 500
+        args.checkpoint_interval = full_run_milestones(config)[1] if fixed_milestone_experiment else 500
     if args.validation_interval is None:
-        args.validation_interval = 3052 if config.experiment_id in {"EXP-003", "EXP-004"} else 500
+        args.validation_interval = full_run_milestones(config)[1] if fixed_milestone_experiment else 500
     if not torch.cuda.is_available() or not torch.cuda.is_bf16_supported():
         raise RuntimeError("EXP-001 full runner requires a BF16-capable CUDA device.")
     assert_physical_batch_control(config, args.microbatch_sequences, args.gradient_accumulation_steps)
@@ -111,8 +113,9 @@ def main() -> None:
     set_global_seed(config.training.seed)
     model = DecoderOnlyTransformer(config.model).to(device)
     parameters = parameter_breakdown(model).total
-    if parameters != 8_392_960:
-        raise RuntimeError(f"EXP-001 model parameter invariant failed: {parameters} != 8,392,960.")
+    expected_parameters = {"EXP-005A": 20_984_064, "EXP-005B": 20_848_512}.get(config.experiment_id, 8_392_960)
+    if parameters != expected_parameters:
+        raise RuntimeError(f"{config.experiment_id} model parameter invariant failed: {parameters} != {expected_parameters:,}.")
     optimizer = build_optimizer(
         model,
         config.training.peak_learning_rate,

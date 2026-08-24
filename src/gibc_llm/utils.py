@@ -126,28 +126,67 @@ def load_config(path: Path | str) -> ExperimentConfig:
 
 def _validate_controlled_experiment(config: ExperimentConfig) -> None:
     model, training, data = config.model, config.training, config.data
-    horizons = {"EXP-001": (3052, 100_007_936), "EXP-002": (9156, 300_023_808), "EXP-003": (9156, 300_023_808), "EXP-004": (9156, 300_023_808)}
+    horizons = {
+        "EXP-001": (3052, 100_007_936),
+        "EXP-002": (9156, 300_023_808),
+        "EXP-003": (9156, 300_023_808),
+        "EXP-004": (9156, 300_023_808),
+        "EXP-005A": (9156, 300_023_808),
+        "EXP-005B": (9156, 300_023_808),
+    }
     if config.experiment_id not in horizons:
-        raise ValueError("Only EXP-001 through EXP-004 controlled configurations are supported.")
-    if (model.vocab_size, model.d_model, model.n_layers, model.n_heads, model.head_dim, model.d_ff) != (8192, 256, 8, 8, 32, 1024):
-        raise ValueError("EXP-001 model dimensions differ from the approved control.")
+        raise ValueError("Only EXP-001 through EXP-005 controlled configurations are supported.")
+    expected_dimensions = {
+        "EXP-005A": (8192, 256, 24, 8, 32, 1024),
+        "EXP-005B": (8192, 384, 10, 12, 32, 1536),
+    }.get(config.experiment_id, (8192, 256, 8, 8, 32, 1024))
+    if (model.vocab_size, model.d_model, model.n_layers, model.n_heads, model.head_dim, model.d_ff) != expected_dimensions:
+        raise ValueError(f"{config.experiment_id} model dimensions differ from the approved allocation.")
     if model.d_model != model.n_heads * model.head_dim or model.rotary_dim != model.head_dim:
-        raise ValueError("EXP-001 requires full-head RoPE with consistent attention dimensions.")
+        raise ValueError("Controlled experiments require full-head RoPE with consistent attention dimensions.")
     if model.rope_theta != 10000.0 or model.rope_scaling != "none":
-        raise ValueError("EXP-001 requires unscaled RoPE theta=10000.0.")
+        raise ValueError("Controlled experiments require unscaled RoPE theta=10000.0.")
     if model.rmsnorm_eps != 1.0e-5 or model.gelu_approximate != "none":
-        raise ValueError("EXP-001 requires RMSNorm eps=1e-5 and exact GELU.")
+        raise ValueError("Controlled experiments require RMSNorm eps=1e-5 and exact GELU.")
     if not model.causal or not model.tie_input_output_embeddings or model.linear_bias or model.dropout != 0.0:
-        raise ValueError("EXP-001 causal/tied/bias/dropout invariants are violated.")
+        raise ValueError("Controlled causal/tied/bias/dropout invariants are violated.")
+    if (
+        model.architecture != "decoder_only_transformer"
+        or model.activation != "gelu"
+        or model.norm != "rmsnorm"
+        or model.norm_placement != "pre_norm"
+        or model.positional_encoding != "rope"
+        or model.attention != "standard_multi_head_self_attention"
+        or model.context_length != 512
+        or model.init_std != 0.02
+    ):
+        raise ValueError("Controlled architecture invariants are violated.")
     if training.effective_batch_tokens != 32768 or training.sequence_predictions != 512:
-        raise ValueError("EXP-001 effective batch is 64 x 512 prediction tokens.")
+        raise ValueError("Controlled effective batch is 64 x 512 prediction tokens.")
     if training.default_microbatch_sequences * training.default_gradient_accumulation_steps * 512 != 32768:
         raise ValueError("Configured microbatch/accumulation does not preserve effective batch tokens.")
+    if config.experiment_id in {"EXP-005A", "EXP-005B"} and (
+        training.default_microbatch_sequences,
+        training.default_gradient_accumulation_steps,
+    ) != (32, 2):
+        raise ValueError("EXP-005 must retain the measured 32-sequence x 2 physical batch.")
     expected_steps, expected_tokens = horizons[config.experiment_id]
     if training.full_schedule_steps != expected_steps or training.full_training_tokens != expected_tokens or training.full_training_tokens != training.full_schedule_steps * training.effective_batch_tokens or training.smoke_steps != 60 or training.smoke_training_tokens != 1_966_080:
         raise ValueError(f"{config.experiment_id} full/smoke token budget invariant is violated.")
+    if (
+        training.precision != "bf16_autocast_fp32_parameters"
+        or training.optimizer != "adamw"
+        or (training.beta1, training.beta2, training.eps) != (0.9, 0.95, 1.0e-8)
+        or training.weight_decay != 0.1
+        or training.peak_learning_rate != 6.0e-4
+        or training.min_learning_rate != 6.0e-5
+        or training.schedule != "cosine_decay"
+        or training.warmup_steps != 100
+        or training.gradient_clip_norm != 1.0
+    ):
+        raise ValueError("Controlled optimizer, precision, clipping, or schedule invariants are violated.")
     if training.seed != 42 or data.split_seed != 42:
-        raise ValueError("EXP-001 requires fixed seed 42.")
+        raise ValueError("Controlled experiments require fixed seed 42.")
     expected_data = (
         ("HuggingFaceFW/fineweb-edu", "default", "87f09149ef4734204d70ed1d046ddc9ca3f2b8f9")
         if config.experiment_id == "EXP-003"
@@ -155,7 +194,7 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
     )
     if (data.dataset_repo, data.dataset_config, data.dataset_revision) != expected_data:
         raise ValueError(f"{config.experiment_id} dataset pin is invalid.")
-    if config.experiment_id == "EXP-004":
+    if config.experiment_id in {"EXP-004", "EXP-005A", "EXP-005B"}:
         expected_mixture = {
             "target_prediction_tokens": {"fineweb": 200_015_872, "fineweb_edu": 100_007_936},
             "global_deduplication": "canonical_content_sha256",
@@ -165,7 +204,7 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
             },
         }
         if config.mixture != expected_mixture:
-            raise ValueError("EXP-004 mixture specification is not the approved deduplicated 2:1 data control.")
+            raise ValueError(f"{config.experiment_id} mixture specification is not the approved deduplicated 2:1 data control.")
     elif config.mixture is not None:
         raise ValueError("Only EXP-004 may declare a mixture data specification.")
     if data.tokenizer_vocab_size != 8192 or data.eod_token != "<|endoftext|>":

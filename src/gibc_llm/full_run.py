@@ -13,6 +13,10 @@ from .data import TokenStreamDataset, tensor_sha256
 from .utils import ExperimentConfig, sha256_file
 
 
+EXP005_IDS = {"EXP-005A", "EXP-005B"}
+EXP004_FROZEN_STREAM_SHA256 = "8e727fa2a2614751a1c34d7f9ac411dfebeb379a09f584ba4f7f418d1059cea1"
+
+
 @dataclass(frozen=True)
 class FullRunArtifact:
     train: TokenStreamDataset
@@ -32,11 +36,21 @@ def expected_full_sequences(config: ExperimentConfig) -> int:
     return config.training.full_training_tokens // config.training.sequence_predictions
 
 
+def full_run_milestones(config: ExperimentConfig) -> tuple[int, int, int, int]:
+    """Return the predeclared equal-token internal curve for 300M dual-validation runs."""
+    if config.experiment_id not in {"EXP-003", "EXP-004", *EXP005_IDS}:
+        raise ValueError("Only controlled 300M dual-validation experiments declare these milestones.")
+    interval = config.training.full_schedule_steps // 3
+    if config.training.full_schedule_steps != 9_156 or interval != 3_052:
+        raise RuntimeError("The controlled 300M milestone plan must remain 0/3052/6104/9156.")
+    return (0, interval, 2 * interval, config.training.full_schedule_steps)
+
+
 def assert_physical_batch_control(config: ExperimentConfig, microbatch_sequences: int, accumulation_steps: int) -> None:
     """Preserve the explicit physical batch where an experiment fixes it."""
     if microbatch_sequences * accumulation_steps != sequences_per_update(config):
         raise RuntimeError("Full runner must retain exactly 64 sequences / 32,768 prediction tokens per update.")
-    if config.experiment_id in {"EXP-003", "EXP-004"} and (
+    if config.experiment_id in {"EXP-003", "EXP-004", *EXP005_IDS} and (
         microbatch_sequences != config.training.default_microbatch_sequences
         or accumulation_steps != config.training.default_gradient_accumulation_steps
     ):
@@ -68,9 +82,10 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
     if not manifest_path.is_file():
         raise RuntimeError("Full-run artifact is missing manifest.json.")
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if manifest.get("experiment_id") != config.experiment_id:
+    expected_manifest_id = "EXP-004" if config.experiment_id in EXP005_IDS else config.experiment_id
+    if manifest.get("experiment_id") != expected_manifest_id:
         raise RuntimeError("Full-run manifest experiment identity differs from the supplied configuration.")
-    dual_validation_experiment = config.experiment_id in {"EXP-003", "EXP-004"}
+    dual_validation_experiment = config.experiment_id in {"EXP-003", "EXP-004", *EXP005_IDS}
     if dual_validation_experiment and manifest.get("preparation_mode") != "full_stream":
         raise RuntimeError(f"{config.experiment_id} full runner requires a complete stream materialization, not validation-only preparation.")
     dataset = manifest.get("dataset", {})
@@ -111,6 +126,8 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
     stream_path = artifact_dir / packed.get("train_stream_file", "train-token-stream.uint16")
     if not stream_path.is_file() or stream_path.stat().st_size != expected_stored * 2:
         raise RuntimeError("Full-run uint16 token stream is missing or has the wrong exact size.")
+    if config.experiment_id in EXP005_IDS and packed.get("train_stream_sha256") != EXP004_FROZEN_STREAM_SHA256:
+        raise RuntimeError("EXP-005 requires the exact frozen EXP-004 stream SHA-256; rematerialized streams are forbidden.")
     if packed.get("train_stream_bytes") != stream_path.stat().st_size or packed.get("train_stream_sha256") != sha256_file(stream_path):
         raise RuntimeError("Full-run uint16 token stream does not match manifest provenance.")
     if config.experiment_id == "EXP-002" and manifest.get("exp001_prefix", {}).get("prefix_match") is not True:
@@ -157,12 +174,12 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
             raise RuntimeError(f"{config.experiment_id} educational validation material does not match its held-out manifest invariants.")
         expected_edu_hashes = (
             ("cc75580b854b69846b1ff15385fbb87adf5bdf1701c1bfe9e8e8d5fdb651fb1a", "300608bc74e052f1580d78e3ad5e1174312360a766f3278c6ce2bdf3336a48b4")
-            if config.experiment_id == "EXP-004"
+            if config.experiment_id in {"EXP-004", *EXP005_IDS}
             else (edu_validation["inputs_sha256"], edu_validation["targets_sha256"])
         )
         if (edu_validation["inputs_sha256"], edu_validation["targets_sha256"]) != expected_edu_hashes:
             raise RuntimeError(f"{config.experiment_id} educational validation is not the frozen approved tensor.")
-    if config.experiment_id == "EXP-004":
+    if config.experiment_id in {"EXP-004", *EXP005_IDS}:
         mixture = manifest.get("mixture", {})
         expected_mixture = config.mixture or {}
         if (
@@ -172,7 +189,7 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
             or sum(mixture.get("actual_prediction_token_contributions", {}).values()) != expected_tokens
             or mixture.get("unique_document_count", 0) <= 0
         ):
-            raise RuntimeError("EXP-004 mixture provenance, deduplication, or source-token accounting is invalid.")
+            raise RuntimeError(f"{config.experiment_id} mixture provenance, deduplication, or source-token accounting is invalid.")
     return FullRunArtifact(
         train=TokenStreamDataset(stream_path, expected_stored, config.data.context_length),
         validation_inputs=inputs,
