@@ -91,7 +91,7 @@ def main() -> None:
     parser.add_argument("--validation-interval", type=int)
     args = parser.parse_args()
     config = load_config(args.config)
-    fixed_milestone_experiment = config.experiment_id in {"EXP-003", "EXP-004", "EXP-005A", "EXP-005B"}
+    fixed_milestone_experiment = config.experiment_id in {"EXP-003", "EXP-004", "EXP-005A", "EXP-005B", "EXP-006"}
     if args.checkpoint_interval is None:
         args.checkpoint_interval = full_run_milestones(config)[1] if fixed_milestone_experiment else 500
     if args.validation_interval is None:
@@ -113,7 +113,7 @@ def main() -> None:
     set_global_seed(config.training.seed)
     model = DecoderOnlyTransformer(config.model).to(device)
     parameters = parameter_breakdown(model).total
-    expected_parameters = {"EXP-005A": 20_984_064, "EXP-005B": 20_848_512}.get(config.experiment_id, 8_392_960)
+    expected_parameters = {"EXP-005A": 20_984_064, "EXP-005B": 20_848_512, "EXP-006": 20_848_512}.get(config.experiment_id, 8_392_960)
     if parameters != expected_parameters:
         raise RuntimeError(f"{config.experiment_id} model parameter invariant failed: {parameters} != {expected_parameters:,}.")
     optimizer = build_optimizer(
