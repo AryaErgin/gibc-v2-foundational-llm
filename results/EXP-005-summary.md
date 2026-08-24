@@ -18,7 +18,7 @@ The frozen general and educational validation tensors were used at steps 0, 3052
 | Candidate | Allocation | Parameters | Final train loss | Final general loss / PPL | Final educational loss / PPL | Final combined loss | Mean throughput (tok/s) | Wall seconds | Peak allocated / reserved bytes |
 | --- | --- | ---: | ---: | --- | --- | ---: | ---: | ---: | --- |
 | EXP-005A deep/thin | d_model 256; 24 layers; 8 heads; head_dim 32; d_ff 1024 | 20,984,064 | 3.611304759979248 | 3.7769566774368286 / 43.68289808942507 | 3.499862164258957 / 33.11088778039228 | 3.6384094208478928 | 120889.67674597578 | 2490.6542591000034 | 6677613056 / 7879000064 |
-| EXP-005B wide/shallow | d_model 384; 10 layers; 12 heads; head_dim 32; d_ff 1536 | 20,848,512 | 3.539416193962097 | 3.7012462317943573 / 40.49774249903524 | 3.555238977074623 | 156476.33467190273 | 1924.2128658000147 | 4892792320 / 5555355648 |
+| EXP-005B wide/shallow | d_model 384; 10 layers; 12 heads; head_dim 32; d_ff 1536 | 20,848,512 | 3.539416193962097 | 3.7012462317943573 / 40.49774249903524 | 3.409231722354889 / 30.242001078563153 | 3.555238977074623 | 156476.33467190273 | 1924.2128658000147 | 4892792320 / 5555355648 |
 
 | Step | Prediction tokens | EXP-005A general | EXP-005A edu | EXP-005B general | EXP-005B edu |
 | ---: | ---: | ---: | ---: | ---: | ---: |
