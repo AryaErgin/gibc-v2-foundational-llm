@@ -28,4 +28,4 @@ Status: completed and accepted. Under the exact frozen EXP-004 stream, EXP-007A 
 
 ## EXP-008
 
-Status: preflight passed; the one controlled 300,023,808-token candidate run is authorized. EXP-008A compares a parameter-near-matched SwiGLU MLP against frozen EXP-007B GELU under the exact EXP-004 stream and all frozen training controls. The candidate's independently derived and programmatically checked count is 49,860,480, below the 50M cap. See `results/EXP-008-preflight.md`. No official benchmark or >300M follow-up is authorized.
+Status: completed. EXP-008A improved final combined frozen validation by 0.0300662965 nats over EXP-007B, exceeding the predeclared 0.02-nat threshold; SwiGLU is the capability winner for this ablation. See `results/EXP-008-summary.md`. No official benchmark, EXP-009, or >300M follow-up is authorized before research review.
