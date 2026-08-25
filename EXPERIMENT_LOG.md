@@ -37,3 +37,5 @@ Status: completed. EXP-009A 4e-4/4e-5 was worse than the existing 6e-4/6e-5 cont
 ## EXP-010
 
 Status: specification and non-training guard preparation only. EXP-010A proposes the single depth/width allocation change from Recipe v3 SwiGLU 640 x 9 x 20, d_ff 1,728 to 608 x 10 x 19, d_ff 1,656 (49,985,504 parameters). See `experiments/EXP-010.md`. Neither the 60-update preflight nor a 300M run is authorized by existing governance.
+
+Status update: completed under subsequent research authorization. EXP-010A's combined loss was 0.0056370944 nats worse than Recipe v3, inside the predeclared 0.02-nat tie region. It was also slower and used more allocated memory, so the committed engineering tiebreak retains Recipe v3. See `results/EXP-010-summary.md`.
