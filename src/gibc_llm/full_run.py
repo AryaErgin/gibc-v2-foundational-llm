@@ -46,6 +46,19 @@ def expected_full_sequences(config: ExperimentConfig) -> int:
     return config.training.full_training_tokens // config.training.sequence_predictions
 
 
+def expected_artifact_sequences(config: ExperimentConfig, artifact_experiment_id: str | None, prediction_tokens: int) -> int:
+    """Return an artifact's own exact sequence count after validating its approved capacity."""
+    if prediction_tokens % config.training.sequence_predictions:
+        raise RuntimeError("Full-run stream prediction tokens must divide exactly into fixed-context examples.")
+    if config.experiment_id == EXP011_ID:
+        allowed = {EXP006_ID: EXP006_PREDICTION_TOKENS, EXP011_ID: EXP011_PREDICTION_TOKENS}
+        if allowed.get(artifact_experiment_id) != prediction_tokens:
+            raise RuntimeError("EXP-011 artifact capacity does not match its approved experiment identity.")
+    elif prediction_tokens != config.training.full_training_tokens:
+        raise RuntimeError("Full-run artifact token capacity differs from the supplied experiment configuration.")
+    return prediction_tokens // config.training.sequence_predictions
+
+
 def full_run_milestones(config: ExperimentConfig) -> tuple[int, ...]:
     """Return the predeclared equal-token internal validation curve for a controlled full run."""
     if config.experiment_id == EXP006_ID:
@@ -157,7 +170,7 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
         or packed.get("prediction_tokens_per_example") != config.training.sequence_predictions
         or packed.get("train_prediction_tokens") != expected_tokens
         or packed.get("train_token_count_including_final_target") != expected_stored
-        or packed.get("train_examples") != expected_full_sequences(config)
+        or packed.get("train_examples") != expected_artifact_sequences(config, manifest.get("experiment_id"), expected_tokens)
         or packed.get("non_cycled") is not True
     ):
         raise RuntimeError("Full-run manifest fails EXP-001 stream shape/non-cycling invariants.")

@@ -7,7 +7,7 @@ from pathlib import Path
 import hashlib
 import pytest
 
-from gibc_llm.full_run import assert_exp011_phase_capacity, assert_physical_batch_control, expected_full_sequences, full_run_milestones
+from gibc_llm.full_run import assert_exp011_phase_capacity, assert_physical_batch_control, expected_artifact_sequences, expected_full_sequences, full_run_milestones
 from gibc_llm.model import DecoderOnlyTransformer, parameter_breakdown
 from gibc_llm.utils import load_config
 
@@ -61,3 +61,11 @@ def test_exp011_phase_capacity_only_allows_exp006_before_900m_and_exp011_afterwa
     assert_exp011_phase_capacity(config, "EXP-011", 1_500_020_736, planned_end_step=45_777)
     with pytest.raises(RuntimeError, match="requires either the validated EXP-006 900M artifact or EXP-011 1.5B artifact"):
         assert_exp011_phase_capacity(config, "EXP-004", 300_023_808, planned_end_step=1)
+
+
+def test_exp011_900m_phase_uses_the_900m_stream_example_count() -> None:
+    """Breaks if phase-one validation mistakenly compares an EXP-006 stream to the 1.5B total."""
+    config = load_config(Path("configs/exp011.yaml"))
+
+    assert expected_artifact_sequences(config, "EXP-006", 900_071_424) == 1_757_952
+    assert expected_artifact_sequences(config, "EXP-011", 1_500_020_736) == 2_929_728
