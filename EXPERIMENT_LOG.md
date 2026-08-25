@@ -20,4 +20,4 @@ Status: completed. Under the exact frozen EXP-004 Data Recipe v1 stream, EXP-005
 
 ## EXP-006
 
-Status: preparation implementation only. EXP-006 holds Architecture Recipe v1 and Data Recipe v1 fixed while predeclaring a 27,468-update / 900,071,424-token horizon-matched cosine run. Its 3x deterministic mixture materializer requires the first 600,047,618 raw bytes to reproduce the exact EXP-004 stream SHA before it can write a training-authorized manifest. See `experiments/EXP-006.md`. Materialization, training, and official benchmarks remain unauthorized.
+Status: completed and accepted. EXP-006 held Architecture Recipe v1 and Data Recipe v1 fixed through 27,468 updates / 900,071,424 prediction tokens. Its final 600M-to-900M combined-validation improvement was `0.0848376601934433`, above the predeclared strongly-data-limited threshold. See `results/EXP-006-summary.md`. Do not resume or modify its checkpoint; only final-checkpoint EXP-006A evaluation is authorized.
