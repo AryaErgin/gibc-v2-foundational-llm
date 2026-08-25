@@ -32,4 +32,4 @@ Status: completed and accepted. EXP-008A improved final combined frozen validati
 
 ## EXP-009
 
-Status: prepared. EXP-009 holds Recipe v3 and every EXP-004 stream/validation/training control fixed while independently testing only the learning-rate schedule amplitude: EXP-009A uses peak/min 4e-4/4e-5 and EXP-009B uses 8e-4/8e-5. Each candidate has a 60-update finite-loss/resume preflight followed, if stable, by its own authorized 9,156-update / 300,023,808-token run. The existing EXP-008A 6e-4/6e-5 result is the control and will not be retrained. Official benchmarks and training beyond this controlled 300M ablation remain unauthorized.
+Status: completed. EXP-009A 4e-4/4e-5 was worse than the existing 6e-4/6e-5 control by 0.0408950746 nats and is rejected. EXP-009B 8e-4/8e-5 improved by 0.0075877458 nats, inside the predeclared 0.01-nat engineering/statistical tie band; retain 6e-4 to avoid proxy-horizon over-tuning. See `results/EXP-009-summary.md`. No official benchmark was run and no >300M follow-up is authorized.
