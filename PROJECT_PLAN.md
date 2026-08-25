@@ -2,4 +2,4 @@
 
 The project follows a baseline-first experimental sequence: infrastructure validation, baseline measurement, controlled interventions, final training, evaluation, and submission documentation.
 
-Current stage: SYS-001 complete. Under fixed Windows-native, OMEN Performance-mode, original-AC-power systems controls, the original EXP-007B 32x2 workload remains the best measured systems recipe. The 64x1 ladder, terminal-window timing, RoPE reuse, SDPA audit, and fused AdamW were bounded and recorded; none justifies a training-path change. No official benchmark or long-horizon training is authorized.
+Current stage: EXP-008A. Native Windows, OMEN Performance mode, and AC power are frozen as the standard environment; the production path remains 32 sequences x 2 accumulation / 32,768 prediction tokens per update. After tests and a bounded candidate preflight, the authorized scope is one controlled 300,023,808-token SwiGLU ablation only. No official benchmark or >300M follow-up is authorized.

@@ -25,3 +25,7 @@ Status: completed and accepted. EXP-006 held Architecture Recipe v1 and Data Rec
 ## EXP-007
 
 Status: completed and accepted. Under the exact frozen EXP-004 stream, EXP-007A had the numerically lower final combined validation loss (3.4257752001 versus 3.4314021170), but the 0.0056269169-nat difference is inside the predeclared 0.02-nat engineering-tie region. EXP-007B is selected by the predeclared throughput/memory efficiency tiebreak and freezes Near-Cap Architecture Recipe v2. See `results/EXP-007-summary.md`. Neither candidate was officially benchmarked.
+
+## EXP-008
+
+Status: implementation and preflight authorized. EXP-008A compares a parameter-near-matched SwiGLU MLP against frozen EXP-007B GELU under the exact EXP-004 stream and all frozen training controls. The candidate's independently derived and programmatically checked count is 49,860,480, below the 50M cap. Full 300,023,808-token training is authorized only after the documented preflight passes; no official benchmark or >300M follow-up is authorized.

@@ -129,13 +129,26 @@ class FeedForward(nn.Module):
         return self.fc2(functional.gelu(self.fc1(hidden), approximate="none"))
 
 
+class SwiGLU(nn.Module):
+    """Bias-free SwiGLU with explicit value, SiLU-gate, and output projections."""
+
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__()
+        self.value_proj = nn.Linear(config.d_model, config.d_ff, bias=False)
+        self.gate_proj = nn.Linear(config.d_model, config.d_ff, bias=False)
+        self.out_proj = nn.Linear(config.d_ff, config.d_model, bias=False)
+
+    def forward(self, hidden: Tensor) -> Tensor:
+        return self.out_proj(self.value_proj(hidden) * functional.silu(self.gate_proj(hidden)))
+
+
 class TransformerBlock(nn.Module):
     def __init__(self, config: ModelConfig) -> None:
         super().__init__()
         self.norm1 = RMSNorm(config.d_model, config.rmsnorm_eps)
         self.attention = CausalSelfAttention(config)
         self.norm2 = RMSNorm(config.d_model, config.rmsnorm_eps)
-        self.mlp = FeedForward(config)
+        self.mlp = FeedForward(config) if config.activation == "gelu" else SwiGLU(config)
 
     def forward(self, hidden: Tensor) -> Tensor:
         hidden = hidden + self.attention(self.norm1(hidden))
