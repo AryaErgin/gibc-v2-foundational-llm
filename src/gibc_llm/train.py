@@ -74,7 +74,13 @@ class CosineWithWarmup:
 
 
 def build_optimizer(
-    model: nn.Module, peak_learning_rate: float, weight_decay: float, betas: tuple[float, float], eps: float
+    model: nn.Module,
+    peak_learning_rate: float,
+    weight_decay: float,
+    betas: tuple[float, float],
+    eps: float,
+    *,
+    fused: bool | None = None,
 ) -> torch.optim.AdamW:
     """Decay matrices (including tied embeddings), not one-dimensional RMSNorm scales."""
     decay, no_decay = [], []
@@ -82,11 +88,16 @@ def build_optimizer(
         if not parameter.requires_grad:
             continue
         (decay if parameter.ndim >= 2 else no_decay).append(parameter)
+    options: dict[str, Any] = {
+        "lr": peak_learning_rate,
+        "betas": betas,
+        "eps": eps,
+    }
+    if fused is not None:
+        options["fused"] = fused
     return torch.optim.AdamW(
         [{"params": decay, "weight_decay": weight_decay}, {"params": no_decay, "weight_decay": 0.0}],
-        lr=peak_learning_rate,
-        betas=betas,
-        eps=eps,
+        **options,
     )
 
 
@@ -123,6 +134,8 @@ def optimizer_update(
     microbatches: Iterable[tuple[Tensor, Tensor]],
     device: torch.device,
     gradient_clip_norm: float,
+    *,
+    capture_scalars: bool = True,
 ) -> dict[str, float]:
     batches = list(microbatches)
     if not batches:
@@ -136,12 +149,16 @@ def optimizer_update(
         with _autocast(device):
             loss = model.loss(inputs, targets)
         (loss / len(batches)).backward()
-        loss_sum += float(loss.detach().float())
+        if capture_scalars:
+            loss_sum += float(loss.detach().float())
         tokens += targets.numel()
-    gradient_norm = float(torch.nn.utils.clip_grad_norm_(model.parameters(), gradient_clip_norm))
+    gradient_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), gradient_clip_norm)
     learning_rate = schedule.step()
     optimizer.step()
-    return {"loss": loss_sum / len(batches), "tokens": float(tokens), "gradient_norm": gradient_norm, "learning_rate": learning_rate}
+    metrics = {"tokens": float(tokens)}
+    if capture_scalars:
+        metrics.update({"loss": loss_sum / len(batches), "gradient_norm": float(gradient_norm), "learning_rate": learning_rate})
+    return metrics
 
 
 def _rng_state() -> dict[str, Any]:

@@ -34,11 +34,44 @@ class RotaryEmbedding(nn.Module):
             raise ValueError("RoPE requires an even head dimension.")
         inv_freq = 1.0 / (theta ** (torch.arange(0, head_dim, 2, dtype=torch.float32) / head_dim))
         self.register_buffer("inv_freq", inv_freq, persistent=False)
+        self._cache_enabled = False
+        self._cached_cosine: Tensor | None = None
+        self._cached_sine: Tensor | None = None
+        self._cached_key: tuple[str, int | None, torch.dtype] | None = None
+
+    @property
+    def cache_identity(self) -> tuple[int, int] | None:
+        """Expose cache reuse for SYS-001 without serializing non-trainable tables."""
+        if self._cached_cosine is None or self._cached_sine is None:
+            return None
+        return (id(self._cached_cosine), id(self._cached_sine))
+
+    def set_cache_enabled(self, enabled: bool) -> None:
+        """Enable or clear the non-persistent RoPE lookup cache for a systems-only phase."""
+        self._cache_enabled = enabled
+        if not enabled:
+            self._cached_cosine = None
+            self._cached_sine = None
+            self._cached_key = None
 
     def _cos_sin(self, sequence_length: int, device: torch.device, dtype: torch.dtype) -> tuple[Tensor, Tensor]:
+        cache_key = (device.type, device.index, dtype)
+        if (
+            self._cache_enabled
+            and self._cached_key == cache_key
+            and self._cached_cosine is not None
+            and self._cached_sine is not None
+            and self._cached_cosine.shape[-2] >= sequence_length
+        ):
+            return self._cached_cosine[:, :, :sequence_length], self._cached_sine[:, :, :sequence_length]
         positions = torch.arange(sequence_length, device=device, dtype=torch.float32)
         angles = torch.outer(positions, self.inv_freq.to(device=device))
-        return angles.cos().to(dtype=dtype)[None, None, :, :], angles.sin().to(dtype=dtype)[None, None, :, :]
+        cosine, sine = angles.cos().to(dtype=dtype)[None, None, :, :], angles.sin().to(dtype=dtype)[None, None, :, :]
+        if self._cache_enabled:
+            self._cached_key = cache_key
+            self._cached_cosine = cosine
+            self._cached_sine = sine
+        return cosine, sine
 
     @staticmethod
     def _rotate(values: Tensor, cosine: Tensor, sine: Tensor) -> Tensor:
