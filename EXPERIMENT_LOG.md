@@ -24,4 +24,4 @@ Status: completed and accepted. EXP-006 held Architecture Recipe v1 and Data Rec
 
 ## EXP-007
 
-Status: bounded preflight complete. Both near-cap candidates reuse the exact frozen EXP-004 stream and passed 60-update, 32x2-batch engineering preflights plus fresh-process resume. See `results/EXP-007-preflight.md`. Full EXP-007A/B training and official benchmarks remain unauthorized.
+Status: completed and accepted. Under the exact frozen EXP-004 stream, EXP-007A had the numerically lower final combined validation loss (3.4257752001 versus 3.4314021170), but the 0.0056269169-nat difference is inside the predeclared 0.02-nat engineering-tie region. EXP-007B is selected by the predeclared throughput/memory efficiency tiebreak and freezes Near-Cap Architecture Recipe v2. See `results/EXP-007-summary.md`. Neither candidate was officially benchmarked.
