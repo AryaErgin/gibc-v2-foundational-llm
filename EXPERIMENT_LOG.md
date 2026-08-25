@@ -33,3 +33,7 @@ Status: completed and accepted. EXP-008A improved final combined frozen validati
 ## EXP-009
 
 Status: completed. EXP-009A 4e-4/4e-5 was worse than the existing 6e-4/6e-5 control by 0.0408950746 nats and is rejected. EXP-009B 8e-4/8e-5 improved by 0.0075877458 nats, inside the predeclared 0.01-nat engineering/statistical tie band; retain 6e-4 to avoid proxy-horizon over-tuning. See `results/EXP-009-summary.md`. No official benchmark was run and no >300M follow-up is authorized.
+
+## EXP-010
+
+Status: specification and non-training guard preparation only. EXP-010A proposes the single depth/width allocation change from Recipe v3 SwiGLU 640 x 9 x 20, d_ff 1,728 to 608 x 10 x 19, d_ff 1,656 (49,985,504 parameters). See `experiments/EXP-010.md`. Neither the 60-update preflight nor a 300M run is authorized by existing governance.
