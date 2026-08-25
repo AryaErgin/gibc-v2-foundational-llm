@@ -21,3 +21,7 @@ Status: completed. Under the exact frozen EXP-004 Data Recipe v1 stream, EXP-005
 ## EXP-006
 
 Status: completed and accepted. EXP-006 held Architecture Recipe v1 and Data Recipe v1 fixed through 27,468 updates / 900,071,424 prediction tokens. Its final 600M-to-900M combined-validation improvement was `0.0848376601934433`, above the predeclared strongly-data-limited threshold. See `results/EXP-006-summary.md`. Do not resume or modify its checkpoint; only final-checkpoint EXP-006A evaluation is authorized.
+
+## EXP-007
+
+Status: bounded preflight complete. Both near-cap candidates reuse the exact frozen EXP-004 stream and passed 60-update, 32x2-batch engineering preflights plus fresh-process resume. See `results/EXP-007-preflight.md`. Full EXP-007A/B training and official benchmarks remain unauthorized.
