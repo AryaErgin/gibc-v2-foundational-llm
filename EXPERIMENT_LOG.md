@@ -28,4 +28,4 @@ Status: completed and accepted. Under the exact frozen EXP-004 stream, EXP-007A 
 
 ## EXP-008
 
-Status: implementation and preflight authorized. EXP-008A compares a parameter-near-matched SwiGLU MLP against frozen EXP-007B GELU under the exact EXP-004 stream and all frozen training controls. The candidate's independently derived and programmatically checked count is 49,860,480, below the 50M cap. Full 300,023,808-token training is authorized only after the documented preflight passes; no official benchmark or >300M follow-up is authorized.
+Status: preflight passed; the one controlled 300,023,808-token candidate run is authorized. EXP-008A compares a parameter-near-matched SwiGLU MLP against frozen EXP-007B GELU under the exact EXP-004 stream and all frozen training controls. The candidate's independently derived and programmatically checked count is 49,860,480, below the 50M cap. See `results/EXP-008-preflight.md`. No official benchmark or >300M follow-up is authorized.
