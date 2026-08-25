@@ -134,13 +134,17 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         "EXP-005A": (9156, 300_023_808),
         "EXP-005B": (9156, 300_023_808),
         "EXP-006": (27_468, 900_071_424),
+        "EXP-007A": (9156, 300_023_808),
+        "EXP-007B": (9156, 300_023_808),
     }
     if config.experiment_id not in horizons:
-        raise ValueError("Only EXP-001 through EXP-006 controlled configurations are supported.")
+        raise ValueError("Only EXP-001 through EXP-007 controlled configurations are supported.")
     expected_dimensions = {
         "EXP-005A": (8192, 256, 24, 8, 32, 1024),
         "EXP-005B": (8192, 384, 10, 12, 32, 1536),
         "EXP-006": (8192, 384, 10, 12, 32, 1536),
+        "EXP-007A": (8192, 608, 10, 19, 32, 2432),
+        "EXP-007B": (8192, 640, 9, 20, 32, 2560),
     }.get(config.experiment_id, (8192, 256, 8, 8, 32, 1024))
     if (model.vocab_size, model.d_model, model.n_layers, model.n_heads, model.head_dim, model.d_ff) != expected_dimensions:
         raise ValueError(f"{config.experiment_id} model dimensions differ from the approved allocation.")
@@ -167,11 +171,11 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         raise ValueError("Controlled effective batch is 64 x 512 prediction tokens.")
     if training.default_microbatch_sequences * training.default_gradient_accumulation_steps * 512 != 32768:
         raise ValueError("Configured microbatch/accumulation does not preserve effective batch tokens.")
-    if config.experiment_id in {"EXP-005A", "EXP-005B", "EXP-006"} and (
+    if config.experiment_id in {"EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B"} and (
         training.default_microbatch_sequences,
         training.default_gradient_accumulation_steps,
     ) != (32, 2):
-        raise ValueError("EXP-005/EXP-006 must retain the measured 32-sequence x 2 physical batch.")
+        raise ValueError("EXP-005 through EXP-007 must retain the measured 32-sequence x 2 physical batch.")
     expected_steps, expected_tokens = horizons[config.experiment_id]
     if training.full_schedule_steps != expected_steps or training.full_training_tokens != expected_tokens or training.full_training_tokens != training.full_schedule_steps * training.effective_batch_tokens or training.smoke_steps != 60 or training.smoke_training_tokens != 1_966_080:
         raise ValueError(f"{config.experiment_id} full/smoke token budget invariant is violated.")
@@ -196,7 +200,7 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
     )
     if (data.dataset_repo, data.dataset_config, data.dataset_revision) != expected_data:
         raise ValueError(f"{config.experiment_id} dataset pin is invalid.")
-    if config.experiment_id in {"EXP-004", "EXP-005A", "EXP-005B", "EXP-006"}:
+    if config.experiment_id in {"EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B"}:
         target_prediction_tokens = (
             {"fineweb": 600_047_616, "fineweb_edu": 300_023_808}
             if config.experiment_id == "EXP-006"
@@ -213,7 +217,7 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         if config.mixture != expected_mixture:
             raise ValueError(f"{config.experiment_id} mixture specification is not the approved deduplicated 2:1 data control.")
     elif config.mixture is not None:
-        raise ValueError("Only EXP-004 through EXP-006 may declare the approved mixture data specification.")
+        raise ValueError("Only EXP-004 through EXP-007 may declare the approved mixture data specification.")
     if data.tokenizer_vocab_size != 8192 or data.eod_token != "<|endoftext|>":
         raise ValueError("EXP-001 tokenizer invariants are violated.")
 
