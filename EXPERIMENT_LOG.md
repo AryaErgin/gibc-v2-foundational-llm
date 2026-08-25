@@ -28,4 +28,8 @@ Status: completed and accepted. Under the exact frozen EXP-004 stream, EXP-007A 
 
 ## EXP-008
 
-Status: completed. EXP-008A improved final combined frozen validation by 0.0300662965 nats over EXP-007B, exceeding the predeclared 0.02-nat threshold; SwiGLU is the capability winner for this ablation. See `results/EXP-008-summary.md`. No official benchmark, EXP-009, or >300M follow-up is authorized before research review.
+Status: completed and accepted. EXP-008A improved final combined frozen validation by 0.0300662965 nats over EXP-007B, exceeding the predeclared 0.02-nat threshold; SwiGLU is the capability winner and freezes Near-Cap Architecture Recipe v3. See `results/EXP-008-summary.md`. No official benchmark was run.
+
+## EXP-009
+
+Status: prepared. EXP-009 holds Recipe v3 and every EXP-004 stream/validation/training control fixed while independently testing only the learning-rate schedule amplitude: EXP-009A uses peak/min 4e-4/4e-5 and EXP-009B uses 8e-4/8e-5. Each candidate has a 60-update finite-loss/resume preflight followed, if stable, by its own authorized 9,156-update / 300,023,808-token run. The existing EXP-008A 6e-4/6e-5 result is the control and will not be retrained. Official benchmarks and training beyond this controlled 300M ablation remain unauthorized.

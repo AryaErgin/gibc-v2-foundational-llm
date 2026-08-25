@@ -9,3 +9,9 @@ Parameter mapping in `src/gibc_llm/model.py`: embedding `8192*256=2,097,152`; at
 EXP-007 freezes the production near-cap recipe as EXP-007B: vocabulary 8,192; d_model 640; 9 decoder blocks; 20 heads with head dimension and rotary dimension 32; d_ff 2,560; exact GELU; pre-RMSNorm eps 1e-5; standard causal SDPA; RoPE theta 10,000; tied input/output embeddings; no linear bias; dropout zero; context 512; initialization Normal(0,0.02); seed 42. The exact trainable parameter count is **49,491,840**, including all norm scales and the tied output treatment.
 
 EXP-007A's final combined validation loss was numerically lower, but B-A was only +0.0056269169 nats, inside the predeclared 0.02-nat engineering-tie region. Recipe v2 therefore selects EXP-007B using its higher throughput and lower allocated-memory measurements, not a claim of lower validation loss.
+
+## Near-Cap Architecture Recipe v3
+
+EXP-008 freezes the production near-cap recipe as EXP-008A: vocabulary 8,192; d_model 640; 9 decoder blocks; 20 heads with head dimension and rotary dimension 32; bias-free SwiGLU MLP with SiLU gate and d_ff 1,728; pre-RMSNorm eps 1e-5; standard causal SDPA; RoPE theta 10,000; tied input/output embeddings; dropout zero; context 512; initialization Normal(0,0.02); seed 42. The exact trainable parameter count is **49,860,480**, including all norm scales and the tied output treatment.
+
+Against the frozen Recipe v2 GELU control, this allocation lowered final combined validation loss from 3.4314021170 to 3.4013358206. The candidate-minus-control difference was -0.0300662965 nats, exceeding the predeclared 0.02-nat capability threshold. Recipe v3 therefore replaces Recipe v2 on capability, not a systems optimization claim.
