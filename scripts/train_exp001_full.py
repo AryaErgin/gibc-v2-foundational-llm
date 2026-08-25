@@ -13,6 +13,7 @@ import torch
 
 from gibc_llm.full_run import (
     assert_physical_batch_control,
+    assert_exp011_phase_capacity,
     dry_run_plan,
     expected_full_sequences,
     full_run_milestones,
@@ -53,10 +54,25 @@ def _checkpoint_provenance(config: Any, tokenizer_hash: str, manifest_hash: str,
     return payload
 
 
-def _verify_resume_provenance(path: Path, tokenizer_hash: str, manifest_hash: str) -> None:
+def _verify_resume_provenance(path: Path, config: Any, artifact: Any, tokenizer_hash: str, manifest_hash: str) -> None:
     payload = torch.load(path, map_location="cpu", weights_only=False)
     provenance = payload.get("config", {}).get("provenance", {})
-    if provenance.get("tokenizer_sha256") != tokenizer_hash or provenance.get("data_manifest_sha256") != manifest_hash:
+    if provenance.get("tokenizer_sha256") != tokenizer_hash:
+        raise RuntimeError("Checkpoint provenance does not match this exact full-run tokenizer/data manifest.")
+    if config.experiment_id == "EXP-011":
+        checkpoint_config = dict(payload.get("config", {}))
+        checkpoint_config.pop("provenance", None)
+        if checkpoint_config != config.as_dict():
+            raise RuntimeError("EXP-011 checkpoint configuration differs from the exact frozen long-horizon control.")
+        previous_manifest_hash = provenance.get("data_manifest_sha256")
+        valid_exp006_to_exp011_resume = (
+            artifact.manifest.get("experiment_id") == "EXP-011"
+            and previous_manifest_hash == artifact.manifest.get("frozen_exp006_source", {}).get("manifest_sha256")
+            and payload.get("state", {}).get("step") == 27_468
+        )
+        if previous_manifest_hash != manifest_hash and not valid_exp006_to_exp011_resume:
+            raise RuntimeError("EXP-011 checkpoint may resume only the same artifact or the recorded exact EXP-006-to-EXP-011 boundary.")
+    elif provenance.get("data_manifest_sha256") != manifest_hash:
         raise RuntimeError("Checkpoint provenance does not match this exact full-run tokenizer/data manifest.")
     if provenance.get("full_stream_non_cycled") is not True:
         raise RuntimeError("Checkpoint does not declare the required non-cycled full token stream.")
@@ -91,7 +107,7 @@ def main() -> None:
     parser.add_argument("--validation-interval", type=int)
     args = parser.parse_args()
     config = load_config(args.config)
-    fixed_milestone_experiment = config.experiment_id in {"EXP-003", "EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A"}
+    fixed_milestone_experiment = config.experiment_id in {"EXP-003", "EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011"}
     if args.checkpoint_interval is None:
         args.checkpoint_interval = full_run_milestones(config)[1] if fixed_milestone_experiment else 500
     if args.validation_interval is None:
@@ -113,7 +129,7 @@ def main() -> None:
     set_global_seed(config.training.seed)
     model = DecoderOnlyTransformer(config.model).to(device)
     parameters = parameter_breakdown(model).total
-    expected_parameters = {"EXP-005A": 20_984_064, "EXP-005B": 20_848_512, "EXP-006": 20_848_512, "EXP-007A": 49_353_184, "EXP-007B": 49_491_840, "EXP-008A": 49_860_480, "EXP-009A": 49_860_480, "EXP-009B": 49_860_480, "EXP-010A": 49_985_504}.get(config.experiment_id, 8_392_960)
+    expected_parameters = {"EXP-005A": 20_984_064, "EXP-005B": 20_848_512, "EXP-006": 20_848_512, "EXP-007A": 49_353_184, "EXP-007B": 49_491_840, "EXP-008A": 49_860_480, "EXP-009A": 49_860_480, "EXP-009B": 49_860_480, "EXP-010A": 49_985_504, "EXP-011": 49_860_480}.get(config.experiment_id, 8_392_960)
     if parameters != expected_parameters:
         raise RuntimeError(f"{config.experiment_id} model parameter invariant failed: {parameters} != {expected_parameters:,}.")
     optimizer = build_optimizer(
@@ -134,12 +150,13 @@ def main() -> None:
     args.run_dir.mkdir(parents=True, exist_ok=True)
     logger = JsonlLogger(args.run_dir / "metrics.jsonl")
     if args.resume is not None:
-        _verify_resume_provenance(args.resume, common["tokenizer_sha256"], artifact.manifest_sha256)
+        _verify_resume_provenance(args.resume, config, artifact, common["tokenizer_sha256"], artifact.manifest_sha256)
         state = load_checkpoint(args.resume, model, optimizer, schedule, device)
     elif (args.run_dir / "metrics.jsonl").exists():
         raise RuntimeError("Run directory already has metrics. Use --resume with an explicit matching checkpoint or choose a new run directory.")
     requested_steps, incomplete = dry_run_plan(config, state.step, args.max_steps)
     planned_end = state.step + requested_steps
+    assert_exp011_phase_capacity(config, artifact.manifest.get("experiment_id"), artifact.train.token_count - 1, planned_end)
     if state.tokens != state.step * config.training.effective_batch_tokens or state.next_sequence_index != state.step * sequences_per_update(config):
         raise RuntimeError("Checkpoint RunState counters do not establish the exact sequential EXP-001 cursor.")
     provenance = _checkpoint_provenance(config, common["tokenizer_sha256"], artifact.manifest_sha256, commit)
