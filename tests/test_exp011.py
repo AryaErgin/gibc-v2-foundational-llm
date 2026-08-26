@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import hashlib
+import importlib.util
 import pytest
 
 from gibc_llm.full_run import assert_exp011_phase_capacity, assert_physical_batch_control, expected_artifact_sequences, expected_full_sequences, full_run_milestones
@@ -69,3 +70,16 @@ def test_exp011_900m_phase_uses_the_900m_stream_example_count() -> None:
 
     assert expected_artifact_sequences(config, "EXP-006", 900_071_424) == 1_757_952
     assert expected_artifact_sequences(config, "EXP-011", 1_500_020_736) == 2_929_728
+
+
+def test_exp011_supervisor_rejects_a_nonboundary_summary(tmp_path: Path) -> None:
+    """Breaks if unattended continuation can cross the 900M boundary without exact state evidence."""
+    spec = importlib.util.spec_from_file_location("exp011_supervisor", Path("scripts/run_exp011_overnight.py"))
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    summary = tmp_path / "summary.json"
+    summary.write_text('{"final_step": 27468}', encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="authorized resume boundary"):
+        module.assert_900m_summary(summary)
