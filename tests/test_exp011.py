@@ -83,3 +83,15 @@ def test_exp011_supervisor_rejects_a_nonboundary_summary(tmp_path: Path) -> None
 
     with pytest.raises(RuntimeError, match="authorized resume boundary"):
         module.assert_900m_summary(summary)
+
+
+def test_exp011_supervisor_exposes_exactly_one_wait_mode(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Breaks if an unattended continuation can ambiguously wait for both a trainer and a builder."""
+    spec = importlib.util.spec_from_file_location("exp011_supervisor", Path("scripts/run_exp011_overnight.py"))
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    monkeypatch.setattr("sys.argv", ["run_exp011_overnight.py", "--wait-pid", "1", "--builder-pid", "2"])
+
+    with pytest.raises(SystemExit):
+        module.main()

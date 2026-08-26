@@ -30,20 +30,24 @@ def run(command: list[str]) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--wait-pid", type=int, required=True)
+    waiting = parser.add_mutually_exclusive_group(required=True)
+    waiting.add_argument("--wait-pid", type=int, help="Wait for the 900M training PID, then build and resume.")
+    waiting.add_argument("--builder-pid", type=int, help="Wait for an already launched 1.5B builder, then validate and resume.")
     args = parser.parse_args()
-    run(["powershell", "-NoProfile", "-Command", f"Wait-Process -Id {args.wait_pid}"])
+    wait_pid = args.wait_pid if args.wait_pid is not None else args.builder_pid
+    run(["powershell", "-NoProfile", "-Command", f"Wait-Process -Id {wait_pid}"])
     assert_900m_summary(Path("artifacts/exp011-full/summary.json"))
-    run([
-        sys.executable,
-        "scripts/prepare_exp011.py",
-        "--config",
-        "configs/exp011.yaml",
-        "--artifact-dir",
-        "artifacts/exp011-full-data",
-        "--exp006-artifact-dir",
-        "artifacts/exp006-full",
-    ])
+    if args.wait_pid is not None:
+        run([
+            sys.executable,
+            "scripts/prepare_exp011.py",
+            "--config",
+            "configs/exp011.yaml",
+            "--artifact-dir",
+            "artifacts/exp011-full-data",
+            "--exp006-artifact-dir",
+            "artifacts/exp006-full",
+        ])
     run([
         sys.executable,
         "-c",
