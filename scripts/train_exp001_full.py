@@ -68,7 +68,7 @@ def _verify_resume_provenance(path: Path, config: Any, artifact: Any, tokenizer_
         valid_exp006_to_exp011_resume = (
             artifact.manifest.get("experiment_id") == "EXP-011"
             and previous_manifest_hash == artifact.manifest.get("frozen_exp006_source", {}).get("manifest_sha256")
-            and payload.get("state", {}).get("step") == 27_468
+            and payload.get("run_state", {}).get("step") == 27_468
         )
         if previous_manifest_hash != manifest_hash and not valid_exp006_to_exp011_resume:
             raise RuntimeError("EXP-011 checkpoint may resume only the same artifact or the recorded exact EXP-006-to-EXP-011 boundary.")

@@ -6,7 +6,9 @@ from pathlib import Path
 
 import hashlib
 import importlib.util
+from types import SimpleNamespace
 import pytest
+import torch
 
 from gibc_llm.full_run import assert_exp011_phase_capacity, assert_physical_batch_control, expected_artifact_sequences, expected_full_sequences, full_run_milestones
 from gibc_llm.model import DecoderOnlyTransformer, parameter_breakdown
@@ -95,6 +97,30 @@ def test_exp011_supervisor_exposes_exactly_one_wait_mode(monkeypatch: pytest.Mon
 
     with pytest.raises(SystemExit):
         module.main()
+
+
+def test_exp011_resume_gate_accepts_the_exact_exp006_to_exp011_run_state_boundary(tmp_path: Path) -> None:
+    """Breaks if the boundary guard reads a nonexistent checkpoint state key instead of run_state."""
+    spec = importlib.util.spec_from_file_location("exp011_runner", Path("scripts/train_exp001_full.py"))
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    config = load_config(Path("configs/exp011.yaml"))
+    exp006_manifest_hash = "a" * 64
+    tokenizer_hash = "b" * 64
+    checkpoint = tmp_path / "checkpoint.pt"
+    checkpoint_config = config.as_dict()
+    checkpoint_config["provenance"] = {
+        "tokenizer_sha256": tokenizer_hash,
+        "data_manifest_sha256": exp006_manifest_hash,
+        "full_stream_non_cycled": True,
+    }
+    torch.save({"config": checkpoint_config, "run_state": {"step": 27_468}}, checkpoint)
+    artifact = SimpleNamespace(
+        manifest={"experiment_id": "EXP-011", "frozen_exp006_source": {"manifest_sha256": exp006_manifest_hash}}
+    )
+
+    module._verify_resume_provenance(checkpoint, config, artifact, tokenizer_hash, "c" * 64)
 
 
 def test_exp011_copies_the_existing_exp006_contamination_index_without_rebuilding(tmp_path: Path) -> None:
