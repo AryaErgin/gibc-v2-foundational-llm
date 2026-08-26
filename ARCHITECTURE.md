@@ -1,4 +1,4 @@
-# EXP-001 Architecture
+# Architecture Record
 
 Decoder-only causal Transformer: vocab 8192, d_model 256, 8 blocks, 8 heads of 32 dimensions, d_ff 1024, exact GELU, pre-RMSNorm, no bias/dropout, tied embedding/output, and context 512. RMSNorm is `x * rsqrt(mean(x^2)+1e-5) * scale`; each scale is the only norm parameter. RoPE uses theta 10000, all 32 head dimensions, adjacent-pair rotation, and no scaling/trainable parameters. SDPA uses `is_causal=True`.
 
@@ -15,3 +15,5 @@ EXP-007A's final combined validation loss was numerically lower, but B-A was onl
 EXP-008 freezes the production near-cap recipe as EXP-008A: vocabulary 8,192; d_model 640; 9 decoder blocks; 20 heads with head dimension and rotary dimension 32; bias-free SwiGLU MLP with SiLU gate and d_ff 1,728; pre-RMSNorm eps 1e-5; standard causal SDPA; RoPE theta 10,000; tied input/output embeddings; dropout zero; context 512; initialization Normal(0,0.02); seed 42. The exact trainable parameter count is **49,860,480**, including all norm scales and the tied output treatment.
 
 Against the frozen Recipe v2 GELU control, this allocation lowered final combined validation loss from 3.4314021170 to 3.4013358206. The candidate-minus-control difference was -0.0300662965 nats, exceeding the predeclared 0.02-nat capability threshold. Recipe v3 therefore replaces Recipe v2 on capability, not a systems optimization claim.
+
+EXP-009 retained the Recipe v3 `6e-4` peak / `6e-5` minimum LR after its 8e-4 candidate improved inside the predeclared 0.01-nat tie band. EXP-010 tested a 608-width, 10-layer SwiGLU allocation and retained Recipe v3 under its committed engineering tiebreak. EXP-011 then completed one fixed-horizon 1.5B-token calibration of Recipe v3; it does not itself promote a final submission checkpoint.

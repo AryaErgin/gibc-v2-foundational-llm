@@ -36,10 +36,8 @@ Status: completed. EXP-009A 4e-4/4e-5 was worse than the existing 6e-4/6e-5 cont
 
 ## EXP-010
 
-Status: specification and non-training guard preparation only. EXP-010A proposes the single depth/width allocation change from Recipe v3 SwiGLU 640 x 9 x 20, d_ff 1,728 to 608 x 10 x 19, d_ff 1,656 (49,985,504 parameters). See `experiments/EXP-010.md`. Neither the 60-update preflight nor a 300M run is authorized by existing governance.
-
-Status update: completed under subsequent research authorization. EXP-010A's combined loss was 0.0056370944 nats worse than Recipe v3, inside the predeclared 0.02-nat tie region. It was also slower and used more allocated memory, so the committed engineering tiebreak retains Recipe v3. See `results/EXP-010-summary.md`.
+Status: completed. EXP-010A tested the single depth/width allocation change from Recipe v3 SwiGLU 640 x 9 x 20, d_ff 1,728 to 608 x 10 x 19, d_ff 1,656 (49,985,504 parameters). Its combined loss was 0.0056370944 nats worse than Recipe v3, inside the predeclared 0.02-nat tie region; it was slower and used more allocated memory, so the committed engineering tiebreak retains Recipe v3. See `results/EXP-010-summary.md`.
 
 ## EXP-011
 
-Status: conditionally authorized long-horizon Recipe v3 calibration. The selected 49,860,480-parameter Recipe v3 passed the 60-update fixed-32x2 preflight and a fresh-process step-60-to-61 resume on the independently revalidated EXP-006 900M prefix. The scheduler remains the exact 45,777-step 6e-4-to-6e-5 cosine from step zero. See `experiments/EXP-011.md` and `results/EXP-011-preflight.md`. No official benchmark was run.
+Status: completed long-horizon calibration. The selected 49,860,480-parameter Recipe v3 completed 45,777 updates / 1,500,020,736 prediction tokens from fresh seed-42 initialization, using the exact 45,777-step 6e-4-to-6e-5 cosine from step zero. The verified full stream preserved the EXP-004 300M and EXP-006 900M raw-byte prefixes. The final 1.2B-to-1.5B combined-validation gain was 0.0455186218 nats, therefore meaningfully data-limited under the predeclared diagnostic. This result does not authorize more training or official evaluation. See `results/EXP-011-summary.md`; no official benchmark was run.
