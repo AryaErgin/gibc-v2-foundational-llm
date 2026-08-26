@@ -95,3 +95,17 @@ def test_exp011_supervisor_exposes_exactly_one_wait_mode(monkeypatch: pytest.Mon
 
     with pytest.raises(SystemExit):
         module.main()
+
+
+def test_exp011_copies_the_existing_exp006_contamination_index_without_rebuilding(tmp_path: Path) -> None:
+    """Breaks if the 1.5B preparation can silently replace the frozen 900M screening index."""
+    from gibc_llm.exp011 import copy_exp006_benchmark_index
+
+    source = tmp_path / "exp006" / "cache" / "benchmarks" / "benchmark-ngrams.sqlite"
+    source.parent.mkdir(parents=True)
+    source.write_bytes(b"frozen-benchmark-index")
+    target = tmp_path / "exp011" / "cache" / "benchmarks" / "benchmark-ngrams.sqlite"
+
+    copied_hash = copy_exp006_benchmark_index(source, target)
+    assert target.read_bytes() == b"frozen-benchmark-index"
+    assert copied_hash == hashlib.sha256(b"frozen-benchmark-index").hexdigest()

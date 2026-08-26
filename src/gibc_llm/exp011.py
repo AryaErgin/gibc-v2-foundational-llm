@@ -11,7 +11,7 @@ from typing import Any
 
 import torch
 
-from .data import build_benchmark_filter, write_token_stream
+from .data import NgramContaminationFilter, write_token_stream
 from .exp003 import FROZEN_TOKENIZER_SHA256
 from .exp004 import (
     SOURCE_ORDER,
@@ -38,6 +38,20 @@ def verify_exp006_prefix(stream_path: Path, byte_count: int, expected_sha256: st
             "The artifact is not authorized for resume."
         )
     return observed
+
+
+def copy_exp006_benchmark_index(source_path: Path, target_path: Path) -> str:
+    """Copy the already-approved EXP-006 contamination index byte-for-byte and return its SHA-256."""
+    source = Path(source_path)
+    target = Path(target_path)
+    if not source.is_file() or source.stat().st_size <= 0:
+        raise RuntimeError("EXP-011 requires the existing nonempty EXP-006 benchmark n-gram index.")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, target)
+    source_sha256 = sha256_file(source)
+    if sha256_file(target) != source_sha256:
+        raise RuntimeError("EXP-011 copied contamination index does not match the exact EXP-006 source bytes.")
+    return source_sha256
 
 
 def assert_frozen_exp006_source(exp006_artifact_dir: Path) -> tuple[Path, Path, Path, Path, dict[str, Any], str]:
@@ -88,6 +102,15 @@ def prepare_exp011(config: Any, artifact_dir: Path, exp006_artifact_dir: Path) -
     started = time.perf_counter()
     frozen_tokenizer, frozen_general, frozen_edu, frozen_stream, frozen_manifest, frozen_manifest_sha = assert_frozen_exp006_source(exp006_artifact_dir)
     frozen_stream_sha = sha256_file(frozen_stream)
+    frozen_contamination = frozen_manifest.get("contamination", {})
+    frozen_benchmark_sources = frozen_contamination.get("benchmark_sources")
+    if (
+        frozen_contamination.get("method") != "NFKC+casefold+tokenized normalized 13-gram SHA-256 overlap"
+        or frozen_contamination.get("ngram_size") != config.data.contamination_ngram_size
+        or not isinstance(frozen_benchmark_sources, list)
+        or not frozen_benchmark_sources
+    ):
+        raise RuntimeError("EXP-011 requires EXP-006's exact recorded contamination-screening provenance.")
 
     artifact_dir = Path(artifact_dir)
     artifact_dir.mkdir(parents=True, exist_ok=True)
@@ -106,7 +129,10 @@ def prepare_exp011(config: Any, artifact_dir: Path, exp006_artifact_dir: Path) -
     if eod_id is None:
         raise RuntimeError("Frozen tokenizer does not contain the required EOD token.")
     cache_dir = artifact_dir / "cache"
-    contamination_filter, benchmark_sources = build_benchmark_filter(cache_dir / "benchmarks", config.data.contamination_ngram_size)
+    benchmark_index_path = cache_dir / "benchmarks" / "benchmark-ngrams.sqlite"
+    source_benchmark_index = Path(exp006_artifact_dir) / "cache" / "benchmarks" / "benchmark-ngrams.sqlite"
+    benchmark_index_sha256 = copy_exp006_benchmark_index(source_benchmark_index, benchmark_index_path)
+    contamination_filter = NgramContaminationFilter(None, config.data.contamination_ngram_size, sqlite_path=benchmark_index_path)
     source_configs = {
         "fineweb": config.data,
         "fineweb_edu": replace(
@@ -153,7 +179,8 @@ def prepare_exp011(config: Any, artifact_dir: Path, exp006_artifact_dir: Path) -
         "contamination": {
             "method": "NFKC+casefold+tokenized normalized 13-gram SHA-256 overlap",
             "ngram_size": config.data.contamination_ngram_size,
-            "benchmark_sources": benchmark_sources,
+            "benchmark_sources": frozen_benchmark_sources,
+            "frozen_exp006_index_sha256": benchmark_index_sha256,
             "sources": source_counters,
         },
         "frozen_exp006_source": {
