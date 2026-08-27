@@ -8,7 +8,7 @@ import subprocess
 import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Sequence
+from typing import Callable, Sequence
 
 
 class EvaluationAlreadyRunning(RuntimeError):
@@ -63,6 +63,169 @@ def _pid_is_alive(pid: int) -> bool:
     return True
 
 
+def _recorded_pid(record: dict[str, object], field: str, status_path: Path) -> int | None:
+    value = record.get(field)
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        raise EvaluationLaunchError(f"Running status {status_path} has an invalid {field}: {value!r}.")
+    return value
+
+
+def _timestamp_filename(value: object) -> str:
+    return str(value).replace(":", "-").replace("+", "_")
+
+
+def _new_history_directory(history: Path, prefix: str) -> Path:
+    history.mkdir(parents=True, exist_ok=True)
+    base = history / f"{prefix}-{_timestamp_filename(_timestamp())}"
+    target = base
+    suffix = 1
+    while target.exists():
+        target = history / f"{base.name}.{suffix}"
+        suffix += 1
+    target.mkdir()
+    return target
+
+
+def _move_status_logs_to_archive(record: dict[str, object], archive: Path) -> list[str]:
+    archived: list[str] = []
+    logs = archive / "logs"
+    for field in ("stdout_path", "stderr_path"):
+        raw_path = record.get(field)
+        if not isinstance(raw_path, str) or not raw_path:
+            continue
+        source = Path(raw_path)
+        if not source.is_file():
+            continue
+        logs.mkdir(parents=True, exist_ok=True)
+        target = logs / source.name
+        suffix = 1
+        while target.exists():
+            target = logs / f"{source.stem}.{suffix}{source.suffix}"
+            suffix += 1
+        os.replace(source, target)
+        archived.append(str(target))
+    return archived
+
+
+def _archive_interrupted_guarded_attempt(status_path: Path, prior: dict[str, object]) -> Path:
+    """Move one stale guarded attempt, including its logs, into durable history."""
+    archive = _new_history_directory(status_path.parent / "history", "interrupted")
+    status_target = archive / "status"
+    status_target.mkdir()
+    os.replace(status_path, status_target / status_path.name)
+    _move_status_logs_to_archive(prior, archive)
+    return archive
+
+
+def _relevant_evaluator_processes() -> list[tuple[int, str]]:
+    """Return actual EXP-012 evaluator processes; failure to inspect is unsafe."""
+    try:
+        completed = subprocess.run(
+            ["ps", "-eo", "pid=,args="],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError) as exc:
+        raise EvaluationLaunchError("Could not inspect the process table before stale-sequence recovery.") from exc
+    markers = (
+        "scripts/run_exp012_cpu_official_sequence.py",
+        "scripts/eval_exp012_cpu_task.py",
+        "scripts/eval_exp012_wikitext103.py",
+        "lm_eval",
+    )
+    processes: list[tuple[int, str]] = []
+    for line in completed.stdout.splitlines():
+        pid_text, _, command = line.strip().partition(" ")
+        try:
+            pid = int(pid_text)
+        except ValueError:
+            continue
+        if pid != os.getpid() and any(marker in command for marker in markers):
+            processes.append((pid, command))
+    return processes
+
+
+def assert_no_official_artifacts(output_dir: Path, tasks: Sequence[str]) -> None:
+    """Refuse a sequence launch that could overwrite a prior official result."""
+    from gibc_llm.official_cpu_evaluation import artifact_path
+
+    for task in tasks:
+        artifact = artifact_path(output_dir, task)
+        if artifact.exists():
+            raise FileExistsError(f"Refusing to overwrite previous official artifact: {artifact}")
+
+
+def recover_stale_sequence(
+    status_path: Path,
+    *,
+    output_dir: Path,
+    pid_is_alive: Callable[[int], bool] = _pid_is_alive,
+    relevant_processes: Callable[[], list[tuple[int, str]]] = _relevant_evaluator_processes,
+) -> Path | None:
+    """Archive a dead interrupted sequence only after comprehensive liveness checks.
+
+    The suite guard is deliberately excluded: by the time its child sequence
+    begins, that guard is the current live owner, not evidence from the stale
+    sequence being recovered.
+    """
+    prior = _read_json(status_path)
+    if prior is None or prior.get("state") != "running":
+        return None
+
+    stale_records: list[tuple[Path, dict[str, object]]] = [(status_path, prior)]
+    for candidate in sorted(status_path.parent.glob("*.status.json")):
+        if candidate == status_path or candidate.name == "suite.status.json":
+            continue
+        record = _read_json(candidate)
+        if record is not None and record.get("state") == "running":
+            stale_records.append((candidate, record))
+
+    for candidate, record in stale_records:
+        for field in ("supervisor_pid", "evaluator_pid"):
+            pid = _recorded_pid(record, field, candidate)
+            if pid is not None and pid_is_alive(pid):
+                raise EvaluationAlreadyRunning(f"Refusing stale-sequence recovery: {candidate} has live recorded PID {pid} in {field}.")
+    allowed_processes = {os.getpid()}
+    suite_path = status_path.parent / "suite.status.json"
+    suite = _read_json(suite_path)
+    if suite is not None and suite.get("state") == "running":
+        for field in ("supervisor_pid", "evaluator_pid"):
+            pid = _recorded_pid(suite, field, suite_path)
+            if pid is not None:
+                allowed_processes.add(pid)
+    for pid, command in relevant_processes():
+        if pid not in allowed_processes:
+            raise EvaluationAlreadyRunning(f"Refusing stale-sequence recovery: relevant evaluator process is live (PID {pid}: {command}).")
+
+    archive = _new_history_directory(output_dir / "history", "interrupted-by-terminal-closure")
+    archived_statuses: list[str] = []
+    archived_logs: list[str] = []
+    status_destination = archive / "status"
+    status_destination.mkdir()
+    for candidate, record in stale_records:
+        os.replace(candidate, status_destination / candidate.name)
+        archived_statuses.append(candidate.name)
+        archived_logs.extend(_move_status_logs_to_archive(record, archive))
+    from gibc_llm.official_cpu_evaluation import artifact_path
+
+    valid_artifact = any(artifact_path(output_dir, task).is_file() for task in ("hellaswag", "arc_easy", "piqa", "winogrande", "wikitext103"))
+    _write_json_atomic(
+        archive / "interruption.json",
+        {
+            "classification": "INTERRUPTED_BY_TERMINAL_CLOSURE",
+            "archived_at": _timestamp(),
+            "sequence_status": str(status_path),
+            "archived_statuses": archived_statuses,
+            "archived_logs": archived_logs,
+            "valid_result_artifact_produced": valid_artifact,
+        },
+    )
+    return archive
+
+
 def _lock_path(status_path: Path) -> Path:
     return status_path.with_suffix(status_path.suffix + ".lock")
 
@@ -105,7 +268,7 @@ def _archive_terminal_status(status_path: Path, prior: dict[str, object] | None)
         return
     history = status_path.parent / "history"
     history.mkdir(parents=True, exist_ok=True)
-    timestamp = str(prior.get("terminal_at") or prior.get("started_at") or "unknown").replace(":", "-").replace("+", "_")
+    timestamp = _timestamp_filename(prior.get("terminal_at") or prior.get("started_at") or "unknown")
     target = history / f"{status_path.stem}.{timestamp}.json"
     suffix = 1
     while target.exists():
@@ -143,13 +306,18 @@ def run_guarded(
             _release_lock(status_path)
             raise EvaluationLaunchError(f"Status artifact {status_path} belongs to a different task.")
         if prior.get("state") == "running":
-            supervisor_pid = int(prior.get("supervisor_pid", 0))
-            if _pid_is_alive(supervisor_pid):
-                _release_lock(status_path)
-                raise EvaluationAlreadyRunning(
-                    f"Task {task!r} already has a live guarded evaluator (supervisor PID {supervisor_pid})."
-                )
-            stale_status_pid = supervisor_pid
+            for field in ("supervisor_pid", "evaluator_pid"):
+                pid = _recorded_pid(prior, field, status_path)
+                if pid is not None and _pid_is_alive(pid):
+                    _release_lock(status_path)
+                    pid_label = "supervisor PID" if field == "supervisor_pid" else "evaluator PID"
+                    raise EvaluationAlreadyRunning(
+                        f"Task {task!r} already has a live guarded evaluator ({pid_label} {pid})."
+                    )
+                if pid is not None and stale_status_pid is None:
+                    stale_status_pid = pid
+            _archive_interrupted_guarded_attempt(status_path, prior)
+            prior = None
 
     _archive_terminal_status(status_path, prior)
 

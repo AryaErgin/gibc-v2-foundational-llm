@@ -10,7 +10,7 @@ import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
-from gibc_llm.evaluation_launch import run_guarded
+from gibc_llm.evaluation_launch import assert_no_official_artifacts, recover_stale_sequence, run_guarded
 from gibc_llm.official_cpu_evaluation import AMENDMENT_COMMIT, artifact_path, validate_lm_task_record, validate_wikitext103_record
 
 
@@ -33,7 +33,8 @@ def _archive_terminal_status(path: Path) -> None:
         return
     prior = json.loads(path.read_text(encoding="utf-8"))
     if prior.get("state") == "running":
-        raise RuntimeError(f"Existing CPU official sequence status is still running: {path}")
+        recover_stale_sequence(path, output_dir=path.parent.parent)
+        return
     history = path.parent / "history"
     history.mkdir(parents=True, exist_ok=True)
     timestamp = str(prior.get("terminal_at") or prior.get("started_at") or "unknown").replace(":", "-").replace("+", "_")
@@ -64,6 +65,7 @@ def main() -> None:
     if os.environ.get("CUDA_VISIBLE_DEVICES") != "":
         raise RuntimeError('CPU official sequence requires CUDA_VISIBLE_DEVICES="".')
     status_path = args.output_dir / "status" / "sequence.status.json"
+    assert_no_official_artifacts(args.output_dir, TASKS)
     _archive_terminal_status(status_path)
     sequence: dict[str, object] = {
         "state": "running",
@@ -76,8 +78,6 @@ def main() -> None:
     try:
         for task in TASKS:
             artifact = artifact_path(args.output_dir, task)
-            if artifact.exists():
-                raise FileExistsError(f"Refusing to overwrite previous official artifact: {artifact}")
             script = "scripts/eval_exp012_wikitext103.py" if task == "wikitext103" else "scripts/eval_exp012_cpu_task.py"
             command = [
                 args.python,
