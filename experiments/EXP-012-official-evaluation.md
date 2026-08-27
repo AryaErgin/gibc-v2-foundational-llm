@@ -66,3 +66,43 @@ Native Windows evaluation was abandoned only after Python-native dependencies co
 WSL2 Ubuntu 26.04 LTS is the isolated evaluation environment, with the public repository checked out at `c2d3a0a9aeef7ed23633529a5143c24d2961e87f` before this amendment. It uses Python `3.11.16`, `torch 2.13.0+cu132` (CUDA runtime `13.2`), `datasets 3.5.1`, `pyarrow 25.0.1`, `lm-eval 0.4.9.1`, and `sacrebleu 1.5.1`. `pip check`, all required imports, CUDA/BF16 visibility, checkpoint/tokenizer hashes, parameter recount, finite tensor checks, actual checkpoint adapter-vs-direct CPU FP32 scoring (absolute tolerance `1e-6`), causal/rolling tests, and the 86-test project suite passed. The WSL differential CUDA test produced no new DXG messages, CUDA error, or observed display corruption; no bitwise Windows/Linux BF16 equality is claimed or required.
 
 The checkpoint, task definitions/templates, zero-shot setting, batch size, context, and scoring semantics are unchanged. No training and no benchmark evaluation ran in WSL during setup; benchmark execution remains separately gated.
+
+## CPU FP32 execution amendment — authorized before official scoring
+
+Research review rejected every local CUDA path for this official evaluation:
+
+- a native-Windows real HellaSwag workload was interrupted by severe display
+  corruption requiring forced shutdown;
+- Windows Smart App Control blocks required native Python evaluation
+  dependencies; and
+- a real WSL HellaSwag workload generated fresh repeated
+  `dxgkio_query_adapter_info: Ioctl failed: -22` records.
+
+No valid official benchmark score has been produced or observed. The CPU
+feasibility probe used only synthetic model token IDs for inference. It did
+materialize frozen benchmark requests to measure their sizes, but did not
+score any request, calculate a likelihood, correctness result, perplexity, or
+benchmark metric. Its WSL artifact is
+`artifacts/exp012-official-eval/cpu-feasibility.json` (SHA-256
+`48802c559cea22fec42283ec87c3c62ef01cbae75d5aa0ed9e9425b895012360`).
+
+WSL CPU FP32 is selected solely as an execution-stability fallback. Every
+official evaluator process must start with `CUDA_VISIBLE_DEVICES=""` and
+assert `torch.cuda.is_available() == False`; all model tensors must remain on
+CPU. Evaluation now uses FP32 rather than CUDA BF16. FP32 is expected to be
+at least as numerically faithful as BF16; this is an execution-device/
+precision change, not a model, checkpoint, tokenizer, task, or scoring change.
+
+The selected checkpoint SHA, exact 49,860,480 parameter count, frozen
+tokenizer, zero-shot protocol, batch size 16, context 512, lm-eval 0.4.9.1,
+upstream task definitions, TemplateLM causal likelihood semantics, and
+separate WikiText-103 protocol remain mandatory. Checkpoint selection occurred
+before any official result. The committed guarded launcher must own a single
+task evaluator, persist PID/status/stdout/stderr, reject duplicates, and write
+terminal state only after the child exits. A generic DXG log record alone is
+recorded but is not a CPU-run stop condition when CUDA remains hidden, no CUDA
+API is used, CPU scoring is healthy, and there is no display or system
+instability.
+
+No training is authorized. No benchmark score may change any frozen model or
+evaluation decision.
