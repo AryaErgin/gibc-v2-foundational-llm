@@ -76,6 +76,7 @@ def _lock_pid(path: Path) -> int | None:
 
 def _acquire_lock(status_path: Path, task: str) -> int | None:
     """Acquire a task-local exclusive lock, replacing only a dead owner."""
+    status_path.parent.mkdir(parents=True, exist_ok=True)
     path = _lock_path(status_path)
     stale_pid: int | None = None
     for _ in range(2):

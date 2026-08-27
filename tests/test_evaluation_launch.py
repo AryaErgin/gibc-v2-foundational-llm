@@ -108,3 +108,19 @@ def test_guard_replaces_only_a_stale_pid_and_records_it(tmp_path: Path) -> None:
     assert terminal["state"] == "succeeded"
     assert terminal["replaced_stale_supervisor_pid"] == 999_999_999
     assert "stale lock replaced" in stdout_path.read_text(encoding="utf-8")
+
+
+def test_guard_creates_a_missing_nested_status_directory(tmp_path: Path) -> None:
+    """The first official task must not fail merely because its status directory is new."""
+    status_path = tmp_path / "new-status" / "dummy.status.json"
+    stdout_path = tmp_path / "new-logs" / "dummy.stdout.log"
+    stderr_path = tmp_path / "new-logs" / "dummy.stderr.log"
+
+    assert run_guarded(
+        task="dummy",
+        command=[sys.executable, "-c", "print('nested status works')"],
+        status_path=status_path,
+        stdout_path=stdout_path,
+        stderr_path=stderr_path,
+    ) == 0
+    assert json.loads(status_path.read_text(encoding="utf-8"))["state"] == "succeeded"
