@@ -50,7 +50,10 @@ class CustomCausalLM(TemplateLM):
         greedy = True
         for token in continuation:
             context = torch.tensor(history[-self.max_length :], dtype=torch.long, device=self.device).unsqueeze(0)
-            logits = self.model(context)[0, -1].float()
+            logits = self.model(context)[0, -1]
+            if not torch.isfinite(logits).all():
+                raise FloatingPointError("Evaluation model produced non-finite logits.")
+            logits = logits.float()
             score += float(torch.log_softmax(logits, dim=-1)[token])
             greedy = greedy and int(logits.argmax()) == token
             history.append(token)
@@ -72,7 +75,10 @@ class CustomCausalLM(TemplateLM):
             input_ids = torch.full((len(batch), width), self.prefix_token_id, dtype=torch.long, device=self.device)
             for row, (_, context, _) in enumerate(batch):
                 input_ids[row, : len(context)] = torch.tensor(context, dtype=torch.long, device=self.device)
-            logits = self.model(input_ids).float()
+            logits = self.model(input_ids)
+            if not torch.isfinite(logits).all():
+                raise FloatingPointError("Evaluation model produced non-finite logits.")
+            logits = logits.float()
             row_ids = torch.arange(len(batch), device=self.device)
             final_logits = logits[row_ids, lengths - 1]
             target_ids = torch.tensor([token for _, _, token in batch], device=self.device)

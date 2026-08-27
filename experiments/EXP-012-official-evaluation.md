@@ -36,14 +36,23 @@ This is a separate evaluator. The lm-eval task name `wikitext` is prohibited her
 ## Commands
 
 ```text
-python scripts/eval_exp012_official.py --task hellaswag --output artifacts/exp012-official-eval/lm_eval/hellaswag.json
-python scripts/eval_exp012_official.py --task arc_easy --output artifacts/exp012-official-eval/lm_eval/arc_easy.json
-python scripts/eval_exp012_official.py --task piqa --output artifacts/exp012-official-eval/lm_eval/piqa.json
-python scripts/eval_exp012_official.py --task winogrande --output artifacts/exp012-official-eval/lm_eval/winogrande.json
-python scripts/eval_exp012_wikitext103.py --output artifacts/exp012-official-eval/wikitext103.json
+CUDA_VISIBLE_DEVICES="" python scripts/run_evaluation_guarded.py \
+  --task exp012_official_cpu_suite \
+  --status artifacts/exp012-official-eval/status/suite.status.json \
+  --stdout artifacts/exp012-official-eval/logs/suite.stdout.log \
+  --stderr artifacts/exp012-official-eval/logs/suite.stderr.log -- \
+  python scripts/run_exp012_cpu_official_sequence.py \
+  --checkpoint artifacts/exp012-eval-checkpoint/checkpoint-step-73242.pt \
+  --tokenizer artifacts/exp012-eval-checkpoint/tokenizer/tokenizer.json \
+  --output-dir artifacts/exp012-official-eval
 ```
 
-These commands execute only after the frozen pre-evaluation gate command passes. No benchmark result authorizes further training.
+This sole guarded command executes the frozen task order HellaSwag,
+ARC-Easy, PIQA, WinoGrande, then the separate WikiText-103 evaluator. Each
+task has a task-local PID/status artifact and logs; the suite status reaches a
+terminal state only after the actual child sequence exits. These commands
+execute only after the frozen pre-evaluation gate command passes. No benchmark
+result authorizes further training.
 
 ## EVALUATION-ENVIRONMENT-COMPATIBILITY amendment
 

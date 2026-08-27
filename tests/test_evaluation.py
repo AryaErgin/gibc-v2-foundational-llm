@@ -151,3 +151,16 @@ def test_batched_rolling_likelihood_matches_serial_beyond_a_model_window() -> No
 
     assert actual == pytest.approx(expected, abs=1e-6)
     assert model.forward_calls < len(batched.tok_encode(text))
+
+
+def test_evaluation_hard_fails_on_nonfinite_model_logits() -> None:
+    """Official evaluation must stop rather than write a metric from NaN logits."""
+    tokenizer = _byte_level_tokenizer()
+
+    class _NonfiniteModel(_DeterministicModel):
+        def __call__(self, input_ids: torch.Tensor) -> torch.Tensor:
+            return torch.full((input_ids.shape[0], input_ids.shape[1], self.vocab_size), float("nan"))
+
+    adapter = CustomCausalLM(_NonfiniteModel(vocab_size=tokenizer.get_vocab_size()), tokenizer, torch.device("cpu"))
+    with pytest.raises(FloatingPointError, match="non-finite logits"):
+        adapter._loglikelihood_tokens([(None, [1], [2])])
