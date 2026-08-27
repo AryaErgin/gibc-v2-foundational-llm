@@ -44,3 +44,11 @@ python scripts/eval_exp012_wikitext103.py --output artifacts/exp012-official-eva
 ```
 
 These commands execute only after the frozen pre-evaluation gate command passes. No benchmark result authorizes further training.
+
+## EVALUATION-ENVIRONMENT-COMPATIBILITY amendment
+
+Before any benchmark request, the first HellaSwag invocation failed while importing `lm_eval.api.metrics`: `sacrebleu 2.6.0` imported `lxml.etree`, whose native DLL was blocked by Windows Smart App Control. No lm-eval task request, dataset example, or benchmark metric executed, and no raw result artifact was written.
+
+`lm-eval` remains exactly `0.4.9.1`. Its installed metadata permits `sacrebleu>=1.5.0`. The required packaged task definitions are unchanged accuracy-only multiple-choice tasks: HellaSwag `acc`/`acc_norm`, ARC-Easy `acc`/`acc_norm`, PIQA `acc`/`acc_norm`, and WinoGrande `acc`. They define no BLEU, chrF, TER, or other sacrebleu metric. The smallest compatible environment change is therefore to pin only `sacrebleu==1.5.1`, which has no `lxml` runtime dependency; no lm-eval source, task YAML/template, checkpoint, model, tokenizer, or protocol setting changes.
+
+Before resuming evaluation, record the old/new package versions, run `pip check`, and require clean `import sacrebleu`, `import lm_eval`, and `from lm_eval import evaluator` smoke tests. Re-run all selected-checkpoint, parameter, tokenizer/config, adapter, causal-shift, context, and unit-test gates. If any import or gate fails, stop without relaxing Windows security or executing a benchmark request.
