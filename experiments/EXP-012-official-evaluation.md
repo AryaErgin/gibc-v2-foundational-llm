@@ -52,3 +52,9 @@ Before any benchmark request, the first HellaSwag invocation failed while import
 `lm-eval` remains exactly `0.4.9.1`. Its installed metadata permits `sacrebleu>=1.5.0`. The required packaged task definitions are unchanged accuracy-only multiple-choice tasks: HellaSwag `acc`/`acc_norm`, ARC-Easy `acc`/`acc_norm`, PIQA `acc`/`acc_norm`, and WinoGrande `acc`. They define no BLEU, chrF, TER, or other sacrebleu metric. The smallest compatible environment change is therefore to pin only `sacrebleu==1.5.1`, which has no `lxml` runtime dependency; no lm-eval source, task YAML/template, checkpoint, model, tokenizer, or protocol setting changes.
 
 Before resuming evaluation, record the old/new package versions, run `pip check`, and require clean `import sacrebleu`, `import lm_eval`, and `from lm_eval import evaluator` smoke tests. Re-run all selected-checkpoint, parameter, tokenizer/config, adapter, causal-shift, context, and unit-test gates. If any import or gate fails, stop without relaxing Windows security or executing a benchmark request.
+
+## EVALUATION-INCIDENT amendment
+
+The first post-recovery HellaSwag attempt began under OMEN Performance mode at approximately 159 W but was interrupted by severe display corruption that required a forced reboot. No final HellaSwag JSON artifact or score was produced or observed. It is therefore not an evaluation result and influenced no model, checkpoint, or protocol decision. This record does not infer that Performance mode caused the incident.
+
+The selected checkpoint SHA, model/task settings, zero-shot protocol, batch size 16, CUDA BF16 evaluation path, and context 512 remain frozen. The sole systems-control change for the restart is OMEN **Balanced** mode as a hardware-stability control; evaluation semantics are unchanged. If display corruption, a CUDA error, driver reset, or other abnormal system behavior recurs, stop without another benchmark attempt or security/system-settings change.
