@@ -17,3 +17,9 @@ Contamination screening uses NFKC + casefold + tokenized normalized 13-gram SHA-
 ## Prefix provenance
 
 The full artifact's first 300,023,809 stored IDs / 300,023,808 predictions exactly match EXP-004 (`8e727fa2a2614751a1c34d7f9ac411dfebeb379a09f584ba4f7f418d1059cea1`). Its first 900,071,425 stored IDs / 900,071,424 predictions exactly match EXP-006 (`07d635264c523ce78b437caef7b50d478a7368371af8f86ef655e4b91661e6af`).
+
+## EXP-012 extension record
+
+EXP-012 rebuilt the stream from zero because the prior builder had no serializable global-dedup state. Its one global canonical-content-SHA-256 state covers the complete 2.4B artifact, including all inherited prefixes. The artifact has 2,399,993,857 stored uint16 IDs / 2,399,993,856 prediction tokens; stream / manifest / tokenizer SHA-256 are `27c1c8d06da579d443ee19017e12dd28a7c3fb8c6387cff76e9128c7c5fba82c` / `b19b508dd1d1928b8e3bbdf586547791dc3bd76af19f6e55b8c39465bd749ccf` / `c5592fba176c3d2f7915a3812559a24d7a669206f4a22484b053c8a9ce08be14`.
+
+Target FineWeb/FineWeb-Edu prediction-token contributions were `1,599,995,904 / 799,997,952`; realized contributions were `1,599,995,879 / 799,997,977`. The artifact independently passed exact EXP-004 300M, EXP-006 900M, and EXP-011 1.5B prefix checks; the EXP-011 prefix SHA-256 is `092fc4a02f991b15fd8fcd2c209754e014485c74bea642c1a57270462141b671`.

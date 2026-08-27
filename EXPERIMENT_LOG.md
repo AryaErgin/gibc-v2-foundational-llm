@@ -41,3 +41,7 @@ Status: completed. EXP-010A tested the single depth/width allocation change from
 ## EXP-011
 
 Status: completed long-horizon calibration. The selected 49,860,480-parameter Recipe v3 completed 45,777 updates / 1,500,020,736 prediction tokens from fresh seed-42 initialization, using the exact 45,777-step 6e-4-to-6e-5 cosine from step zero. The verified full stream preserved the EXP-004 300M and EXP-006 900M raw-byte prefixes. The final 1.2B-to-1.5B combined-validation gain was 0.0455186218 nats, therefore meaningfully data-limited under the predeclared diagnostic. This result does not authorize more training or official evaluation. See `results/EXP-011-summary.md`; no official benchmark was run.
+
+## EXP-012
+
+Status: completed fresh 2.4B-token calibration. Recipe v3 completed 73,242 updates / 2,399,993,856 prediction tokens from fresh seed-42 initialization, using the exact 73,242-step 6e-4-to-6e-5 cosine from step zero. The deterministically rebuilt Data Recipe v1 stream passed exact EXP-004 300M, EXP-006 900M, and EXP-011 1.5B raw-byte prefix gates. The final 299,827,200-token tranche improved combined frozen validation by 0.0212369710 nats, therefore approaching diminishing returns under the predeclared diagnostic. This result does not authorize further training or official evaluation. See `results/EXP-012-summary.md`; no official benchmark was run.
