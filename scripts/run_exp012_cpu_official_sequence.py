@@ -11,7 +11,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from gibc_llm.evaluation_launch import run_guarded
-from gibc_llm.official_cpu_evaluation import AMENDMENT_COMMIT, validate_lm_task_record, validate_wikitext103_record
+from gibc_llm.official_cpu_evaluation import AMENDMENT_COMMIT, artifact_path, validate_lm_task_record, validate_wikitext103_record
 
 
 TASKS = ("hellaswag", "arc_easy", "piqa", "winogrande", "wikitext103")
@@ -26,6 +26,23 @@ def _write_status(path: Path, record: dict[str, object]) -> None:
     temporary = path.with_suffix(path.suffix + ".tmp")
     temporary.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     os.replace(temporary, path)
+
+
+def _archive_terminal_status(path: Path) -> None:
+    if not path.exists():
+        return
+    prior = json.loads(path.read_text(encoding="utf-8"))
+    if prior.get("state") == "running":
+        raise RuntimeError(f"Existing CPU official sequence status is still running: {path}")
+    history = path.parent / "history"
+    history.mkdir(parents=True, exist_ok=True)
+    timestamp = str(prior.get("terminal_at") or prior.get("started_at") or "unknown").replace(":", "-").replace("+", "_")
+    target = history / f"{path.stem}.{timestamp}.json"
+    suffix = 1
+    while target.exists():
+        target = history / f"{path.stem}.{timestamp}.{suffix}.json"
+        suffix += 1
+    os.replace(path, target)
 
 
 def _sha256(path: Path) -> str:
@@ -47,6 +64,7 @@ def main() -> None:
     if os.environ.get("CUDA_VISIBLE_DEVICES") != "":
         raise RuntimeError('CPU official sequence requires CUDA_VISIBLE_DEVICES="".')
     status_path = args.output_dir / "status" / "sequence.status.json"
+    _archive_terminal_status(status_path)
     sequence: dict[str, object] = {
         "state": "running",
         "amendment_commit": AMENDMENT_COMMIT,
@@ -57,7 +75,7 @@ def main() -> None:
     _write_status(status_path, sequence)
     try:
         for task in TASKS:
-            artifact = args.output_dir / ("wikitext103.json" if task == "wikitext103" else "lm_eval" / f"{task}.json")
+            artifact = artifact_path(args.output_dir, task)
             if artifact.exists():
                 raise FileExistsError(f"Refusing to overwrite previous official artifact: {artifact}")
             script = "scripts/eval_exp012_wikitext103.py" if task == "wikitext103" else "scripts/eval_exp012_cpu_task.py"

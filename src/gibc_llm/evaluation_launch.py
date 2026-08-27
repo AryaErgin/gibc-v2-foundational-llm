@@ -99,6 +99,21 @@ def _release_lock(status_path: Path) -> None:
     _lock_path(status_path).unlink(missing_ok=True)
 
 
+def _archive_terminal_status(status_path: Path, prior: dict[str, object] | None) -> None:
+    """Keep earlier terminal status evidence before a deliberate retry."""
+    if prior is None or prior.get("state") == "running" or not status_path.exists():
+        return
+    history = status_path.parent / "history"
+    history.mkdir(parents=True, exist_ok=True)
+    timestamp = str(prior.get("terminal_at") or prior.get("started_at") or "unknown").replace(":", "-").replace("+", "_")
+    target = history / f"{status_path.stem}.{timestamp}.json"
+    suffix = 1
+    while target.exists():
+        target = history / f"{status_path.stem}.{timestamp}.{suffix}.json"
+        suffix += 1
+    os.replace(status_path, target)
+
+
 def run_guarded(
     *,
     task: str,
@@ -135,6 +150,8 @@ def run_guarded(
                     f"Task {task!r} already has a live guarded evaluator (supervisor PID {supervisor_pid})."
                 )
             stale_status_pid = supervisor_pid
+
+    _archive_terminal_status(status_path, prior)
 
     replaced_stale_pid = stale_lock_pid if stale_lock_pid is not None else stale_status_pid
     status: dict[str, object] = {

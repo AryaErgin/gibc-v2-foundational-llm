@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 import os
+from pathlib import Path
 from typing import Any
 
 
@@ -17,6 +18,14 @@ EXPECTED_LM_METRICS = {
     "piqa": ("acc,none", "acc_stderr,none", "acc_norm,none", "acc_norm_stderr,none"),
     "winogrande": ("acc,none", "acc_stderr,none"),
 }
+
+
+def artifact_path(output_dir: Path, task: str) -> Path:
+    if task == "wikitext103":
+        return output_dir / "wikitext103.json"
+    if task in EXPECTED_LM_METRICS:
+        return output_dir / "lm_eval" / f"{task}.json"
+    raise ValueError(f"Unsupported frozen official task {task!r}.")
 
 
 def enforce_cpu_isolation(torch_module: Any, model: Any) -> None:

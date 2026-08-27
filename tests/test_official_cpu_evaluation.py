@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from gibc_llm.official_cpu_evaluation import enforce_cpu_isolation, validate_lm_task_record, validate_wikitext103_record
+from gibc_llm.official_cpu_evaluation import artifact_path, enforce_cpu_isolation, validate_lm_task_record, validate_wikitext103_record
 
 
 CHECKPOINT = "cacb728b3963c10af8f4613149d8b879b0ef6e44558069726c621c1cb1bb981c"
@@ -73,3 +73,8 @@ def test_wikitext_record_requires_positive_finite_metrics_and_token_count() -> N
     record["result"]["scored_tokens"] = 0
     with pytest.raises(RuntimeError, match="positive scored-token"):
         validate_wikitext103_record(record)
+
+
+def test_task_artifact_paths_are_path_objects_for_all_frozen_tasks(tmp_path):
+    assert artifact_path(tmp_path, "hellaswag") == tmp_path / "lm_eval" / "hellaswag.json"
+    assert artifact_path(tmp_path, "wikitext103") == tmp_path / "wikitext103.json"

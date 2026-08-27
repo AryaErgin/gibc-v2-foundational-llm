@@ -124,3 +124,18 @@ def test_guard_creates_a_missing_nested_status_directory(tmp_path: Path) -> None
         stderr_path=stderr_path,
     ) == 0
     assert json.loads(status_path.read_text(encoding="utf-8"))["state"] == "succeeded"
+
+
+def test_guard_archives_a_terminal_status_before_a_new_attempt(tmp_path: Path) -> None:
+    """A retry retains terminal attempt evidence rather than silently replacing it."""
+    status_path = tmp_path / "dummy.status.json"
+    stdout_path = tmp_path / "dummy.stdout.log"
+    stderr_path = tmp_path / "dummy.stderr.log"
+    run_guarded(task="dummy", command=[sys.executable, "-c", "print('first')"], status_path=status_path, stdout_path=stdout_path, stderr_path=stderr_path)
+    first = json.loads(status_path.read_text(encoding="utf-8"))
+
+    run_guarded(task="dummy", command=[sys.executable, "-c", "print('second')"], status_path=status_path, stdout_path=stdout_path, stderr_path=stderr_path)
+
+    archived = list((tmp_path / "history").glob("dummy.status.*.json"))
+    assert len(archived) == 1
+    assert json.loads(archived[0].read_text(encoding="utf-8"))["started_at"] == first["started_at"]
