@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "gibc-v2-foundational-llm"
 version = "0.1.0"
-description = "Reproducible EXP-001 decoder-only language-model baseline"
+description = "Reproducible from-scratch Track 01 decoder-only language model with finalized EXP-012 evaluation evidence"
 requires-python = ">=3.11,<3.12"
 dependencies = [
   "PyYAML==6.0.2",

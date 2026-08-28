@@ -1,0 +1,11 @@
+{
+  "attention": 14745600,
+  "config": "configs/exp012.yaml",
+  "config_sha256": "d1b7c9e6e940e009c3eb84b6b560dffa166dbf29c22d49a3547c26e7a27ea1c7",
+  "embedding": 5242880,
+  "expected_total": 49860480,
+  "mlp": 29859840,
+  "norms": 12160,
+  "output_head_additional": 0,
+  "total": 49860480
+}

@@ -1,6 +1,6 @@
 # EXP-012 — Fresh 2.4B-token long-horizon calibration
 
-Status: **EXP-012 COMPLETE**. This is a fresh seed-42 calibration under a 73,242-step cosine horizon, not an EXP-011 schedule reproduction or automatic final-model promotion. Official benchmarks were not run.
+Status: **EXP-012 COMPLETE; official evaluation finalized 2026-08-28**. This is a fresh seed-42 calibration under a 73,242-step cosine horizon, not an EXP-011 schedule reproduction or automatic final-model promotion. The validation-selected terminal checkpoint completed the frozen official HellaSwag, ARC-Easy, PIQA, WinoGrande, and WikiText-103 evaluation; see `experiments/EXP-012-official-evaluation.md` and `RESULTS.md`.
 
 ## Integrity and provenance
 

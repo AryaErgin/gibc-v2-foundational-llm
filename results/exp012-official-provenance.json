@@ -1,0 +1,32 @@
+{
+  "amendment_commit": "49bfe789fb8e6ebd23b00b5774f4f2e97ee1c464",
+  "artifact_sha256": {
+    "arc_easy": "b4897908dc355352554c89250830a9490d906ed0dc7c1ffa286901ff64ce6ae6",
+    "hellaswag": "eeda0b3d58803e8fccc6ef61b4e287195eb70958c269d0c40b5c1685b9be5e50",
+    "piqa": "d2f126c5f2a9b3730d085c95863262b217219c1f344342c1e5502d4e759bb8e6",
+    "wikitext103": "4104c5e3f7fa3e1a93d24eb1d5fb88b7dd4de37b9fb1bd55e86700808cd9b1a8",
+    "winogrande": "7041224d05d0660734f6ec8b376c37391c6abb363da7dc3ea5a620c5cc6d562a"
+  },
+  "checkpoint_sha256": "cacb728b3963c10af8f4613149d8b879b0ef6e44558069726c621c1cb1bb981c",
+  "evaluation": {
+    "batch_size": 16,
+    "context_length": 512,
+    "cuda_available": false,
+    "device": "cpu",
+    "lm_eval_version": "0.4.9.1",
+    "num_fewshot": 0,
+    "precision": "fp32",
+    "suite_state": "succeeded",
+    "suite_wall_seconds": 32562.111278
+  },
+  "official_results": {
+    "arc_easy": {"acc": 0.38552188552188554, "acc_norm": 0.36447811447811446},
+    "hellaswag": {"acc": 0.273451503684525, "acc_norm": 0.28759211312487554},
+    "piqa": {"acc": 0.6039173014145811, "acc_norm": 0.6022850924918389},
+    "wikitext103": {"bits_per_byte": 1.4083853215598, "documents": 2891, "perplexity": 35.93897257521639, "scored_tokens": 350948},
+    "winogrande": {"acc": 0.5035516969218626}
+  },
+  "schema_version": 1,
+  "tokenizer_sha256": "c5592fba176c3d2f7915a3812559a24d7a669206f4a22484b053c8a9ce08be14",
+  "trainable_parameters": 49860480
+}

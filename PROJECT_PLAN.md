@@ -14,4 +14,10 @@ Native Windows, OMEN Performance mode, AC power, context 512, physical batch 32 
 
 ## Next action
 
-Stop for research review. No official benchmark, additional training, LR/architecture/data change, or EXP-013 is authorized by this document. A future official evaluation may run only on the checkpoint selected by the frozen validation-based promotion rule.
+The selected EXP-012 terminal checkpoint completed the frozen official CPU FP32
+evaluation successfully on 2026-08-28; see
+`experiments/EXP-012-official-evaluation.md` and `RESULTS.md`. No additional
+training, LR/architecture/data change, alternate checkpoint selection, or
+benchmark rerun is authorized. The remaining submission task is approval-gated
+publication of the inference-only artifact described in
+`docs/EXP-012-INFERENCE-PUBLICATION.md`.
