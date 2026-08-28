@@ -150,6 +150,8 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         "EXP-012": (73_242, 2_399_993_856),
         "EXP-013-C": (9_156, 300_023_808),
         "EXP-013-W": (9_156, 300_023_808),
+        "EXP-013-C43": (9_156, 300_023_808),
+        "EXP-013-W43": (9_156, 300_023_808),
     }
     if config.experiment_id not in horizons:
         raise ValueError("Only EXP-001 through EXP-013 controlled configurations are supported.")
@@ -167,6 +169,8 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         "EXP-012": (8192, 640, 9, 20, 32, 1728),
         "EXP-013-C": (8192, 640, 9, 20, 32, 1728),
         "EXP-013-W": (8192, 640, 9, 20, 32, 1728),
+        "EXP-013-C43": (8192, 640, 9, 20, 32, 1728),
+        "EXP-013-W43": (8192, 640, 9, 20, 32, 1728),
     }.get(config.experiment_id, (8192, 256, 8, 8, 32, 1024))
     if (model.vocab_size, model.d_model, model.n_layers, model.n_heads, model.head_dim, model.d_ff) != expected_dimensions:
         raise ValueError(f"{config.experiment_id} model dimensions differ from the approved allocation.")
@@ -180,7 +184,7 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         raise ValueError("Controlled causal/tied/bias/dropout invariants are violated.")
     if (
         model.architecture != "decoder_only_transformer"
-        or model.activation != ("swiglu" if config.experiment_id in {"EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W"} else "gelu")
+        or model.activation != ("swiglu" if config.experiment_id in {"EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43"} else "gelu")
         or model.norm != "rmsnorm"
         or model.norm_placement != "pre_norm"
         or model.positional_encoding != "rope"
@@ -193,7 +197,7 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         raise ValueError("Controlled effective batch is 64 x 512 prediction tokens.")
     if training.default_microbatch_sequences * training.default_gradient_accumulation_steps * 512 != 32768:
         raise ValueError("Configured microbatch/accumulation does not preserve effective batch tokens.")
-    if config.experiment_id in {"EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W"} and (
+    if config.experiment_id in {"EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43"} and (
         training.default_microbatch_sequences,
         training.default_gradient_accumulation_steps,
     ) != (32, 2):
@@ -207,17 +211,18 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         or (training.beta1, training.beta2, training.eps) != (0.9, 0.95, 1.0e-8)
         or training.weight_decay != 0.1
         or (training.peak_learning_rate, training.min_learning_rate) != ({"EXP-009A": (4.0e-4, 4.0e-5), "EXP-009B": (8.0e-4, 8.0e-5)}.get(config.experiment_id, (6.0e-4, 6.0e-5)))
-        or training.schedule != ("warmup_stable_decay" if config.experiment_id == "EXP-013-W" else "cosine_decay")
+        or training.schedule != ("warmup_stable_decay" if config.experiment_id in {"EXP-013-W", "EXP-013-W43"} else "cosine_decay")
         or training.warmup_steps != 100
         or training.gradient_clip_norm != 1.0
     ):
         raise ValueError("Controlled optimizer, precision, clipping, or schedule invariants are violated.")
-    if (config.experiment_id == "EXP-013-W" and training.cooldown_steps != 916) or (
-        config.experiment_id != "EXP-013-W" and training.cooldown_steps is not None
+    if (config.experiment_id in {"EXP-013-W", "EXP-013-W43"} and training.cooldown_steps != 916) or (
+        config.experiment_id not in {"EXP-013-W", "EXP-013-W43"} and training.cooldown_steps is not None
     ):
         raise ValueError("Only EXP-013-W may declare its fixed 916-update WSD cooldown.")
-    if training.seed != 42 or data.split_seed != 42:
-        raise ValueError("Controlled experiments require fixed seed 42.")
+    expected_seed = 43 if config.experiment_id in {"EXP-013-C43", "EXP-013-W43"} else 42
+    if training.seed != expected_seed or data.split_seed != 42:
+        raise ValueError("Controlled experiments require their exact training seed and fixed data split seed 42.")
     expected_data = (
         ("HuggingFaceFW/fineweb-edu", "default", "87f09149ef4734204d70ed1d046ddc9ca3f2b8f9")
         if config.experiment_id == "EXP-003"
@@ -225,7 +230,7 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
     )
     if (data.dataset_repo, data.dataset_config, data.dataset_revision) != expected_data:
         raise ValueError(f"{config.experiment_id} dataset pin is invalid.")
-    if config.experiment_id in {"EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W"}:
+    if config.experiment_id in {"EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43"}:
         target_prediction_tokens = (
             {"fineweb": 600_047_616, "fineweb_edu": 300_023_808}
             if config.experiment_id == "EXP-006"

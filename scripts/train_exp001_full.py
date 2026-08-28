@@ -109,7 +109,7 @@ def main() -> None:
     parser.add_argument("--recorded-source-commit", help="Pre-training source/spec commit recorded by an external clean checkout.")
     args = parser.parse_args()
     config = load_config(args.config)
-    fixed_milestone_experiment = config.experiment_id in {"EXP-003", "EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W"}
+    fixed_milestone_experiment = config.experiment_id in {"EXP-003", "EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43"}
     if args.checkpoint_interval is None:
         args.checkpoint_interval = full_run_milestones(config)[1] if fixed_milestone_experiment else 500
     if args.validation_interval is None:
@@ -131,7 +131,7 @@ def main() -> None:
     set_global_seed(config.training.seed)
     model = DecoderOnlyTransformer(config.model).to(device)
     parameters = parameter_breakdown(model).total
-    expected_parameters = {"EXP-005A": 20_984_064, "EXP-005B": 20_848_512, "EXP-006": 20_848_512, "EXP-007A": 49_353_184, "EXP-007B": 49_491_840, "EXP-008A": 49_860_480, "EXP-009A": 49_860_480, "EXP-009B": 49_860_480, "EXP-010A": 49_985_504, "EXP-011": 49_860_480, "EXP-012": 49_860_480, "EXP-013-C": 49_860_480, "EXP-013-W": 49_860_480}.get(config.experiment_id, 8_392_960)
+    expected_parameters = {"EXP-005A": 20_984_064, "EXP-005B": 20_848_512, "EXP-006": 20_848_512, "EXP-007A": 49_353_184, "EXP-007B": 49_491_840, "EXP-008A": 49_860_480, "EXP-009A": 49_860_480, "EXP-009B": 49_860_480, "EXP-010A": 49_985_504, "EXP-011": 49_860_480, "EXP-012": 49_860_480, "EXP-013-C": 49_860_480, "EXP-013-W": 49_860_480, "EXP-013-C43": 49_860_480, "EXP-013-W43": 49_860_480}.get(config.experiment_id, 8_392_960)
     if parameters != expected_parameters:
         raise RuntimeError(f"{config.experiment_id} model parameter invariant failed: {parameters} != {expected_parameters:,}.")
     optimizer = build_optimizer(
@@ -206,7 +206,7 @@ def main() -> None:
     while state.step < planned_end:
         next_validation = ((state.step // args.validation_interval) + 1) * args.validation_interval
         next_checkpoint = ((state.step // args.checkpoint_interval) + 1) * args.checkpoint_interval
-        if config.experiment_id == "EXP-013-W" and state.step < 8_240:
+        if config.experiment_id in {"EXP-013-W", "EXP-013-W43"} and state.step < 8_240:
             next_checkpoint = min(next_checkpoint, 8_240)
         boundary = min(planned_end, next_validation, next_checkpoint)
         chunk = train_smoke(
@@ -245,7 +245,7 @@ def main() -> None:
                 )
                 _log_validation(logger, "edu_milestone" if state.step % args.validation_interval == 0 else "edu_end", edu_result, state, common)
                 edu_validation_records.append({"step": float(state.step), "loss": edu_result.loss, "ppl": edu_result.perplexity})
-        if state.step % args.checkpoint_interval == 0 or state.step == 8_240 or state.step == planned_end:
+        if state.step % args.checkpoint_interval == 0 or (config.experiment_id in {"EXP-013-W", "EXP-013-W43"} and state.step == 8_240) or state.step == planned_end:
             checkpoint = args.run_dir / "checkpoints" / f"checkpoint-step-{state.step:04d}.pt"
             save_checkpoint(checkpoint, model, optimizer, schedule, state, provenance)
             checkpoint_paths.append(str(checkpoint))

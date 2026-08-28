@@ -114,3 +114,21 @@ def test_exp013_predeclared_decision_boundaries_and_regression_guard() -> None:
     assert guarded["delta_combined"] < -0.020
     assert guarded["classification"] == "PERFORMANCE TIE"
     assert guarded["individual_regression_over_0_020"] is True
+
+
+def test_exp013_seed43_confirmation_configs_are_paired_and_fixed() -> None:
+    """Seed 43 must vary only the seed and already-approved scheduler arm."""
+    cosine = load_config(Path("configs/exp013-seed43-cosine.yaml"))
+    wsd = load_config(Path("configs/exp013-seed43-wsd.yaml"))
+
+    assert cosine.experiment_id == "EXP-013-C43"
+    assert wsd.experiment_id == "EXP-013-W43"
+    assert cosine.training.seed == wsd.training.seed == 43
+    assert cosine.model == wsd.model
+    assert cosine.data == wsd.data
+    assert cosine.mixture == wsd.mixture
+    assert cosine.training.schedule == "cosine_decay"
+    assert wsd.training.schedule == "warmup_stable_decay"
+    assert cosine.training.cooldown_steps is None
+    assert wsd.training.cooldown_steps == 916
+    assert expected_run_state(wsd, 0, 9156) == (9156, 300023808, 585984)
