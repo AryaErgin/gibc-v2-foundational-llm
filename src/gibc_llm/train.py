@@ -73,6 +73,74 @@ class CosineWithWarmup:
         self._set_lr(self.lr_at_step(self.step_count))
 
 
+class WarmupStableDecay:
+    """Explicit WSD schedule with a fixed, checkpointable stable-stage boundary."""
+
+    def __init__(
+        self,
+        optimizer: torch.optim.Optimizer,
+        peak_lr: float,
+        min_lr: float,
+        warmup_steps: int,
+        total_steps: int,
+        cooldown_steps: int,
+    ) -> None:
+        if warmup_steps <= 0 or cooldown_steps <= 0 or total_steps <= warmup_steps + cooldown_steps:
+            raise ValueError("WSD requires positive warmup/cooldown and a non-empty stable interval.")
+        self.optimizer = optimizer
+        self.peak_lr = peak_lr
+        self.min_lr = min_lr
+        self.warmup_steps = warmup_steps
+        self.total_steps = total_steps
+        self.cooldown_steps = cooldown_steps
+        self.stable_end_step = total_steps - cooldown_steps
+        self.step_count = 0
+        self._set_lr(self.lr_at_step(0))
+
+    def lr_at_step(self, step: int) -> float:
+        if step <= 0:
+            return 0.0
+        if step <= self.warmup_steps:
+            return self.peak_lr * step / self.warmup_steps
+        if step <= self.stable_end_step:
+            return self.peak_lr
+        if step >= self.total_steps:
+            return self.min_lr
+        progress = (step - self.stable_end_step) / self.cooldown_steps
+        return self.min_lr + 0.5 * (self.peak_lr - self.min_lr) * (1.0 + math.cos(math.pi * progress))
+
+    def _set_lr(self, value: float) -> None:
+        for group in self.optimizer.param_groups:
+            group["lr"] = value
+
+    def step(self) -> float:
+        self.step_count += 1
+        value = self.lr_at_step(self.step_count)
+        self._set_lr(value)
+        return value
+
+    def state_dict(self) -> dict[str, Any]:
+        return {
+            "type": "warmup_stable_decay",
+            "step_count": self.step_count,
+            "warmup_steps": self.warmup_steps,
+            "total_steps": self.total_steps,
+            "cooldown_steps": self.cooldown_steps,
+        }
+
+    def load_state_dict(self, state: dict[str, Any]) -> None:
+        expected = {
+            "type": "warmup_stable_decay",
+            "warmup_steps": self.warmup_steps,
+            "total_steps": self.total_steps,
+            "cooldown_steps": self.cooldown_steps,
+        }
+        if any(state.get(key) != value for key, value in expected.items()):
+            raise RuntimeError("WSD checkpoint scheduler parameters do not match the configured schedule.")
+        self.step_count = int(state["step_count"])
+        self._set_lr(self.lr_at_step(self.step_count))
+
+
 def build_optimizer(
     model: nn.Module,
     peak_learning_rate: float,

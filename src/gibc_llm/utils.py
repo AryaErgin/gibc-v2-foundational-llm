@@ -8,7 +8,7 @@ import os
 import platform
 import random
 import tempfile
-from dataclasses import asdict, dataclass
+from dataclasses import MISSING, asdict, dataclass
 from pathlib import Path
 from typing import Any
 
@@ -67,6 +67,7 @@ class TrainingConfig:
     smoke_training_tokens: int
     smoke_validation_tokens: int
     seed: int
+    cooldown_steps: int | None = None
 
 
 @dataclass(frozen=True)
@@ -98,9 +99,14 @@ class ExperimentConfig:
 
 
 def _construct(section: str, cls: type[Any], values: dict[str, Any]) -> Any:
-    expected = set(cls.__dataclass_fields__)
+    fields = cls.__dataclass_fields__
+    expected = set(fields)
     actual = set(values)
-    missing = expected - actual
+    missing = {
+        name
+        for name, field in fields.items()
+        if name not in actual and field.default is MISSING and field.default_factory is MISSING
+    }
     unknown = actual - expected
     if missing or unknown:
         raise ValueError(f"Invalid {section} config; missing={sorted(missing)}, unknown={sorted(unknown)}")
@@ -142,9 +148,11 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         "EXP-010A": (9156, 300_023_808),
         "EXP-011": (45_777, 1_500_020_736),
         "EXP-012": (73_242, 2_399_993_856),
+        "EXP-013-C": (9_156, 300_023_808),
+        "EXP-013-W": (9_156, 300_023_808),
     }
     if config.experiment_id not in horizons:
-        raise ValueError("Only EXP-001 through EXP-012 controlled configurations are supported.")
+        raise ValueError("Only EXP-001 through EXP-013 controlled configurations are supported.")
     expected_dimensions = {
         "EXP-005A": (8192, 256, 24, 8, 32, 1024),
         "EXP-005B": (8192, 384, 10, 12, 32, 1536),
@@ -157,6 +165,8 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         "EXP-010A": (8192, 608, 10, 19, 32, 1656),
         "EXP-011": (8192, 640, 9, 20, 32, 1728),
         "EXP-012": (8192, 640, 9, 20, 32, 1728),
+        "EXP-013-C": (8192, 640, 9, 20, 32, 1728),
+        "EXP-013-W": (8192, 640, 9, 20, 32, 1728),
     }.get(config.experiment_id, (8192, 256, 8, 8, 32, 1024))
     if (model.vocab_size, model.d_model, model.n_layers, model.n_heads, model.head_dim, model.d_ff) != expected_dimensions:
         raise ValueError(f"{config.experiment_id} model dimensions differ from the approved allocation.")
@@ -170,7 +180,7 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         raise ValueError("Controlled causal/tied/bias/dropout invariants are violated.")
     if (
         model.architecture != "decoder_only_transformer"
-        or model.activation != ("swiglu" if config.experiment_id in {"EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012"} else "gelu")
+        or model.activation != ("swiglu" if config.experiment_id in {"EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W"} else "gelu")
         or model.norm != "rmsnorm"
         or model.norm_placement != "pre_norm"
         or model.positional_encoding != "rope"
@@ -183,7 +193,7 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         raise ValueError("Controlled effective batch is 64 x 512 prediction tokens.")
     if training.default_microbatch_sequences * training.default_gradient_accumulation_steps * 512 != 32768:
         raise ValueError("Configured microbatch/accumulation does not preserve effective batch tokens.")
-    if config.experiment_id in {"EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012"} and (
+    if config.experiment_id in {"EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W"} and (
         training.default_microbatch_sequences,
         training.default_gradient_accumulation_steps,
     ) != (32, 2):
@@ -197,11 +207,15 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         or (training.beta1, training.beta2, training.eps) != (0.9, 0.95, 1.0e-8)
         or training.weight_decay != 0.1
         or (training.peak_learning_rate, training.min_learning_rate) != ({"EXP-009A": (4.0e-4, 4.0e-5), "EXP-009B": (8.0e-4, 8.0e-5)}.get(config.experiment_id, (6.0e-4, 6.0e-5)))
-        or training.schedule != "cosine_decay"
+        or training.schedule != ("warmup_stable_decay" if config.experiment_id == "EXP-013-W" else "cosine_decay")
         or training.warmup_steps != 100
         or training.gradient_clip_norm != 1.0
     ):
         raise ValueError("Controlled optimizer, precision, clipping, or schedule invariants are violated.")
+    if (config.experiment_id == "EXP-013-W" and training.cooldown_steps != 916) or (
+        config.experiment_id != "EXP-013-W" and training.cooldown_steps is not None
+    ):
+        raise ValueError("Only EXP-013-W may declare its fixed 916-update WSD cooldown.")
     if training.seed != 42 or data.split_seed != 42:
         raise ValueError("Controlled experiments require fixed seed 42.")
     expected_data = (
@@ -211,7 +225,7 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
     )
     if (data.dataset_repo, data.dataset_config, data.dataset_revision) != expected_data:
         raise ValueError(f"{config.experiment_id} dataset pin is invalid.")
-    if config.experiment_id in {"EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012"}:
+    if config.experiment_id in {"EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W"}:
         target_prediction_tokens = (
             {"fineweb": 600_047_616, "fineweb_edu": 300_023_808}
             if config.experiment_id == "EXP-006"
@@ -232,7 +246,7 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         if config.mixture != expected_mixture:
             raise ValueError(f"{config.experiment_id} mixture specification is not the approved deduplicated 2:1 data control.")
     elif config.mixture is not None:
-        raise ValueError("Only EXP-004 through EXP-012 may declare the approved mixture data specification.")
+        raise ValueError("Only EXP-004 through EXP-013 may declare the approved mixture data specification.")
     if data.tokenizer_vocab_size != 8192 or data.eod_token != "<|endoftext|>":
         raise ValueError("EXP-001 tokenizer invariants are violated.")
 

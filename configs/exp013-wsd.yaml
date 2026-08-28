@@ -1,0 +1,67 @@
+experiment_id: EXP-013-W
+model:
+  architecture: decoder_only_transformer
+  vocab_size: 8192
+  d_model: 640
+  n_layers: 9
+  n_heads: 20
+  head_dim: 32
+  d_ff: 1728
+  activation: swiglu
+  gelu_approximate: none
+  norm: rmsnorm
+  rmsnorm_eps: 1.0e-5
+  norm_placement: pre_norm
+  positional_encoding: rope
+  rope_theta: 10000.0
+  rotary_dim: 32
+  rope_scaling: none
+  attention: standard_multi_head_self_attention
+  causal: true
+  tie_input_output_embeddings: true
+  linear_bias: false
+  dropout: 0.0
+  context_length: 512
+  init_std: 0.02
+training:
+  precision: bf16_autocast_fp32_parameters
+  optimizer: adamw
+  beta1: 0.9
+  beta2: 0.95
+  eps: 1.0e-8
+  weight_decay: 0.1
+  peak_learning_rate: 6.0e-4
+  min_learning_rate: 6.0e-5
+  schedule: warmup_stable_decay
+  warmup_steps: 100
+  full_schedule_steps: 9156
+  gradient_clip_norm: 1.0
+  effective_batch_tokens: 32768
+  sequence_predictions: 512
+  default_microbatch_sequences: 32
+  default_gradient_accumulation_steps: 2
+  full_training_tokens: 300023808
+  smoke_steps: 60
+  smoke_training_tokens: 1966080
+  smoke_validation_tokens: 131072
+  seed: 42
+  cooldown_steps: 916
+data:
+  dataset_repo: HuggingFaceFW/fineweb
+  dataset_config: sample-10BT
+  dataset_revision: 9bb295ddab0e05d785b879661af7260fed5140fc
+  text_field: text
+  split_seed: 42
+  validation_bucket_modulus: 10000
+  validation_bucket_cutoff: 200
+  tokenizer_training_text_bytes: 104857600
+  contamination_ngram_size: 13
+  context_length: 512
+  eod_token: <|endoftext|>
+  tokenizer_vocab_size: 8192
+mixture:
+  target_prediction_tokens: {fineweb: 200015872, fineweb_edu: 100007936}
+  global_deduplication: canonical_content_sha256
+  sources:
+    fineweb: {repo: HuggingFaceFW/fineweb, config: sample-10BT, revision: 9bb295ddab0e05d785b879661af7260fed5140fc, field: text}
+    fineweb_edu: {repo: HuggingFaceFW/fineweb-edu, config: default, revision: 87f09149ef4734204d70ed1d046ddc9ca3f2b8f9, field: text}
