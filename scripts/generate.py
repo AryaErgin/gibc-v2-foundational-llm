@@ -6,6 +6,7 @@ import argparse
 from pathlib import Path
 
 import torch
+from safetensors.torch import load_file
 
 from gibc_llm.generation import generate
 from gibc_llm.model import DecoderOnlyTransformer
@@ -30,11 +31,15 @@ def main() -> None:
         raise RuntimeError("--device cuda was requested but CUDA is unavailable.")
     device = torch.device("cuda" if args.device == "cuda" or (args.device == "auto" and torch.cuda.is_available()) else "cpu")
     model = DecoderOnlyTransformer(config.model).to(device)
-    payload = torch.load(args.checkpoint, map_location="cpu", weights_only=False)
-    try:
-        model.load_state_dict(payload["model"], strict=True)
-    except (KeyError, TypeError) as exc:
-        raise RuntimeError("Inference checkpoint must contain a strict 'model' state dictionary.") from exc
+    if args.checkpoint.suffix == ".safetensors":
+        state = load_file(args.checkpoint, device="cpu")
+    else:
+        payload = torch.load(args.checkpoint, map_location="cpu", weights_only=False)
+        try:
+            state = payload["model"]
+        except (KeyError, TypeError) as exc:
+            raise RuntimeError("PyTorch inference checkpoints must contain a strict 'model' state dictionary.") from exc
+    model.load_state_dict(state, strict=True)
     model.eval()
     print(generate(model, load_tokenizer(args.tokenizer), args.prompt, args.max_new_tokens, args.temperature, args.top_k, args.seed))
 

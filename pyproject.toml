@@ -9,6 +9,7 @@ description = "Reproducible from-scratch Track 01 decoder-only language model wi
 requires-python = ">=3.11,<3.12"
 dependencies = [
   "PyYAML==6.0.2",
+  "safetensors==0.8.0",
   "datasets==3.5.1",
   "tokenizers==0.21.4",
   "lm-eval==0.4.9.1",

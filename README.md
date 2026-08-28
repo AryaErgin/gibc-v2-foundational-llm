@@ -11,9 +11,10 @@ fine-tuning, distillation, benchmark-answer training, or benchmark-driven
 checkpoint selection was used.
 
 The public source is intentionally separate from large local checkpoints,
-datasets, caches, and benchmark outputs. The planned inference-only model
-package is described in [the publication plan](docs/EXP-012-INFERENCE-PUBLICATION.md);
-it requires an explicit publication approval before upload.
+datasets, caches, and benchmark outputs. EXP-012 has a validated local
+inference-only publication candidate, but public model publication is deferred
+until the final GIBC model is selected. Its exact local-package record is in
+[the publication plan](docs/EXP-012-INFERENCE-PUBLICATION.md).
 
 ## Final model and official results
 
@@ -75,16 +76,16 @@ py -3.11 -m venv .venv
 This command must exit zero and print `"total": 49860480`. Its committed
 output is [results/exp012-parameter-count.json](results/exp012-parameter-count.json).
 
-### Final-model inference
+### Evaluated EXP-012 inference
 
-The final public inference package is not uploaded yet; see the approval-gated
-publication plan above. Once obtained, place its files in `FINAL_MODEL_DIR`
+The validated EXP-012 package remains local-only and is not a final GIBC model.
+If a later approved release retains it, place its files in `FINAL_MODEL_DIR`
 without changing their names or manifest, then run:
 
 ```powershell
 .\.venv\Scripts\python.exe scripts\generate.py "A short prompt" `
   --config FINAL_MODEL_DIR\exp012.yaml `
-  --checkpoint FINAL_MODEL_DIR\model_state.pt `
+  --checkpoint FINAL_MODEL_DIR\model.safetensors `
   --tokenizer FINAL_MODEL_DIR\tokenizer.json `
   --device auto --max-new-tokens 64 --temperature 0.0
 ```
