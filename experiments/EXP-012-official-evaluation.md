@@ -115,3 +115,53 @@ instability.
 
 No training is authorized. No benchmark score may change any frozen model or
 evaluation decision.
+
+## Official evaluation finalization — 2026-08-28
+
+The guarded WSL CPU FP32 suite reached `state: succeeded` with return code
+zero. It started at `2026-08-27T20:38:26.845712+00:00` and reached terminal
+state at `2026-08-28T05:41:08.956990+00:00`: total guarded-suite duration
+`32562.111278` seconds. The nested sequence ran for `32561.097048` seconds.
+All five artifacts were rehashed after completion and each SHA-256 exactly
+matches its entry in `status/sequence.status.json`:
+
+| Task | Artifact SHA-256 | Evaluator wall seconds |
+|---|---|---:|
+| HellaSwag | `eeda0b3d58803e8fccc6ef61b4e287195eb70958c269d0c40b5c1685b9be5e50` | 22130.618813981 |
+| ARC-Easy | `b4897908dc355352554c89250830a9490d906ed0dc7c1ffa286901ff64ce6ae6` | 776.1316821100045 |
+| PIQA | `d2f126c5f2a9b3730d085c95863262b217219c1f344342c1e5502d4e759bb8e6` | 1248.1371511809994 |
+| WinoGrande | `7041224d05d0660734f6ec8b376c37391c6abb363da7dc3ea5a620c5cc6d562a` | 337.74195021099877 |
+| WikiText-103 | `4104c5e3f7fa3e1a93d24eb1d5fb88b7dd4de37b9fb1bd55e86700808cd9b1a8` | 8058.951546159995 |
+
+Every artifact's embedded metadata was audited: checkpoint SHA-256
+`cacb728b3963c10af8f4613149d8b879b0ef6e44558069726c621c1cb1bb981c`,
+tokenizer SHA-256 `c5592fba176c3d2f7915a3812559a24d7a669206f4a22484b053c8a9ce08be14`,
+49,860,480 parameters, CPU FP32, `cuda_available: false`,
+`cuda_visible_devices: ""`, zero-shot, batch size 16, context 512,
+`lm-eval==0.4.9.1`, and amendment commit
+`49bfe789fb8e6ebd23b00b5774f4f2e97ee1c464`. All required reported metrics
+were finite.
+
+| Task | Final raw metrics |
+|---|---|
+| HellaSwag | acc `0.273451503684525`; acc stderr `0.004448196648383006`; acc_norm `0.28759211312487554`; acc_norm stderr `0.004517148434180435` |
+| ARC-Easy | acc `0.38552188552188554`; acc stderr `0.009987250004629016`; acc_norm `0.36447811447811446`; acc_norm stderr `0.00987572928248244` |
+| PIQA | acc `0.6039173014145811`; acc stderr `0.011411089031912477`; acc_norm `0.6022850924918389`; acc_norm stderr `0.011419114133117227` |
+| WinoGrande | acc `0.5035516969218626`; acc stderr `0.014052131146915853` |
+| WikiText-103 held-out | perplexity `35.93897257521639`; BPB `1.4083853215598`; scored tokens `350948`; documents `2891`; mean NLL `3.581822293724097` |
+
+The WikiText-103 raw artifact records the exact `mean_negative_log_likelihood`
+field above; its summed negative log likelihood is retained in that artifact.
+No rounded or derived value replaces the raw record.
+
+### Interpretation boundary and prior interrupted attempts
+
+The official benchmark values are final records, not training signals. They
+must not select another checkpoint, alter the model, retune a setting, or
+authorize another official benchmark pass.
+
+The display-corruption attempt and terminal-closure interruption remain in the
+preserved history directories as non-results. In particular, the terminal
+closure evidence includes the `10042/10042` request-construction progress line
+but no completed scoring pass, score, or HellaSwag JSON artifact. These attempts
+did not inform selection or interpretation of the final result.
