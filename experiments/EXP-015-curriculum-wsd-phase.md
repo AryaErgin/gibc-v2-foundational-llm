@@ -23,7 +23,9 @@ The desired exact aggregate source allocation is 390,656 FineWeb sequences (200,
 
 | Arm / phase | FineWeb sequences | FineWeb-Edu sequences | Total |
 | --- | ---: | ---: | ---: |
-| A static | deterministic 2:1 schedule over the same aggregate pools | deterministic 2:1 schedule over the same aggregate pools | 585,984 |
+| A phase 1, static | 312,491 | 156,245 | 468,736 |
+| A phase 2, static | 39,082 | 19,542 | 58,624 |
+| A phase 3, static | 39,083 | 19,541 | 58,624 |
 | B phase 1 | 322,261 | 146,475 | 468,736 |
 | B phase 2, ordinary | 39,083 | 19,541 | 58,624 |
 | B phase 3, Edu-enriched | 29,312 | 29,312 | 58,624 |
