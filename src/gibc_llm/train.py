@@ -11,7 +11,7 @@ import tempfile
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Protocol
 
 import numpy as np
 import torch
@@ -19,6 +19,12 @@ from torch import Tensor, nn
 
 from .data import TokenStreamDataset
 from .model import DecoderOnlyTransformer, RMSNorm
+
+
+class LRController(Protocol):
+    def step(self, step: int, global_lr: float) -> dict[str, Any] | None: ...
+    def state_dict(self) -> dict[str, Any]: ...
+    def load_state_dict(self, state: dict[str, Any]) -> None: ...
 
 
 @dataclass
@@ -204,6 +210,7 @@ def optimizer_update(
     gradient_clip_norm: float,
     *,
     capture_scalars: bool = True,
+    lr_controller: LRController | None = None,
 ) -> dict[str, float]:
     batches = list(microbatches)
     if not batches:
@@ -222,10 +229,13 @@ def optimizer_update(
         tokens += targets.numel()
     gradient_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), gradient_clip_norm)
     learning_rate = schedule.step()
+    llr_telemetry = lr_controller.step(schedule.step_count, learning_rate) if lr_controller is not None else None
     optimizer.step()
     metrics = {"tokens": float(tokens)}
     if capture_scalars:
         metrics.update({"loss": loss_sum / len(batches), "gradient_norm": float(gradient_norm), "learning_rate": learning_rate})
+    if llr_telemetry is not None:
+        metrics["llr_telemetry"] = llr_telemetry
     return metrics
 
 
@@ -253,6 +263,8 @@ def save_checkpoint(
     schedule: CosineWithWarmup,
     state: RunState,
     config: dict[str, Any],
+    *,
+    lr_controller: LRController | None = None,
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
@@ -264,6 +276,8 @@ def save_checkpoint(
         "rng": _rng_state(),
         "config": config,
     }
+    if lr_controller is not None:
+        payload["llr"] = lr_controller.state_dict()
     with tempfile.NamedTemporaryFile(dir=path.parent, delete=False, suffix=".pt") as handle:
         temporary = Path(handle.name)
     try:
@@ -279,6 +293,8 @@ def load_checkpoint(
     optimizer: torch.optim.Optimizer,
     schedule: CosineWithWarmup,
     device: torch.device,
+    *,
+    lr_controller: LRController | None = None,
 ) -> RunState:
     # Keep serialized CPU/CUDA RNG state byte tensors on CPU; move optimizer state separately.
     payload = torch.load(path, map_location="cpu", weights_only=False)
@@ -289,6 +305,10 @@ def load_checkpoint(
             if isinstance(value, torch.Tensor):
                 optimizer_state[name] = value.to(device)
     schedule.load_state_dict(payload["schedule"])
+    if lr_controller is not None:
+        if "llr" not in payload:
+            raise RuntimeError("EXP-014 checkpoint lacks required LLR controller state.")
+        lr_controller.load_state_dict(payload["llr"])
     _restore_rng(payload["rng"])
     saved_state = dict(payload["run_state"])
     if "next_sequence_index" not in saved_state:
@@ -343,6 +363,7 @@ def train_smoke(
     steps: int,
     gradient_clip_norm: float,
     logger: JsonlLogger | None = None,
+    lr_controller: LRController | None = None,
 ) -> list[dict[str, float]]:
     if isinstance(train_inputs, TokenStreamDataset):
         if train_inputs.context_length != 512 or train_targets is not None:
@@ -378,7 +399,7 @@ def train_smoke(
         if device.type == "cuda":
             torch.cuda.synchronize(device)
         start = time.perf_counter()
-        metrics = optimizer_update(model, optimizer, schedule, batches, device, gradient_clip_norm)
+        metrics = optimizer_update(model, optimizer, schedule, batches, device, gradient_clip_norm, lr_controller=lr_controller)
         if device.type == "cuda":
             torch.cuda.synchronize(device)
         elapsed = time.perf_counter() - start

@@ -49,3 +49,13 @@ Status: completed fresh 2.4B-token calibration and finalized official evaluation
 ## EXP-013
 
 Status: completed and promoted. The preregistered 300M-token paired WSD scheduler ablation retained every Recipe v3, Data Recipe v1, optimizer, batch, seed-specific initialization, and validation control. At seed 42, WSD improved combined frozen validation by `0.03376075625419617` nat versus its contemporaneous cosine control, meeting the capability-win threshold with General and Edu both improving. At seed 43, the paired confirmation improved by `0.027358993887901306` nat, exceeding its `0.010`-nat confirmation threshold with no domain regression. Recipe v3 + WSD is therefore the frozen promoted training baseline for a future EXP-014; no EXP-014 run, benchmark, or retrospective tuning is authorized by this decision. See `results/EXP-013-summary.md`.
+# EXP-014 — HT-SR LLR pre-registration (2026-08-29)
+
+Status: implementation preflight only; no training has started. EXP-014 tests
+the paper's HT-SR PL_Alpha_Hill positive linear layerwise LR mapping on the
+promoted Recipe-v3 + WSD baseline, with all model/data/tokenizer/seed/AdamW/
+batch/validation conditions fixed. The source specification is
+`experiments/EXP-014-htsr-llr.md`; candidate config is
+`configs/exp014-llr.yaml`. Launch remains blocked until the author repository
+is pinned to an exact immutable commit and the full non-benchmark test suite
+passes.

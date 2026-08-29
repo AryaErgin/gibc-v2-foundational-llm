@@ -87,15 +87,31 @@ class DataConfig:
 
 
 @dataclass(frozen=True)
+class LLRConfig:
+    method: str
+    min_multiplier: float
+    max_multiplier: float
+    recompute_interval_updates: int
+    hill_k_fraction: float
+    soft_switch_steps: int
+    active_recompute_last_step: int
+    multiplier_freeze_step: int
+
+
+@dataclass(frozen=True)
 class ExperimentConfig:
     experiment_id: str
     model: ModelConfig
     training: TrainingConfig
     data: DataConfig
     mixture: dict[str, Any] | None = None
+    llr: LLRConfig | None = None
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        payload = asdict(self)
+        if payload["llr"] is None:
+            payload.pop("llr")
+        return payload
 
 
 def _construct(section: str, cls: type[Any], values: dict[str, Any]) -> Any:
@@ -117,14 +133,15 @@ def load_config(path: Path | str) -> ExperimentConfig:
     """Load the complete explicit EXP-001 configuration and reject drift."""
     with Path(path).open("r", encoding="utf-8") as handle:
         raw = yaml.safe_load(handle)
-    if not isinstance(raw, dict) or set(raw) not in ({"experiment_id", "model", "training", "data"}, {"experiment_id", "model", "training", "data", "mixture"}):
-        raise ValueError("Configuration must contain experiment_id, model, training, data, and optional mixture.")
+    if not isinstance(raw, dict) or not {"experiment_id", "model", "training", "data"}.issubset(raw) or set(raw) - {"experiment_id", "model", "training", "data", "mixture", "llr"}:
+        raise ValueError("Configuration must contain experiment_id, model, training, data, and optional mixture/llr.")
     config = ExperimentConfig(
         experiment_id=str(raw["experiment_id"]),
         model=_construct("model", ModelConfig, raw["model"]),
         training=_construct("training", TrainingConfig, raw["training"]),
         data=_construct("data", DataConfig, raw["data"]),
         mixture=raw.get("mixture"),
+        llr=_construct("llr", LLRConfig, raw["llr"]) if raw.get("llr") is not None else None,
     )
     _validate_controlled_experiment(config)
     return config
@@ -152,9 +169,10 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         "EXP-013-W": (9_156, 300_023_808),
         "EXP-013-C43": (9_156, 300_023_808),
         "EXP-013-W43": (9_156, 300_023_808),
+        "EXP-014": (9_156, 300_023_808),
     }
     if config.experiment_id not in horizons:
-        raise ValueError("Only EXP-001 through EXP-013 controlled configurations are supported.")
+        raise ValueError("Only EXP-001 through EXP-014 controlled configurations are supported.")
     expected_dimensions = {
         "EXP-005A": (8192, 256, 24, 8, 32, 1024),
         "EXP-005B": (8192, 384, 10, 12, 32, 1536),
@@ -171,6 +189,7 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         "EXP-013-W": (8192, 640, 9, 20, 32, 1728),
         "EXP-013-C43": (8192, 640, 9, 20, 32, 1728),
         "EXP-013-W43": (8192, 640, 9, 20, 32, 1728),
+        "EXP-014": (8192, 640, 9, 20, 32, 1728),
     }.get(config.experiment_id, (8192, 256, 8, 8, 32, 1024))
     if (model.vocab_size, model.d_model, model.n_layers, model.n_heads, model.head_dim, model.d_ff) != expected_dimensions:
         raise ValueError(f"{config.experiment_id} model dimensions differ from the approved allocation.")
@@ -184,7 +203,7 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         raise ValueError("Controlled causal/tied/bias/dropout invariants are violated.")
     if (
         model.architecture != "decoder_only_transformer"
-        or model.activation != ("swiglu" if config.experiment_id in {"EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43"} else "gelu")
+        or model.activation != ("swiglu" if config.experiment_id in {"EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014"} else "gelu")
         or model.norm != "rmsnorm"
         or model.norm_placement != "pre_norm"
         or model.positional_encoding != "rope"
@@ -197,7 +216,7 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         raise ValueError("Controlled effective batch is 64 x 512 prediction tokens.")
     if training.default_microbatch_sequences * training.default_gradient_accumulation_steps * 512 != 32768:
         raise ValueError("Configured microbatch/accumulation does not preserve effective batch tokens.")
-    if config.experiment_id in {"EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43"} and (
+    if config.experiment_id in {"EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014"} and (
         training.default_microbatch_sequences,
         training.default_gradient_accumulation_steps,
     ) != (32, 2):
@@ -211,15 +230,20 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         or (training.beta1, training.beta2, training.eps) != (0.9, 0.95, 1.0e-8)
         or training.weight_decay != 0.1
         or (training.peak_learning_rate, training.min_learning_rate) != ({"EXP-009A": (4.0e-4, 4.0e-5), "EXP-009B": (8.0e-4, 8.0e-5)}.get(config.experiment_id, (6.0e-4, 6.0e-5)))
-        or training.schedule != ("warmup_stable_decay" if config.experiment_id in {"EXP-013-W", "EXP-013-W43"} else "cosine_decay")
+        or training.schedule != ("warmup_stable_decay" if config.experiment_id in {"EXP-013-W", "EXP-013-W43", "EXP-014"} else "cosine_decay")
         or training.warmup_steps != 100
         or training.gradient_clip_norm != 1.0
     ):
         raise ValueError("Controlled optimizer, precision, clipping, or schedule invariants are violated.")
-    if (config.experiment_id in {"EXP-013-W", "EXP-013-W43"} and training.cooldown_steps != 916) or (
-        config.experiment_id not in {"EXP-013-W", "EXP-013-W43"} and training.cooldown_steps is not None
+    if (config.experiment_id in {"EXP-013-W", "EXP-013-W43", "EXP-014"} and training.cooldown_steps != 916) or (
+        config.experiment_id not in {"EXP-013-W", "EXP-013-W43", "EXP-014"} and training.cooldown_steps is not None
     ):
-        raise ValueError("Only EXP-013-W may declare its fixed 916-update WSD cooldown.")
+        raise ValueError("Only WSD arms may declare the fixed 916-update cooldown.")
+    if config.experiment_id == "EXP-014":
+        if config.llr is None or config.llr != LLRConfig("htsr_pl_alpha_hill_linear", 1.0, 5.0, 100, 0.5, 50, 1800, 1850):
+            raise ValueError("EXP-014 must use the pre-registered HT-SR LLR settings.")
+    elif config.llr is not None:
+        raise ValueError("Only EXP-014 may declare LLR settings.")
     expected_seed = 43 if config.experiment_id in {"EXP-013-C43", "EXP-013-W43"} else 42
     if training.seed != expected_seed or data.split_seed != 42:
         raise ValueError("Controlled experiments require their exact training seed and fixed data split seed 42.")
@@ -230,7 +254,7 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
     )
     if (data.dataset_repo, data.dataset_config, data.dataset_revision) != expected_data:
         raise ValueError(f"{config.experiment_id} dataset pin is invalid.")
-    if config.experiment_id in {"EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43"}:
+    if config.experiment_id in {"EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014"}:
         target_prediction_tokens = (
             {"fineweb": 600_047_616, "fineweb_edu": 300_023_808}
             if config.experiment_id == "EXP-006"
@@ -251,7 +275,7 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         if config.mixture != expected_mixture:
             raise ValueError(f"{config.experiment_id} mixture specification is not the approved deduplicated 2:1 data control.")
     elif config.mixture is not None:
-        raise ValueError("Only EXP-004 through EXP-013 may declare the approved mixture data specification.")
+        raise ValueError("Only EXP-004 through EXP-014 may declare the approved mixture data specification.")
     if data.tokenizer_vocab_size != 8192 or data.eod_token != "<|endoftext|>":
         raise ValueError("EXP-001 tokenizer invariants are violated.")
 
