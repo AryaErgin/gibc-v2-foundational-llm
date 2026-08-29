@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 import numpy as np
+import torch
 
 from .utils import atomic_json_write, sha256_file
 
@@ -163,6 +164,113 @@ def schedule_cursor_state(schedule: FixedExampleSchedule, cursor: int, arm: str)
     if arm not in schedules or not 0 <= cursor <= len(schedule.static):
         raise ValueError("Invalid EXP-015 arm or schedule cursor.")
     return {"mechanism": "fixed_example_index_permutation", "arm": arm, "schedule_sha256": _array_sha256(schedules[arm]), "next_schedule_cursor": cursor}
+
+
+def adamw_retention_diagnostic() -> dict[str, object]:
+    """Compute the fixed-WSD AdamW final-weight retention diagnostic.
+
+    c_i is descriptive only: it is not a fitted TREC or an EXP-015 design
+    input.  Step i uses the learning rate applied by the existing WSD
+    scheduler at optimizer update i, and the product is over later updates.
+    """
+    from .train import WarmupStableDecay
+
+    parameter = torch.nn.Parameter(torch.zeros(()))
+    optimizer = torch.optim.AdamW([parameter], lr=0.0, weight_decay=0.1)
+    schedule = WarmupStableDecay(optimizer, 6.0e-4, 6.0e-5, 100, 9_156, 916)
+    lrs = np.asarray([schedule.lr_at_step(step) for step in range(1, 9_157)], dtype=np.float64)
+    coefficients = np.empty_like(lrs)
+    later_retention = 1.0
+    for offset in range(len(lrs) - 1, -1, -1):
+        coefficients[offset] = lrs[offset] * 0.1 * later_retention
+        later_retention *= 1.0 - lrs[offset] * 0.1
+    normalized = coefficients / coefficients.max()
+    max_step = int(normalized.argmax()) + 1
+    values = {str(step): float(normalized[step - 1]) for step in (7_325, 8_240, 8_241, max_step, 8_700, 9_000, 9_156)}
+    return {
+        "weight_decay": 0.1,
+        "max_step": max_step,
+        "max_fraction": max_step / 9_156,
+        "phase_means": {
+            "phase1": float(normalized[:7_324].mean()),
+            "phase2": float(normalized[7_324:8_240].mean()),
+            "phase3": float(normalized[8_240:].mean()),
+        },
+        "boundary_values": values,
+    }
+
+
+def indexed_window_sha256(stream_path: Path, schedule_ids: np.ndarray, context_length: int = 512) -> str:
+    """Hash (original ID, immutable 513-token row) pairs in ID order."""
+    stream = np.memmap(stream_path, mode="r", dtype=np.uint16)
+    digest = hashlib.sha256()
+    try:
+        for index in np.sort(np.asarray(schedule_ids, dtype=np.uint32)):
+            start = int(index) * context_length
+            digest.update(np.asarray([index], dtype=np.uint32).tobytes())
+            digest.update(stream[start : start + context_length + 1].tobytes())
+    finally:
+        del stream
+    return digest.hexdigest()
+
+
+def analyze_fixed_example_sidecar(sidecar_path: Path, stream_path: Path, output_dir: Path) -> dict[str, object]:
+    """Build immutable schedules and complete their non-training audit report."""
+    stored_tokens = stream_path.stat().st_size // np.dtype(np.uint16).itemsize
+    labels = np.memmap(sidecar_path, mode="r", dtype=np.uint8, shape=(stored_tokens,))
+    schedule = FixedExampleSchedule.build(labels)
+    del labels
+    output_dir.mkdir(parents=True, exist_ok=True)
+    named = {"a-static": schedule.static, "b-cooldown-edu": schedule.cooldown_edu, "c-precooldown-edu": schedule.precooldown_edu}
+    for name, values in named.items():
+        np.save(output_dir / f"schedule-{name}.npy", values, allow_pickle=False)
+    tail_counts = schedule.edu_counts[schedule.phase1_windows :]
+    def distribution(values: np.ndarray) -> dict[str, object]:
+        return {
+            "p10": float(np.quantile(values, 0.10)),
+            "median": float(np.median(values)),
+            "p90": float(np.quantile(values, 0.90)),
+            "zero": int((values == 0).sum()),
+            "full": int((values == schedule.context_length).sum()),
+            "mixed": int(((values > 0) & (values < schedule.context_length)).sum()),
+        }
+    content_hashes = {name: indexed_window_sha256(stream_path, values, schedule.context_length) for name, values in named.items()}
+    report = {
+        "tail_window_count": int(tail_counts.size),
+        "low_count": int(schedule.low.size),
+        "high_count": int(schedule.high.size),
+        "low_edu_token_share": float(schedule.edu_counts[schedule.low].mean()) / schedule.context_length,
+        "high_edu_token_share": float(schedule.edu_counts[schedule.high].mean()) / schedule.context_length,
+        "absolute_treatment_contrast": schedule.treatment_contrast,
+        "tail_distribution": distribution(tail_counts),
+        "low_distribution": distribution(schedule.edu_counts[schedule.low]),
+        "high_distribution": distribution(schedule.edu_counts[schedule.high]),
+        "schedule_hashes": schedule.schedule_hashes(),
+        "indexed_window_sha256": content_hashes,
+        "static_original_equivalence": bool(np.array_equal(schedule.static, np.arange(len(schedule.static), dtype=np.uint32))),
+        "phase1_equivalence": bool(np.array_equal(schedule.cooldown_edu[: schedule.phase1_windows], schedule.precooldown_edu[: schedule.phase1_windows])),
+        "block_swap_equivalence": bool(np.array_equal(schedule.cooldown_edu[schedule.phase1_windows :], np.concatenate((schedule.low, schedule.high))) and np.array_equal(schedule.precooldown_edu[schedule.phase1_windows :], np.concatenate((schedule.high, schedule.low)))),
+        "all_example_membership_equality": all(np.array_equal(np.sort(values), schedule.static) for values in named.values()),
+        "adamw_retention": adamw_retention_diagnostic(),
+    }
+    return report
+
+
+def finalize_preflight_report(artifact_dir: Path, output_dir: Path) -> dict[str, object]:
+    """Merge the completed immutable-window audit into the replay report."""
+    artifact_dir, output_dir = Path(artifact_dir), Path(output_dir)
+    report_path = output_dir / "preflight.json"
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    manifest = json.loads((artifact_dir / "manifest.json").read_text(encoding="utf-8"))
+    report.update(analyze_fixed_example_sidecar(output_dir / "stored-token-sources.uint8", artifact_dir / manifest["packed"]["train_stream_file"], output_dir))
+    report["validation_hashes"] = {
+        "general_inputs": manifest["general_validation"]["inputs_sha256"],
+        "general_targets": manifest["general_validation"]["targets_sha256"],
+        "edu_inputs": manifest["edu_validation"]["inputs_sha256"],
+        "edu_targets": manifest["edu_validation"]["targets_sha256"],
+    }
+    atomic_json_write(report_path, report)
+    return report
 
 
 def reconstruct_exp004_attribution(config: Any, artifact_dir: Path, output_dir: Path) -> dict[str, object]:

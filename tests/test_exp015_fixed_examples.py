@@ -79,3 +79,28 @@ def test_exp015_schedule_rejects_insufficient_tail_separation() -> None:
     labels = np.zeros(1 + 12 * 4, dtype=np.uint8)
     with pytest.raises(RuntimeError, match="treatment separation"):
         FixedExampleSchedule.build(labels, context_length=4, phase1_windows=8, block_windows=2)
+
+
+def test_exp015_adamw_retention_matches_fixed_wsd_phase_semantics() -> None:
+    """Breaks if retention uses a different WSD step convention or cooldown boundary."""
+    from gibc_llm.exp015 import adamw_retention_diagnostic
+
+    report = adamw_retention_diagnostic()
+    assert report["max_step"] == 8251
+    assert report["boundary_values"]["8241"] > report["boundary_values"]["8240"]
+    assert report["phase_means"]["phase2"] == pytest.approx(0.973, abs=0.003)
+    assert report["phase_means"]["phase3"] == pytest.approx(0.558, abs=0.003)
+
+
+def test_exp015_schedule_cursor_state_preserves_arm_hash_and_cursor() -> None:
+    """Breaks if a future checkpoint can lose the selected fixed-example schedule."""
+    from gibc_llm.exp015 import FixedExampleSchedule, schedule_cursor_state
+
+    labels = np.array([0] + ([0] * 40) + ([1] * 8), dtype=np.uint8)
+    schedule = FixedExampleSchedule.build(labels, context_length=4, phase1_windows=8, block_windows=2)
+    state = schedule_cursor_state(schedule, cursor=8, arm="C")
+
+    assert state["mechanism"] == "fixed_example_index_permutation"
+    assert state["arm"] == "C"
+    assert state["next_schedule_cursor"] == 8
+    assert state["schedule_sha256"] == schedule.schedule_hashes()["precooldown_edu"]
