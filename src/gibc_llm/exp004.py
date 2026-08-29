@@ -91,6 +91,16 @@ class GlobalDeduplicatedTokenMixer:
         return max(SOURCE_ORDER, key=lambda source: (deficits[source], -SOURCE_ORDER.index(source)))
 
     def __iter__(self) -> Iterator[int]:
+        yield from (token_id for token_id, _ in self.iter_with_sources())
+
+    def iter_with_sources(self) -> Iterator[tuple[int, str]]:
+        """Replay the frozen mixer while retaining each emitted token's source.
+
+        This is deliberately the same selection and truncation loop as the
+        historical token iterator.  Consumers that need attribution must use
+        it only to verify an already materialized stream; it never changes
+        tokenization, EOD insertion, or the emitted stream bytes.
+        """
         stored_emitted = 0
         while stored_emitted < self.stored_token_count:
             source = self._choose_source(stored_emitted - 1 if stored_emitted else 0)
@@ -103,7 +113,7 @@ class GlobalDeduplicatedTokenMixer:
                     self.prediction_token_contributions[source] += 1
                 self.stored_token_contributions[source] += 1
                 stored_emitted += 1
-                yield token_id
+                yield token_id, source
 
 
 def assert_frozen_exp004_artifacts(tokenizer_path: Path, general_validation_path: Path, edu_validation_path: Path) -> None:
