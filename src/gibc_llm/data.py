@@ -207,6 +207,22 @@ class TokenStreamDataset:
         targets = torch.from_numpy(window[1:].reshape(sequence_count, self.context_length))
         return inputs, targets
 
+    def get_indexed_batch(self, sequence_indices: Sequence[int]) -> tuple[torch.Tensor, torch.Tensor]:
+        """Return immutable 513-token windows by original sequence ID.
+
+        Contiguous IDs retain the legacy fast path exactly. Non-contiguous IDs
+        are gathered as independent pre-existing windows; they are never
+        concatenated or re-windowed.
+        """
+        indices = [int(value) for value in sequence_indices]
+        if not indices or any(not 0 <= value < len(self) for value in indices):
+            raise IndexError("Invalid fixed-example sequence IDs.")
+        if indices == list(range(indices[0], indices[0] + len(indices))):
+            return self.get_contiguous_batch(indices[0], len(indices))
+        token_ids = self._open()
+        windows = np.stack([np.array(token_ids[index * self.context_length : index * self.context_length + self.context_length + 1], dtype=np.int64, copy=True) for index in indices])
+        return torch.from_numpy(windows[:, :-1]), torch.from_numpy(windows[:, 1:])
+
 
 def write_token_stream(
     path: Path, token_ids: Iterable[int], token_count: int, context_length: int = 512

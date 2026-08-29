@@ -265,6 +265,7 @@ def save_checkpoint(
     config: dict[str, Any],
     *,
     lr_controller: LRController | None = None,
+    data_cursor: dict[str, Any] | None = None,
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
@@ -272,7 +273,7 @@ def save_checkpoint(
         "optimizer": optimizer.state_dict(),
         "schedule": schedule.state_dict(),
         "run_state": asdict(state),
-        "data_cursor": {"next_sequence_index": state.next_sequence_index, "mechanism": "sequential_example_index"},
+        "data_cursor": data_cursor or {"next_sequence_index": state.next_sequence_index, "mechanism": "sequential_example_index"},
         "rng": _rng_state(),
         "config": config,
     }
@@ -364,6 +365,7 @@ def train_smoke(
     gradient_clip_norm: float,
     logger: JsonlLogger | None = None,
     lr_controller: LRController | None = None,
+    sequence_schedule: np.ndarray | None = None,
 ) -> list[dict[str, float]]:
     if isinstance(train_inputs, TokenStreamDataset):
         if train_inputs.context_length != 512 or train_targets is not None:
@@ -378,6 +380,9 @@ def train_smoke(
     model.to(device)
     records: list[dict[str, float]] = []
     total_sequences = microbatch_sequences * accumulation_steps
+    if sequence_schedule is not None:
+        if sequence_schedule.dtype != np.uint32 or sequence_schedule.shape != (train_example_count,) or not np.array_equal(np.sort(sequence_schedule), np.arange(train_example_count, dtype=np.uint32)):
+            raise ValueError("Sequence schedule must be an exact uint32 permutation of immutable training windows.")
     expected_cursor = state.step * total_sequences
     if state.next_sequence_index != expected_cursor:
         raise ValueError("RunState data cursor must equal global optimizer step times sequences per update.")
@@ -385,12 +390,12 @@ def train_smoke(
         next_cursor = state.next_sequence_index + total_sequences
         if next_cursor > train_example_count:
             raise ValueError("Sequential training data exhausted; EXP-001 never cycles a prepared corpus.")
-        indices = torch.arange(state.next_sequence_index, next_cursor)
+        indices = (sequence_schedule[state.next_sequence_index:next_cursor].tolist() if sequence_schedule is not None else list(range(state.next_sequence_index, next_cursor)))
         batches = []
         for offset in range(0, total_sequences, microbatch_sequences):
-            batch_indices = indices[offset : offset + microbatch_sequences].tolist()
+            batch_indices = indices[offset : offset + microbatch_sequences]
             if isinstance(train_inputs, TokenStreamDataset):
-                batch_inputs, batch_targets = train_inputs.get_contiguous_batch(batch_indices[0], len(batch_indices))
+                batch_inputs, batch_targets = train_inputs.get_indexed_batch(batch_indices)
             else:
                 assert train_targets is not None
                 batch_inputs = train_inputs[batch_indices]

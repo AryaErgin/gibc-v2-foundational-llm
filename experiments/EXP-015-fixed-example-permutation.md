@@ -33,6 +33,18 @@ The AdamW retention diagnostic uses the exact WSD schedule and matrix decay
 No full TREC prediction was made: the exact v2 coefficient source was not
 reproduced, and this 49.86M model is below the cited paper's 111M floor.
 
+## Trainer amendment before results
+
+Production BF16/SDPA GPU runs are empirically non-bitwise reproducible even
+for legacy-versus-legacy trajectories with identical seed and batches. The
+Schedule-A-versus-Schedule-A and legacy-versus-Schedule-A envelopes are of
+the same order; fixed-example inputs, targets, layout, and LR remain exact.
+Accordingly, historical EXP-013 Static reuse is withdrawn. EXP-015 will use
+fresh contemporaneous seed-42 A, B, and C runs through the same scheduled
+loader and integration commit, in fixed order A then B then C regardless of
+intermediate validation results. The original numerical decision thresholds
+remain unchanged.
+
 The original EXP-015 source-private-pool proposal remains blocked and historical. This revision changes neither model nor tokenization: it uses the immutable EXP-004 300,023,808-prediction-token stream and permutes only IDs of its existing 585,984 fixed windows.
 
 ## Immutable examples and attribution gate

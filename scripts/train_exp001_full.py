@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import subprocess
 import time
@@ -10,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 import torch
+import numpy as np
 
 from gibc_llm.full_run import (
     assert_physical_batch_control,
@@ -108,6 +110,8 @@ def main() -> None:
     parser.add_argument("--checkpoint-interval", type=int)
     parser.add_argument("--validation-interval", type=int)
     parser.add_argument("--recorded-source-commit", help="Pre-training source/spec commit recorded by an external clean checkout.")
+    parser.add_argument("--sequence-schedule", type=Path)
+    parser.add_argument("--schedule-arm", choices=("A", "B", "C"))
     args = parser.parse_args()
     config = load_config(args.config)
     fixed_milestone_experiment = config.experiment_id in {"EXP-003", "EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014"}
@@ -121,6 +125,15 @@ def main() -> None:
     if args.checkpoint_interval <= 0 or args.validation_interval <= 0:
         raise ValueError("Checkpoint and validation intervals must be positive.")
     artifact = load_full_run_artifact(args.artifact_dir, config)
+    sequence_schedule = None
+    schedule_metadata = None
+    if args.sequence_schedule is not None:
+        if args.schedule_arm is None:
+            raise ValueError("--schedule-arm is required with --sequence-schedule.")
+        sequence_schedule = np.load(args.sequence_schedule, allow_pickle=False)
+        if sequence_schedule.dtype != np.uint32 or sequence_schedule.shape != (len(artifact.train),) or not np.array_equal(np.sort(sequence_schedule), np.arange(len(artifact.train), dtype=np.uint32)):
+            raise RuntimeError("EXP-015 schedule is not an exact immutable-window permutation.")
+        schedule_metadata = {"arm": args.schedule_arm, "schedule_sha256": hashlib.sha256(sequence_schedule.tobytes()).hexdigest(), "schedule_path": str(args.sequence_schedule)}
     device = torch.device("cuda")
     commit = args.recorded_source_commit or _git_commit()
     common = {
@@ -169,7 +182,13 @@ def main() -> None:
     logger = JsonlLogger(args.run_dir / "metrics.jsonl")
     if args.resume is not None:
         _verify_resume_provenance(args.resume, config, artifact, common["tokenizer_sha256"], artifact.manifest_sha256)
+        if schedule_metadata is not None:
+            saved_cursor = torch.load(args.resume, map_location="cpu", weights_only=False).get("data_cursor", {})
+            if saved_cursor.get("mechanism") != "fixed_example_index_permutation" or saved_cursor.get("arm") != schedule_metadata["arm"] or saved_cursor.get("schedule_sha256") != schedule_metadata["schedule_sha256"]:
+                raise RuntimeError("Scheduled resume arm or schedule SHA-256 differs from the checkpoint.")
         state = load_checkpoint(args.resume, model, optimizer, schedule, device, lr_controller=llr_controller)
+        if schedule_metadata is not None and saved_cursor.get("next_schedule_cursor") != state.next_sequence_index:
+            raise RuntimeError("Scheduled resume cursor differs from checkpoint RunState.")
     elif (args.run_dir / "metrics.jsonl").exists():
         raise RuntimeError("Run directory already has metrics. Use --resume with an explicit matching checkpoint or choose a new run directory.")
     requested_steps, incomplete = dry_run_plan(config, state.step, args.max_steps)
@@ -178,6 +197,8 @@ def main() -> None:
     if state.tokens != state.step * config.training.effective_batch_tokens or state.next_sequence_index != state.step * sequences_per_update(config):
         raise RuntimeError("Checkpoint RunState counters do not establish the exact sequential EXP-001 cursor.")
     provenance = _checkpoint_provenance(config, common["tokenizer_sha256"], artifact.manifest_sha256, commit)
+    if schedule_metadata is not None:
+        provenance["provenance"]["sequence_schedule"] = schedule_metadata
     logger.log(
         {
             **common,
@@ -228,6 +249,7 @@ def main() -> None:
             boundary - state.step,
             config.training.gradient_clip_norm,
             lr_controller=llr_controller,
+            sequence_schedule=sequence_schedule,
         )
         for record in chunk:
             record_step = int(record["step"])
@@ -252,7 +274,8 @@ def main() -> None:
                 edu_validation_records.append({"step": float(state.step), "loss": edu_result.loss, "ppl": edu_result.perplexity})
         if state.step % args.checkpoint_interval == 0 or (config.experiment_id in {"EXP-013-W", "EXP-013-W43"} and state.step == 8_240) or state.step == planned_end:
             checkpoint = args.run_dir / "checkpoints" / f"checkpoint-step-{state.step:04d}.pt"
-            save_checkpoint(checkpoint, model, optimizer, schedule, state, provenance, lr_controller=llr_controller)
+            data_cursor = ({"mechanism": "fixed_example_index_permutation", **schedule_metadata, "next_schedule_cursor": state.next_sequence_index} if schedule_metadata is not None else None)
+            save_checkpoint(checkpoint, model, optimizer, schedule, state, provenance, lr_controller=llr_controller, data_cursor=data_cursor)
             checkpoint_paths.append(str(checkpoint))
     elapsed = time.perf_counter() - started
     final_validation = validation_records[-1]
