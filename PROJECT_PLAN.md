@@ -10,7 +10,7 @@ EXP-011 completed the authorized fresh seed-42 1.5B calibration. EXP-012 then co
 
 ## Frozen controls
 
-Native Windows, OMEN Performance mode, AC power, context 512, physical batch 32 x accumulation 2, effective batch 32,768 prediction tokens, BF16 autocast with FP32 model/optimizer state, and Recipe v3 remain the recorded production controls.
+Native Windows, OMEN Performance mode, AC power, context 512, physical batch 32 x accumulation 2, effective batch 32,768 prediction tokens, BF16 autocast with FP32 model/optimizer state, and Recipe v3 + WSD remain the recorded production controls. EXP-013 verified the WSD 100-update warmup, stable `6e-4` phase through update 8,240, and 916-update cooldown to exactly `6e-5` at update 9,156 across seeds 42 and 43.
 
 ## Next action
 
@@ -20,4 +20,6 @@ evaluation successfully on 2026-08-28; see
 training, LR/architecture/data change, alternate checkpoint selection, or
 benchmark rerun is authorized. The remaining submission task is approval-gated
 publication of the inference-only artifact described in
-`docs/EXP-012-INFERENCE-PUBLICATION.md`.
+`docs/EXP-012-INFERENCE-PUBLICATION.md`. Recipe v3 + WSD is promoted for a
+future EXP-014 fixed-total curriculum investigation, but EXP-014 is not
+authorized to start yet.

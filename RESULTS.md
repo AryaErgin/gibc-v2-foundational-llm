@@ -6,6 +6,19 @@
 | Near-cap Recipe v3 | EXP-008 selects 49,860,480-parameter SwiGLU Recipe v3. EXP-009 retains 6e-4/6e-5; EXP-010 retains Recipe v3. | [EXP-008](results/EXP-008-summary.md), [EXP-009](results/EXP-009-summary.md), [EXP-010](results/EXP-010-summary.md) |
 | Long-horizon calibration | EXP-011 completed 1,500,020,736 prediction tokens; the final tranche remains meaningfully data-limited. | [EXP-011](results/EXP-011-summary.md) |
 | Fresh 2.4B calibration and official evaluation | EXP-012 completed 2,399,993,856 prediction tokens, then completed its frozen CPU FP32 official evaluation. | [Training record](results/EXP-012-summary.md), [official protocol and provenance](experiments/EXP-012-official-evaluation.md) |
+| WSD scheduler selection | EXP-013 seed-42 discovery and seed-43 paired confirmation both improved frozen combined validation without a domain regression; Recipe v3 + WSD is promoted. | [EXP-013](results/EXP-013-summary.md) |
+
+## EXP-013 WSD scheduler ablation â€” finalized 2026-08-29
+
+The four completed 300,023,808-token arms used the frozen 49,860,480-parameter
+Recipe v3, tokenizer, Data Recipe v1 stream, and validation tensors. WSD
+improved combined loss by `-0.03376075625419617` nat at seed 42 and by
+`-0.027358993887901306` nat in the paired seed-43 confirmation; General and
+Edu validation both improved in each comparison. **Model Recipe v3 + WSD is
+the frozen promoted training baseline for EXP-014.** This is an internal
+validation/scheduler conclusion only; it does not run or reinterpret any
+official benchmark. Full provenance, runtime, scheduler, and checkpoint data
+are in [results/EXP-013-summary.md](results/EXP-013-summary.md).
 
 ## EXP-012 official evaluation — finalized 2026-08-28
 
