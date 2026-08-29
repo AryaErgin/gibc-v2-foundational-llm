@@ -12,13 +12,22 @@ convergence efficiency? The frozen seed-42 WSD control is General
 
 ## Upstream provenance and adaptation
 
-Method reference: He et al., *One LR Doesn't Fit All*, arXiv:2605.22297v3
-(27 May 2026), with `hed-ucas/Layer-wise-Learning-Rate`, main inspected on
-29 August 2026. The upstream repository is an OLMo/AlphaDecay pre-release;
-EXP-014 does not import it or inherit its OLMo scheduler, logging, distributed,
-or optimizer assumptions. Its source revision must be resolved to a full Git
-commit before a training launch; network access was unavailable during this
-preflight, so this remains a launch gate.
+Algorithmic specification: He et al., *One LR Doesn't Fit All*,
+arXiv:2605.22297v3 (27 May 2026). The consulted behavioral reference is
+`hed-ucas/Layer-wise-Learning-Rate` at immutable commit
+`bbd0dcf86af80b8843866a9a041086a37de35897` (created
+2026-05-27T12:05:00Z). That commit identifies the inspected tree even though
+its own change is README-only. The repository has no declared license, so it
+is not copied, vendored, or treated as a code dependency. EXP-014 is an
+independent implementation of the paper's method and does not inherit OLMo,
+AlphaDecay, distributed, scheduler, logging, or optimizer assumptions.
+
+Consulted upstream paths are `README.md` (published LLR command/defaults) and
+`olmo/LRUnbalance.py` (`layerTempbalance.net_esd_estimator`,
+`get_layer_temps`, and `step`). No upstream source file or snippet is retained
+in this repository. Auditable provenance, including the SHA-256 of the local
+independent implementation, is recorded in
+`provenance/exp014-upstream-provenance.json`.
 
 The adaptation uses the paper/source's weight-spectrum PL_Alpha_Hill metric,
 positive `tb_linear_map`, upper-bound embedding treatment, and linear soft

@@ -1,0 +1,35 @@
+{
+  "experiment_id": "EXP-014",
+  "algorithmic_specification": {
+    "citation": "He et al., One LR Doesn't Fit All: Heavy-Tail Guided Layerwise Learning Rates for LLMs, arXiv:2605.22297v3",
+    "arxiv_version": "v3",
+    "url": "https://arxiv.org/abs/2605.22297v3"
+  },
+  "consulted_behavioral_reference": {
+    "repository": "https://github.com/hed-ucas/Layer-wise-Learning-Rate",
+    "immutable_commit": "bbd0dcf86af80b8843866a9a041086a37de35897",
+    "commit_created_at": "2026-05-27T12:05:00Z",
+    "commit_note": "Verified main-head commit; its README-only change still immutably identifies the inspected repository tree.",
+    "repository_license": "No declared repository license observed",
+    "consulted_paths": [
+      {
+        "path": "README.md",
+        "consulted_for": "published LLR command settings and attribution"
+      },
+      {
+        "path": "olmo/LRUnbalance.py",
+        "functions": ["layerTempbalance.net_esd_estimator", "layerTempbalance.get_layer_temps", "layerTempbalance.step"],
+        "consulted_for": "behavioral interpretation of spectral metric, positive linear mapping, embedding treatment, and soft switching"
+      }
+    ]
+  },
+  "licensing_and_independence": {
+    "upstream_source_copied_verbatim": false,
+    "upstream_source_vendored": false,
+    "local_implementation_independent": true,
+    "local_implementation_path": "src/gibc_llm/llr.py",
+    "local_implementation_sha256": "6b388ad2599829bca58fb588ccf2b6dbdf81a996a7164d575e7f84df9fa99313",
+    "local_upstream_source_copy_or_snippet_hashes": null,
+    "note": "No upstream source copy or snippet is retained locally; only path/function-level consultation is recorded."
+  }
+}
