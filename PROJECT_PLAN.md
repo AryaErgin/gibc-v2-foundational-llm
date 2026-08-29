@@ -20,6 +20,7 @@ evaluation successfully on 2026-08-28; see
 training, LR/architecture/data change, alternate checkpoint selection, or
 benchmark rerun is authorized. The remaining submission task is approval-gated
 publication of the inference-only artifact described in
-`docs/EXP-012-INFERENCE-PUBLICATION.md`. Recipe v3 + WSD is promoted for a
-future EXP-014 fixed-total curriculum investigation, but EXP-014 is not
-authorized to start yet.
+`docs/EXP-012-INFERENCE-PUBLICATION.md`. EXP-014 then tested the
+pre-registered HT-SR LLR treatment at fixed total tokens and failed its seed-42
+capability gate; Recipe v3 + WSD remains the promoted baseline. No follow-up
+LLR tuning or confirmation is authorized by that negative result.

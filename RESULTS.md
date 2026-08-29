@@ -7,6 +7,17 @@
 | Long-horizon calibration | EXP-011 completed 1,500,020,736 prediction tokens; the final tranche remains meaningfully data-limited. | [EXP-011](results/EXP-011-summary.md) |
 | Fresh 2.4B calibration and official evaluation | EXP-012 completed 2,399,993,856 prediction tokens, then completed its frozen CPU FP32 official evaluation. | [Training record](results/EXP-012-summary.md), [official protocol and provenance](experiments/EXP-012-official-evaluation.md) |
 | WSD scheduler selection | EXP-013 seed-42 discovery and seed-43 paired confirmation both improved frozen combined validation without a domain regression; Recipe v3 + WSD is promoted. | [EXP-013](results/EXP-013-summary.md) |
+| HT-SR LLR ablation | EXP-014 seed-42 LLR worsened combined frozen validation by `0.05562235414981842` nat and failed its preregistered gate; Recipe v3 + WSD remains baseline. | [EXP-014](results/EXP-014-summary.md) |
+
+## EXP-014 HT-SR LLR ablation — finalized 2026-08-29
+
+At the fixed 300,023,808-token seed-42 Recipe-v3 + WSD protocol, HT-SR LLR
+finished with combined frozen validation loss `3.423619344830513` versus the
+WSD control's `3.3679969906806946` (`+0.05562235414981842` nat). Both General
+and Edu losses regressed by more than 0.020 nat. **EXP-014 is a negative
+result; Recipe v3 + WSD remains the frozen promoted baseline.** No official
+benchmark, LLR retuning, or seed-43 confirmation followed. Details are in
+[results/EXP-014-summary.md](results/EXP-014-summary.md).
 
 ## EXP-013 WSD scheduler ablation â€” finalized 2026-08-29
 
