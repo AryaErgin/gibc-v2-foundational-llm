@@ -1,0 +1,25 @@
+{
+  "experiment_id": "EXP-016",
+  "status": "preregistered_prelaunch",
+  "prepared_utc_date": "2026-08-30",
+  "algorithm_source": {
+    "authors": ["Taejong Joo", "et al."],
+    "title": "On Surprising Effectiveness of Masking Updates in Adaptive Optimizers",
+    "arxiv_id": "2602.15322",
+    "version": "v1",
+    "year": 2026,
+    "abstract_url": "https://arxiv.org/abs/2602.15322",
+    "html_url": "https://arxiv.org/html/2602.15322v1",
+    "implementation_relation": "independent implementation; no third-party Magma package or code imported"
+  },
+  "adaptation": {
+    "base_optimizer": "AdamW with promoted WSD schedule",
+    "paper_difference": "The paper main table reports Adam; EXP-016 applies the declared wrapper to full AdamW deltas.",
+    "block_granularity": "one complete parameter matrix per block",
+    "target_blocks": "attention q/k/v/o projection matrices and SwiGLU value/gate/out projection matrices only",
+    "survival_probability": 0.5,
+    "tau": 2.0,
+    "alignment_smoothing": 0.9,
+    "rng": "dedicated torch.Generator, seed 42, checkpointed"
+  }
+}

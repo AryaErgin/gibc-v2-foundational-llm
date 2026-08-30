@@ -24,6 +24,7 @@ from gibc_llm.full_run import (
 )
 from gibc_llm.model import DecoderOnlyTransformer, parameter_breakdown
 from gibc_llm.llr import HTSRLLR, LLRSettings, build_llr_optimizer
+from gibc_llm.magma import MagmaAdamW, MagmaSettings, magma_blocks
 from gibc_llm.train import (
     CosineWithWarmup,
     JsonlLogger,
@@ -63,6 +64,11 @@ def _verify_resume_provenance(path: Path, config: Any, artifact: Any, tokenizer_
     provenance = payload.get("config", {}).get("provenance", {})
     if provenance.get("tokenizer_sha256") != tokenizer_hash:
         raise RuntimeError("Checkpoint provenance does not match this exact full-run tokenizer/data manifest.")
+    if config.experiment_id in {"EXP-016-C", "EXP-016-M"}:
+        checkpoint_config = dict(payload.get("config", {}))
+        checkpoint_config.pop("provenance", None)
+        if checkpoint_config != config.as_dict():
+            raise RuntimeError("EXP-016 checkpoint configuration differs from the exact preregistered arm.")
     if config.experiment_id == "EXP-011":
         checkpoint_config = dict(payload.get("config", {}))
         checkpoint_config.pop("provenance", None)
@@ -114,7 +120,7 @@ def main() -> None:
     parser.add_argument("--schedule-arm", choices=("A", "B", "C"))
     args = parser.parse_args()
     config = load_config(args.config)
-    fixed_milestone_experiment = config.experiment_id in {"EXP-003", "EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014"}
+    fixed_milestone_experiment = config.experiment_id in {"EXP-003", "EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014", "EXP-016-C", "EXP-016-M"}
     if args.checkpoint_interval is None:
         args.checkpoint_interval = full_run_milestones(config)[1] if fixed_milestone_experiment else 500
     if args.validation_interval is None:
@@ -145,15 +151,29 @@ def main() -> None:
     set_global_seed(config.training.seed)
     model = DecoderOnlyTransformer(config.model).to(device)
     parameters = parameter_breakdown(model).total
-    expected_parameters = {"EXP-005A": 20_984_064, "EXP-005B": 20_848_512, "EXP-006": 20_848_512, "EXP-007A": 49_353_184, "EXP-007B": 49_491_840, "EXP-008A": 49_860_480, "EXP-009A": 49_860_480, "EXP-009B": 49_860_480, "EXP-010A": 49_985_504, "EXP-011": 49_860_480, "EXP-012": 49_860_480, "EXP-013-C": 49_860_480, "EXP-013-W": 49_860_480, "EXP-013-C43": 49_860_480, "EXP-013-W43": 49_860_480, "EXP-014": 49_860_480}.get(config.experiment_id, 8_392_960)
+    expected_parameters = {"EXP-005A": 20_984_064, "EXP-005B": 20_848_512, "EXP-006": 20_848_512, "EXP-007A": 49_353_184, "EXP-007B": 49_491_840, "EXP-008A": 49_860_480, "EXP-009A": 49_860_480, "EXP-009B": 49_860_480, "EXP-010A": 49_985_504, "EXP-011": 49_860_480, "EXP-012": 49_860_480, "EXP-013-C": 49_860_480, "EXP-013-W": 49_860_480, "EXP-013-C43": 49_860_480, "EXP-013-W43": 49_860_480, "EXP-014": 49_860_480, "EXP-016-C": 49_860_480, "EXP-016-M": 49_860_480}.get(config.experiment_id, 8_392_960)
     if parameters != expected_parameters:
         raise RuntimeError(f"{config.experiment_id} model parameter invariant failed: {parameters} != {expected_parameters:,}.")
-    optimizer = (build_llr_optimizer if config.llr is not None else build_optimizer)(
+    base_optimizer = (build_llr_optimizer if config.llr is not None else build_optimizer)(
         model,
         config.training.peak_learning_rate,
         config.training.weight_decay,
         (config.training.beta1, config.training.beta2),
         config.training.eps,
+    )
+    optimizer = (
+        MagmaAdamW(
+            base_optimizer,
+            magma_blocks(model),
+            MagmaSettings(
+                config.magma.survival_probability,
+                config.magma.tau,
+                config.magma.smoothing,
+                config.magma.rng_seed,
+            ),
+        )
+        if config.magma is not None
+        else base_optimizer
     )
     llr_controller = None
     if config.llr is not None:
@@ -231,7 +251,7 @@ def main() -> None:
     while state.step < planned_end:
         next_validation = ((state.step // args.validation_interval) + 1) * args.validation_interval
         next_checkpoint = ((state.step // args.checkpoint_interval) + 1) * args.checkpoint_interval
-        if config.experiment_id in {"EXP-013-W", "EXP-013-W43"} and state.step < 8_240:
+        if config.experiment_id in {"EXP-013-W", "EXP-013-W43", "EXP-016-C", "EXP-016-M"} and state.step < 8_240:
             next_checkpoint = min(next_checkpoint, 8_240)
         boundary = min(planned_end, next_validation, next_checkpoint)
         chunk = train_smoke(
@@ -272,7 +292,7 @@ def main() -> None:
                 )
                 _log_validation(logger, "edu_milestone" if state.step % args.validation_interval == 0 else "edu_end", edu_result, state, common)
                 edu_validation_records.append({"step": float(state.step), "loss": edu_result.loss, "ppl": edu_result.perplexity})
-        if state.step % args.checkpoint_interval == 0 or (config.experiment_id in {"EXP-013-W", "EXP-013-W43"} and state.step == 8_240) or state.step == planned_end:
+        if state.step % args.checkpoint_interval == 0 or (config.experiment_id in {"EXP-013-W", "EXP-013-W43", "EXP-016-C", "EXP-016-M"} and state.step == 8_240) or state.step == planned_end:
             checkpoint = args.run_dir / "checkpoints" / f"checkpoint-step-{state.step:04d}.pt"
             data_cursor = ({"mechanism": "fixed_example_index_permutation", **schedule_metadata, "next_schedule_cursor": state.next_sequence_index} if schedule_metadata is not None else None)
             save_checkpoint(checkpoint, model, optimizer, schedule, state, provenance, lr_controller=llr_controller, data_cursor=data_cursor)

@@ -99,6 +99,15 @@ class LLRConfig:
 
 
 @dataclass(frozen=True)
+class MagmaConfig:
+    method: str
+    survival_probability: float
+    tau: float
+    smoothing: float
+    rng_seed: int
+
+
+@dataclass(frozen=True)
 class ExperimentConfig:
     experiment_id: str
     model: ModelConfig
@@ -106,11 +115,14 @@ class ExperimentConfig:
     data: DataConfig
     mixture: dict[str, Any] | None = None
     llr: LLRConfig | None = None
+    magma: MagmaConfig | None = None
 
     def as_dict(self) -> dict[str, Any]:
         payload = asdict(self)
         if payload["llr"] is None:
             payload.pop("llr")
+        if payload["magma"] is None:
+            payload.pop("magma")
         return payload
 
 
@@ -133,8 +145,8 @@ def load_config(path: Path | str) -> ExperimentConfig:
     """Load the complete explicit EXP-001 configuration and reject drift."""
     with Path(path).open("r", encoding="utf-8") as handle:
         raw = yaml.safe_load(handle)
-    if not isinstance(raw, dict) or not {"experiment_id", "model", "training", "data"}.issubset(raw) or set(raw) - {"experiment_id", "model", "training", "data", "mixture", "llr"}:
-        raise ValueError("Configuration must contain experiment_id, model, training, data, and optional mixture/llr.")
+    if not isinstance(raw, dict) or not {"experiment_id", "model", "training", "data"}.issubset(raw) or set(raw) - {"experiment_id", "model", "training", "data", "mixture", "llr", "magma"}:
+        raise ValueError("Configuration must contain experiment_id, model, training, data, and optional mixture/llr/magma.")
     config = ExperimentConfig(
         experiment_id=str(raw["experiment_id"]),
         model=_construct("model", ModelConfig, raw["model"]),
@@ -142,6 +154,7 @@ def load_config(path: Path | str) -> ExperimentConfig:
         data=_construct("data", DataConfig, raw["data"]),
         mixture=raw.get("mixture"),
         llr=_construct("llr", LLRConfig, raw["llr"]) if raw.get("llr") is not None else None,
+        magma=_construct("magma", MagmaConfig, raw["magma"]) if raw.get("magma") is not None else None,
     )
     _validate_controlled_experiment(config)
     return config
@@ -170,9 +183,11 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         "EXP-013-C43": (9_156, 300_023_808),
         "EXP-013-W43": (9_156, 300_023_808),
         "EXP-014": (9_156, 300_023_808),
+        "EXP-016-C": (9_156, 300_023_808),
+        "EXP-016-M": (9_156, 300_023_808),
     }
     if config.experiment_id not in horizons:
-        raise ValueError("Only EXP-001 through EXP-014 controlled configurations are supported.")
+        raise ValueError("Only EXP-001 through EXP-016 controlled configurations are supported.")
     expected_dimensions = {
         "EXP-005A": (8192, 256, 24, 8, 32, 1024),
         "EXP-005B": (8192, 384, 10, 12, 32, 1536),
@@ -190,6 +205,8 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         "EXP-013-C43": (8192, 640, 9, 20, 32, 1728),
         "EXP-013-W43": (8192, 640, 9, 20, 32, 1728),
         "EXP-014": (8192, 640, 9, 20, 32, 1728),
+        "EXP-016-C": (8192, 640, 9, 20, 32, 1728),
+        "EXP-016-M": (8192, 640, 9, 20, 32, 1728),
     }.get(config.experiment_id, (8192, 256, 8, 8, 32, 1024))
     if (model.vocab_size, model.d_model, model.n_layers, model.n_heads, model.head_dim, model.d_ff) != expected_dimensions:
         raise ValueError(f"{config.experiment_id} model dimensions differ from the approved allocation.")
@@ -203,7 +220,7 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         raise ValueError("Controlled causal/tied/bias/dropout invariants are violated.")
     if (
         model.architecture != "decoder_only_transformer"
-        or model.activation != ("swiglu" if config.experiment_id in {"EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014"} else "gelu")
+        or model.activation != ("swiglu" if config.experiment_id in {"EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014", "EXP-016-C", "EXP-016-M"} else "gelu")
         or model.norm != "rmsnorm"
         or model.norm_placement != "pre_norm"
         or model.positional_encoding != "rope"
@@ -216,7 +233,7 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         raise ValueError("Controlled effective batch is 64 x 512 prediction tokens.")
     if training.default_microbatch_sequences * training.default_gradient_accumulation_steps * 512 != 32768:
         raise ValueError("Configured microbatch/accumulation does not preserve effective batch tokens.")
-    if config.experiment_id in {"EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014"} and (
+    if config.experiment_id in {"EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014", "EXP-016-C", "EXP-016-M"} and (
         training.default_microbatch_sequences,
         training.default_gradient_accumulation_steps,
     ) != (32, 2):
@@ -230,13 +247,13 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         or (training.beta1, training.beta2, training.eps) != (0.9, 0.95, 1.0e-8)
         or training.weight_decay != 0.1
         or (training.peak_learning_rate, training.min_learning_rate) != ({"EXP-009A": (4.0e-4, 4.0e-5), "EXP-009B": (8.0e-4, 8.0e-5)}.get(config.experiment_id, (6.0e-4, 6.0e-5)))
-        or training.schedule != ("warmup_stable_decay" if config.experiment_id in {"EXP-013-W", "EXP-013-W43", "EXP-014"} else "cosine_decay")
+        or training.schedule != ("warmup_stable_decay" if config.experiment_id in {"EXP-013-W", "EXP-013-W43", "EXP-014", "EXP-016-C", "EXP-016-M"} else "cosine_decay")
         or training.warmup_steps != 100
         or training.gradient_clip_norm != 1.0
     ):
         raise ValueError("Controlled optimizer, precision, clipping, or schedule invariants are violated.")
-    if (config.experiment_id in {"EXP-013-W", "EXP-013-W43", "EXP-014"} and training.cooldown_steps != 916) or (
-        config.experiment_id not in {"EXP-013-W", "EXP-013-W43", "EXP-014"} and training.cooldown_steps is not None
+    if (config.experiment_id in {"EXP-013-W", "EXP-013-W43", "EXP-014", "EXP-016-C", "EXP-016-M"} and training.cooldown_steps != 916) or (
+        config.experiment_id not in {"EXP-013-W", "EXP-013-W43", "EXP-014", "EXP-016-C", "EXP-016-M"} and training.cooldown_steps is not None
     ):
         raise ValueError("Only WSD arms may declare the fixed 916-update cooldown.")
     if config.experiment_id == "EXP-014":
@@ -244,6 +261,11 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
             raise ValueError("EXP-014 must use the pre-registered HT-SR LLR settings.")
     elif config.llr is not None:
         raise ValueError("Only EXP-014 may declare LLR settings.")
+    if config.experiment_id == "EXP-016-M":
+        if config.magma != MagmaConfig("magma", 0.5, 2.0, 0.9, 42):
+            raise ValueError("EXP-016-M must use the preregistered Magma settings.")
+    elif config.magma is not None:
+        raise ValueError("Only EXP-016-M may declare Magma settings.")
     expected_seed = 43 if config.experiment_id in {"EXP-013-C43", "EXP-013-W43"} else 42
     if training.seed != expected_seed or data.split_seed != 42:
         raise ValueError("Controlled experiments require their exact training seed and fixed data split seed 42.")
@@ -254,7 +276,7 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
     )
     if (data.dataset_repo, data.dataset_config, data.dataset_revision) != expected_data:
         raise ValueError(f"{config.experiment_id} dataset pin is invalid.")
-    if config.experiment_id in {"EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014"}:
+    if config.experiment_id in {"EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014", "EXP-016-C", "EXP-016-M"}:
         target_prediction_tokens = (
             {"fineweb": 600_047_616, "fineweb_edu": 300_023_808}
             if config.experiment_id == "EXP-006"

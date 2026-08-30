@@ -41,3 +41,14 @@ within all predeclared Windows equivalence gates. This is runtime-system
 qualification only, not model-selection evidence: it does not change Recipe
 v3 + WSD, promote a new model, or authorize EXP-016, seed43, a benchmark, or
 additional training. The extenal run record is
+
+## EXP-016 Magma preflight
+
+The research chat has authorized preflight only for a future paired
+fresh-seed-42 EXP-016 ordinary-AdamW control followed by Magma treatment.
+The WSL runtime is scientifically qualified, but neither EXP-016 arm is
+authorized to start by this document. Recipe v3 + WSD remains the promoted
+baseline. The frozen specification, gates, and independent paper provenance
+are in `experiments/EXP-016-magma.md` and
+`provenance/exp016-magma-paper.json`; no benchmarks, tuning, or seed-43
+confirmation are authorized at preflight.

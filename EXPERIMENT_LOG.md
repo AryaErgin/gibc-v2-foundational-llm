@@ -81,3 +81,36 @@ improved General but materially regressed Edu, worsening combined NLL by
 `0.010336264967918396` nat. C was `0.016190573573112488` nat worse than B, so
 phase interaction failed. Reject the curriculum; no seed-43 is authorized.
 Recipe v3 + WSD remains promoted. See `results/EXP-015-summary.md`.
+
+## EXP-016 — Magma pre-registration (2026-08-30)
+
+Status: preflight complete; no EXP-016 training arm has been launched. EXP-016
+will test independent Momentum-Aligned Gradient Masking (Magma) under the
+scientifically qualified WSL runtime while holding Recipe v3 + WSD, seed,
+batch, data stream, tokenizer, schedule, and frozen validations fixed.
+The two future fresh seed-42 arms are ordinary AdamW control
+`configs/exp016-control.yaml` followed by AdamW+Magma treatment
+`configs/exp016-magma.yaml`, at 9,156 updates / 300,023,808 prediction
+tokens each. The treatment uses p=0.5, tau=2.0, and EMA smoothing=0.9 over
+63 attention/SwiGLU matrix blocks (44,605,440 parameters); embeddings/output,
+RMSNorm, and all non-attention/non-MLP tensors remain dense AdamW.
+
+The independent implementation applies Magma to the full post-step AdamW
+delta, including decoupled weight decay, after dense first/second-moment
+updates. It maintains an isolated seed-42 torch generator and checkpoints
+block mapping, alignment scalars, generator state, and configuration. The
+predeclared capability gate is combined NLL improvement of at least 0.010 nat
+against the contemporaneous control with neither domain regressing by more
+than 0.020 nat; mean training throughput degradation must be no more than
+10%. No benchmark, hyperparameter retuning, or seed-43 confirmation is
+authorized by this preflight. See `experiments/EXP-016-magma.md` and
+`provenance/exp016-magma-paper.json`.
+
+Focused single-threaded Magma tests passed (8 tests) and the read-only frozen
+artifact preflight verified parameter, Schedule-A, stream, validation, and WSD
+invariants. A bounded 60-update WSL GPU smoke completed with finite loss,
+79,076.26 post-warmup tok/s, 8,665,432,064 reserved bytes, no data stalls, and
+61 C sampled peak GPU temperature. Its estimated 7.13% throughput degradation
+relative to the prior WSL production baseline is within the predeclared 10%
+operational guard. This is implementation/infrastructure evidence only, not
+model-selection evidence; see `results/EXP-016-preflight.md`.
