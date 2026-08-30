@@ -17,10 +17,18 @@ Native Windows, OMEN Performance mode, AC power, context 512, physical batch 32 
 The selected EXP-012 terminal checkpoint completed the frozen official CPU FP32
 evaluation successfully on 2026-08-28; see
 `experiments/EXP-012-official-evaluation.md` and `RESULTS.md`. No additional
-training, LR/architecture/data change, alternate checkpoint selection, or
+training, LR/architecture/data change, alternate checkpoint selection, o
 benchmark rerun is authorized. The remaining submission task is approval-gated
 publication of the inference-only artifact described in
 `docs/EXP-012-INFERENCE-PUBLICATION.md`. EXP-014 then tested the
 pre-registered HT-SR LLR treatment at fixed total tokens and failed its seed-42
 capability gate; Recipe v3 + WSD remains the promoted baseline. No follow-up
 LLR tuning or confirmation is authorized by that negative result.
+
+EXP-015 subsequently tested FineWeb-Edu-enriched fixed-example temporal
+placement at the fixed 300,023,808-token seed-42 Recipe-v3 + WSD protocol.
+Neither ordering met its preregistered capability gate, and C failed the
+preregistered phase-interaction gate against B. This negative result rejects
+the curriculum from the promoted recipe and does not authorize seed-43,
+EXP-016, a benchmark, or a final-scale run. Recipe v3 + WSD remains the
+promoted training baseline.

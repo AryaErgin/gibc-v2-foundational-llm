@@ -68,3 +68,16 @@ The LLR candidate completed 9,156 updates / 300,023,808 tokens with General
 capability gate and both domain-safety conditions. No seed-43 run, LLR tuning,
 benchmark, or new experiment is authorized. Recipe v3 + WSD remains the
 promoted baseline; see `results/EXP-014-summary.md`.
+
+## EXP-015
+
+Status: completed seed-42 negative result. EXP-015 tested FineWeb-Edu-enriched
+fixed-example temporal placement with Recipe v3 + WSD. A/B/C each completed
+9,156 updates and 300,023,808 prediction tokens from fresh seed-42 starts at
+recovered integration commit `ac7078f3d0cf327d4f8dc7ab9f8ec7edfd263321`. B
+improved Edu but slightly regressed General and improved combined NLL only
+`0.005854308605194092` nat, below the preregistered 0.010-nat gate. C slightly
+improved General but materially regressed Edu, worsening combined NLL by
+`0.010336264967918396` nat. C was `0.016190573573112488` nat worse than B, so
+phase interaction failed. Reject the curriculum; no seed-43 is authorized.
+Recipe v3 + WSD remains promoted. See `results/EXP-015-summary.md`.

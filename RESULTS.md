@@ -21,7 +21,7 @@ benchmark, LLR retuning, or seed-43 confirmation followed. Details are in
 
 ## EXP-013 WSD scheduler ablation â€” finalized 2026-08-29
 
-The four completed 300,023,808-token arms used the frozen 49,860,480-parameter
+The four completed 300,023,808-token arms used the frozen 49,860,480-paramete
 Recipe v3, tokenizer, Data Recipe v1 stream, and validation tensors. WSD
 improved combined loss by `-0.03376075625419617` nat at seed 42 and by
 `-0.027358993887901306` nat in the paired seed-43 confirmation; General and
@@ -57,3 +57,17 @@ These are descriptive comparisons only. A single combined architecture-and-scale
 The previous EXP-001 through EXP-006 “WikiText” BPB figures came from the earlier lm-eval `wikitext` task, not this competition-correct WikiText-103 evaluator. They are **not directly comparable**; this record does not present a `1.276 -> 1.408` regression.
 
 The first display-corruption attempt and terminal-closure attempt remain preserved in EXP-012 history as non-results: neither produced a valid official result artifact or informed checkpoint/model selection. No training, checkpoint selection, retuning, or benchmark rerun is authorized by these results.
+| Fixed-example temporal placement | EXP-015 seed-42 A/B/C found a General/Edu specialization tradeoff, no preregistered capability winner, and no phase-interaction support; Recipe v3 + WSD remains baseline. | [EXP-015](results/EXP-015-summary.md) |
+
+## EXP-015 fixed-example temporal placement - finalized 2026-08-30
+
+At the fixed 300,023,808-token seed-42 Recipe-v3 + WSD protocol, B
+cooldown-Edu reached combined frozen validation NLL `3.3636962473392487`
+versus A static `3.3695505559444427` (`-0.005854308605194092` nat), below the
+preregistered `-0.010` capability threshold. C pre-cooldown-Edu reached
+`3.379886820912361` (`+0.010336264967918396` nat versus A) and was
+`+0.016190573573112488` nat versus B, failing both capability and
+phase-interaction gates. **EXP-015 is a preserved negative result.** Identical
+fixed examples with only temporal placement produced a domain tradeoff, not
+broad capability improvement. No seed-43 follows; Recipe v3 + WSD remains
+frozen. Details: [EXP-015](results/EXP-015-summary.md).
