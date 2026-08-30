@@ -120,7 +120,9 @@ def main() -> None:
     parser.add_argument("--schedule-arm", choices=("A", "B", "C"))
     args = parser.parse_args()
     config = load_config(args.config)
-    fixed_milestone_experiment = config.experiment_id in {"EXP-003", "EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014", "EXP-016-C", "EXP-016-M"}
+    if config.experiment_id == "EXP-017A" and args.resume is not None:
+        raise RuntimeError("EXP-017A requires a fresh step-0 lineage; --resume is forbidden.")
+    fixed_milestone_experiment = config.experiment_id in {"EXP-003", "EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014", "EXP-016-C", "EXP-016-M", "EXP-017A"}
     if args.checkpoint_interval is None:
         args.checkpoint_interval = full_run_milestones(config)[1] if fixed_milestone_experiment else 500
     if args.validation_interval is None:
@@ -151,7 +153,7 @@ def main() -> None:
     set_global_seed(config.training.seed)
     model = DecoderOnlyTransformer(config.model).to(device)
     parameters = parameter_breakdown(model).total
-    expected_parameters = {"EXP-005A": 20_984_064, "EXP-005B": 20_848_512, "EXP-006": 20_848_512, "EXP-007A": 49_353_184, "EXP-007B": 49_491_840, "EXP-008A": 49_860_480, "EXP-009A": 49_860_480, "EXP-009B": 49_860_480, "EXP-010A": 49_985_504, "EXP-011": 49_860_480, "EXP-012": 49_860_480, "EXP-013-C": 49_860_480, "EXP-013-W": 49_860_480, "EXP-013-C43": 49_860_480, "EXP-013-W43": 49_860_480, "EXP-014": 49_860_480, "EXP-016-C": 49_860_480, "EXP-016-M": 49_860_480}.get(config.experiment_id, 8_392_960)
+    expected_parameters = {"EXP-005A": 20_984_064, "EXP-005B": 20_848_512, "EXP-006": 20_848_512, "EXP-007A": 49_353_184, "EXP-007B": 49_491_840, "EXP-008A": 49_860_480, "EXP-009A": 49_860_480, "EXP-009B": 49_860_480, "EXP-010A": 49_985_504, "EXP-011": 49_860_480, "EXP-012": 49_860_480, "EXP-013-C": 49_860_480, "EXP-013-W": 49_860_480, "EXP-013-C43": 49_860_480, "EXP-013-W43": 49_860_480, "EXP-014": 49_860_480, "EXP-016-C": 49_860_480, "EXP-016-M": 49_860_480, "EXP-017A": 49_860_480}.get(config.experiment_id, 8_392_960)
     if parameters != expected_parameters:
         raise RuntimeError(f"{config.experiment_id} model parameter invariant failed: {parameters} != {expected_parameters:,}.")
     base_optimizer = (build_llr_optimizer if config.llr is not None else build_optimizer)(
@@ -253,6 +255,8 @@ def main() -> None:
         next_checkpoint = ((state.step // args.checkpoint_interval) + 1) * args.checkpoint_interval
         if config.experiment_id in {"EXP-013-W", "EXP-013-W43", "EXP-016-C", "EXP-016-M"} and state.step < 8_240:
             next_checkpoint = min(next_checkpoint, 8_240)
+        if config.experiment_id == "EXP-017A" and state.step < 65_918:
+            next_checkpoint = min(next_checkpoint, 65_918)
         boundary = min(planned_end, next_validation, next_checkpoint)
         chunk = train_smoke(
             model,
@@ -292,7 +296,7 @@ def main() -> None:
                 )
                 _log_validation(logger, "edu_milestone" if state.step % args.validation_interval == 0 else "edu_end", edu_result, state, common)
                 edu_validation_records.append({"step": float(state.step), "loss": edu_result.loss, "ppl": edu_result.perplexity})
-        if state.step % args.checkpoint_interval == 0 or (config.experiment_id in {"EXP-013-W", "EXP-013-W43", "EXP-016-C", "EXP-016-M"} and state.step == 8_240) or state.step == planned_end:
+        if state.step % args.checkpoint_interval == 0 or (config.experiment_id in {"EXP-013-W", "EXP-013-W43", "EXP-016-C", "EXP-016-M"} and state.step == 8_240) or (config.experiment_id == "EXP-017A" and state.step == 65_918) or state.step == planned_end:
             checkpoint = args.run_dir / "checkpoints" / f"checkpoint-step-{state.step:04d}.pt"
             data_cursor = ({"mechanism": "fixed_example_index_permutation", **schedule_metadata, "next_schedule_cursor": state.next_sequence_index} if schedule_metadata is not None else None)
             save_checkpoint(checkpoint, model, optimizer, schedule, state, provenance, lr_controller=llr_controller, data_cursor=data_cursor)

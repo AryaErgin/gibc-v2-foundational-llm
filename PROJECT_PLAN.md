@@ -1,3 +1,17 @@
+## EXP-017A 2.4B WSD horizon branch
+
+EXP-016 is finalized negative: Magma worsened combined frozen NLL by
+`0.09226645529270172` nat and failed both domain guards. It is rejected with
+no tuning or seed-43; Recipe v3 + WSD remains promoted.
+
+EXP-017A is preregistered only, not launched: a fresh seed-42 2.4B-token
+Recipe-v3 + WSD lineage on the immutable EXP-012 stream. Scheduler-derived
+WSD is stable through 65,918 and cools down across updates 65,919-73,242
+(7,324 updates), ending at `6e-5`. The pre-cooldown checkpoint at
+2,160,001,024 prediction tokens is the required future continuation trunk;
+the cooled endpoint does not continue. Future 4.8B/7.2B/9.6B branches require
+separate authorization. No benchmark or training is authorized by this plan.
+
 # Project Plan
 
 The project follows a baseline-first experimental sequence: infrastructure validation, baseline measurement, controlled interventions, final training, evaluation, and submission documentation.

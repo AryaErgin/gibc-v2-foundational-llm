@@ -1,3 +1,12 @@
+## EXP-016 closure and EXP-017A preregistration - 2026-08-30
+
+**EXP-016 is a negative result.** Magma combined NLL `3.4620570689439774`
+versus Control `3.3697906136512756` is `+0.09226645529270172` nat, and both
+domain guards failed; passing the efficiency guard does not rescue capability.
+Magma is rejected without tuning or seed-43. Recipe v3 + WSD remains promoted.
+EXP-017A is preregistered only as a fresh 2.4B WSD internal-validation branch;
+it has no result, changes no model selection, and invokes no official benchmark.
+
 # Results Index
 
 | Record | Accepted outcome | Detailed evidence |

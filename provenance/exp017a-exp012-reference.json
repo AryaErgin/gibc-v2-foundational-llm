@@ -1,0 +1,28 @@
+{
+  "experiment_id": "EXP-017A",
+  "reference": {
+    "experiment_id": "EXP-012",
+    "schedule": "cosine_decay",
+    "terminal_summary_sha256": "d5bd0d55db6def6e9045d7b0e70eea959d696212d0e4ba058a09cd7986d7f125",
+    "terminal_general_nll": 3.190959542989731,
+    "terminal_edu_nll": 2.8499483168125153,
+    "terminal_combined_nll": 3.020453929901123
+  },
+  "stream": {
+    "artifact_experiment_id": "EXP-012",
+    "sha256": "27c1c8d06da579d443ee19017e12dd28a7c3fb8c6387cff76e9128c7c5fba82c",
+    "manifest_sha256": "b19b508dd1d1928b8e3bbdf586547791dc3bd76af19f6e55b8c39465bd749ccf",
+    "tokenizer_sha256": "c5592fba176c3d2f7915a3812559a24d7a669206f4a22484b053c8a9ce08be14",
+    "general_validation_sha256": ["f721fda2a0a0ca11a580178dba6c2592af4dd9324da3ed7120624b7364d653f7", "2ca518affa0b36d15c7c427de84b4c7d761926e1e993c03724d75f396934f13e"],
+    "edu_validation_sha256": ["cc75580b854b69846b1ff15385fbb87adf5bdf1701c1bfe9e8e8d5fdb651fb1a", "300608bc74e052f1580d78e3ad5e1174312360a766f3278c6ce2bdf3336a48b4"],
+    "prefix_chain": {
+      "exp004": "8e727fa2a2614751a1c34d7f9ac411dfebeb379a09f584ba4f7f418d1059cea1",
+      "exp006": "07d635264c523ce78b437caef7b50d478a7368371af8f86ef655e4b91661e6af",
+      "exp011": "092fc4a02f991b15fd8fcd2c209754e014485c74bea642c1a57270462141b671"
+    }
+  },
+  "decision_gate": {
+    "combined_improvement_nll": 0.01,
+    "maximum_single_domain_regression_nll": 0.02
+  }
+}

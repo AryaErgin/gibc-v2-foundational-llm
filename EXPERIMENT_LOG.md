@@ -1,3 +1,21 @@
+## EXP-017A — 2.4B WSD horizon branch (2026-08-30)
+
+Status: preregistered and preflighted; not launched. EXP-016 is closed as a
+negative result: Magma combined NLL `3.4620570689439774` versus Control
+`3.3697906136512756` (`+0.09226645529270172` nat), failing capability and both
+domain guards despite passing its efficiency guard. Magma is rejected without
+tuning or seed-43; Recipe v3 + WSD remains promoted.
+
+EXP-017A is fresh seed-42 Recipe-v3 + WSD at 73,242 updates / 2,399,993,856
+prediction tokens using the immutable EXP-012 2.4B stream after exact
+stream/manifest/tokenizer/validation/prefix verification. WSD is warmup 100,
+stable through 65,918, then 7,324 cooldown updates from 65,919 to final LR
+`6e-5`; checkpoint-step-65918 is the required stable-trunk artifact. Its
+internal EXP-012 cosine reference is General `3.190959542989731`, Edu
+`2.8499483168125153`, combined `3.020453929901123`. SUCCESS requires at least
+0.010 combined improvement and neither domain worse by more than 0.020. No
+training, benchmark, or data rebuild is authorized. See `experiments/EXP-017A-2.4b-wsd.md`.
+
 # Experiment Log
 
 ## EXP-001
