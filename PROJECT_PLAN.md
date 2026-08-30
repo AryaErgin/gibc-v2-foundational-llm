@@ -6,7 +6,7 @@ The project follows a baseline-first experimental sequence: infrastructure valid
 
 Recipe v3 (49,860,480 parameters, SwiGLU) was selected by EXP-008. EXP-009 retained peak/minimum LR `6e-4/6e-5` because the 8e-4 result was inside its predeclared 0.01-nat tie region. EXP-010 retained Recipe v3 under its predeclared engineering tiebreak.
 
-EXP-011 completed the authorized fresh seed-42 1.5B calibration. EXP-012 then completed the single authorized fresh 2.4B-class calibration: 73,242 updates / 2,399,993,856 prediction tokens, with its cosine horizon fixed from step zero. The rebuilt stream retained exact EXP-004, EXP-006, and EXP-011 raw-byte prefixes and the 2:1 globally deduplicated, contamination-screened Data Recipe v1 mixture. The final approximately-300M EXP-012 tranche is approaching diminishing returns. Details: [results/EXP-012-summary.md](results/EXP-012-summary.md).
+EXP-011 completed the authorized fresh seed-42 1.5B calibration. EXP-012 then completed the single authorized fresh 2.4B-class calibration: 73,242 updates / 2,399,993,856 prediction tokens, with its cosine horizon fixed from step zero. The rebuilt stream retained exact EXP-004, EXP-006, and EXP-011 raw-byte prefixes and the 2:1 globally deduplicated, contamination-screened Data Recipe v1 mixture. The final approximately-300M EXP-012 tranche is approaching diminishing retuns. Details: [results/EXP-012-summary.md](results/EXP-012-summary.md).
 
 ## Frozen controls
 
@@ -17,7 +17,7 @@ Native Windows, OMEN Performance mode, AC power, context 512, physical batch 32 
 The selected EXP-012 terminal checkpoint completed the frozen official CPU FP32
 evaluation successfully on 2026-08-28; see
 `experiments/EXP-012-official-evaluation.md` and `RESULTS.md`. No additional
-training, LR/architecture/data change, alternate checkpoint selection, o
+training, LR/architecture/data change, altenate checkpoint selection, o
 benchmark rerun is authorized. The remaining submission task is approval-gated
 publication of the inference-only artifact described in
 `docs/EXP-012-INFERENCE-PUBLICATION.md`. EXP-014 then tested the
@@ -32,3 +32,12 @@ preregistered phase-interaction gate against B. This negative result rejects
 the curriculum from the promoted recipe and does not authorize seed-43,
 EXP-016, a benchmark, or a final-scale run. Recipe v3 + WSD remains the
 promoted training baseline.
+
+## SYS-002 WSL runtime qualification
+
+On 2026-08-30, the secure WSL Python 3.11 / torch 2.13.0+cu132 runtime on the
+RTX 5090 Laptop reproduced the frozen seed-42 Recipe-v3 + WSD 300M endpoint
+within all predeclared Windows equivalence gates. This is runtime-system
+qualification only, not model-selection evidence: it does not change Recipe
+v3 + WSD, promote a new model, or authorize EXP-016, seed43, a benchmark, or
+additional training. The extenal run record is

@@ -26,7 +26,7 @@ Recipe v3, tokenizer, Data Recipe v1 stream, and validation tensors. WSD
 improved combined loss by `-0.03376075625419617` nat at seed 42 and by
 `-0.027358993887901306` nat in the paired seed-43 confirmation; General and
 Edu validation both improved in each comparison. **Model Recipe v3 + WSD is
-the frozen promoted training baseline for EXP-014.** This is an internal
+the frozen promoted training baseline for EXP-014.** This is an intenal
 validation/scheduler conclusion only; it does not run or reinterpret any
 official benchmark. Full provenance, runtime, scheduler, and checkpoint data
 are in [results/EXP-013-summary.md](results/EXP-013-summary.md).
@@ -71,3 +71,9 @@ phase-interaction gates. **EXP-015 is a preserved negative result.** Identical
 fixed examples with only temporal placement produced a domain tradeoff, not
 broad capability improvement. No seed-43 follows; Recipe v3 + WSD remains
 frozen. Details: [EXP-015](results/EXP-015-summary.md).
+
+## SYS-002 WSL runtime qualification - finalized 2026-08-30
+
+The fresh WSL runtime reproduction of Recipe-v3 + WSD completed 9,156 updates
+and 300,023,808 prediction tokens under the frozen A schedule. General, Edu,
+and combined endpoint differences versus Windows A were all within the
