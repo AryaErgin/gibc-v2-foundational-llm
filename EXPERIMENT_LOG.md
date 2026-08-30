@@ -114,3 +114,14 @@ invariants. A bounded 60-update WSL GPU smoke completed with finite loss,
 relative to the prior WSL production baseline is within the predeclared 10%
 operational guard. This is implementation/infrastructure evidence only, not
 model-selection evidence; see `results/EXP-016-preflight.md`.
+
+## EXP-016 - Magma (2026-08-30)
+
+Status: completed fresh seed-42 negative result. Control reached General
+`3.526235818862915`, Edu `3.2133454084396362`, combined `3.3697906136512756`.
+Magma reached General `3.616050601005554`, Edu `3.3080635368824005`, combined
+`3.4620570689439774`: combined worsened by `0.09226645529270172` nat and both
+domain guards failed. Its 7.43% throughput decline passed the efficiency guard
+but cannot rescue capability failure. Reject Magma without tuning; no seed-43,
+benchmark, or new experiment is authorized. Recipe v3 + WSD remains promoted.
+See `results/EXP-016-summary.md`.

@@ -52,3 +52,12 @@ baseline. The frozen specification, gates, and independent paper provenance
 are in `experiments/EXP-016-magma.md` and
 `provenance/exp016-magma-paper.json`; no benchmarks, tuning, or seed-43
 confirmation are authorized at preflight.
+
+## EXP-016 result
+
+EXP-016 completed fresh seed-42 Control then Magma on the scientifically
+qualified WSL runtime. Magma worsened combined frozen NLL by 0.09226645529270172
+nat and failed both domain guards. Its <=10% throughput guard passed but does
+not rescue capability failure. Magma is rejected without tuning; no seed-43,
+benchmark, or additional experiment is authorized. Recipe v3 + WSD remains the
+promoted training recipe.

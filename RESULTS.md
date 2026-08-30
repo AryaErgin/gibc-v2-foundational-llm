@@ -77,3 +77,14 @@ frozen. Details: [EXP-015](results/EXP-015-summary.md).
 The fresh WSL runtime reproduction of Recipe-v3 + WSD completed 9,156 updates
 and 300,023,808 prediction tokens under the frozen A schedule. General, Edu,
 and combined endpoint differences versus Windows A were all within the
+
+| Momentum-Aligned Gradient Masking | EXP-016 fresh seed-42 Magma worsened combined frozen validation by `0.09226645529270172` nat and failed both domain guards; its 7.43% throughput decline met the efficiency guard but cannot rescue capability failure. Recipe v3 + WSD remains baseline. | [EXP-016](results/EXP-016-summary.md) |
+
+## EXP-016 Magma - finalized 2026-08-30
+
+Magma combined NLL was `3.4620570689439774` versus Control
+`3.3697906136512756` (`+0.09226645529270172` nat), with both domain guards
+failing. **EXP-016 is a preserved negative result; Magma is rejected without
+tuning or seed-43 confirmation.** The efficiency guard passed with a 7.43%
+mean-throughput degradation, which does not alter capability failure. Details:
+[results/EXP-016-summary.md](results/EXP-016-summary.md).
