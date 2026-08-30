@@ -10,6 +10,7 @@ import random
 import tempfile
 import time
 from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Protocol
 
@@ -349,6 +350,20 @@ class JsonlLogger:
             handle.write(json.dumps(record, sort_keys=True) + "\n")
 
 
+class DurableProgressLogger:
+    """Append-only, fsynced output-only progress telemetry for long runs."""
+
+    def __init__(self, path: Path) -> None:
+        self.path = path
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+
+    def log(self, record: dict[str, Any]) -> None:
+        with self.path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(record, sort_keys=True) + "\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+
+
 def train_smoke(
     model: DecoderOnlyTransformer,
     train_inputs: Tensor | TokenStreamDataset,
@@ -366,7 +381,12 @@ def train_smoke(
     logger: JsonlLogger | None = None,
     lr_controller: LRController | None = None,
     sequence_schedule: np.ndarray | None = None,
+    progress_logger: DurableProgressLogger | None = None,
+    progress_interval_updates: int = 100,
+    progress_metadata: dict[str, Any] | None = None,
 ) -> list[dict[str, float]]:
+    if progress_logger is not None and not 0 < progress_interval_updates <= 100:
+        raise ValueError("Durable progress interval must be in [1, 100] completed optimizer updates.")
     if isinstance(train_inputs, TokenStreamDataset):
         if train_inputs.context_length != 512 or train_targets is not None:
             raise ValueError("TokenStreamDataset training expects 512-token views and no duplicate target tensor.")
@@ -418,6 +438,20 @@ def train_smoke(
         records.append(metrics)
         if logger is not None:
             logger.log(metrics)
+        if progress_logger is not None and state.step % progress_interval_updates == 0:
+            progress_logger.log(
+                {
+                    **(progress_metadata or {}),
+                    "event": "durable_progress",
+                    "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+                    "step": state.step,
+                    "prediction_tokens": state.tokens,
+                    "next_sequence_index": state.next_sequence_index,
+                    "train_loss": float(metrics["loss"]),
+                    "learning_rate": float(metrics["learning_rate"]),
+                    "tokens_per_second": float(metrics["tokens_per_second"]),
+                }
+            )
     return records
 
 

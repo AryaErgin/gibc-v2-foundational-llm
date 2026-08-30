@@ -4,8 +4,9 @@
 versus Control `3.3697906136512756` is `+0.09226645529270172` nat, and both
 domain guards failed; passing the efficiency guard does not rescue capability.
 Magma is rejected without tuning or seed-43. Recipe v3 + WSD remains promoted.
-EXP-017A is preregistered only as a fresh 2.4B WSD internal-validation branch;
-it has no result, changes no model selection, and invokes no official benchmark.
+EXP-017A Attempt 1 is `TECHNICAL_ABORT_THERMAL` with `NO SCIENTIFIC RESULT`;
+it remains a fresh 2.4B WSD internal-validation branch with no model-selection
+effect and no official benchmark invocation.
 
 # Results Index
 

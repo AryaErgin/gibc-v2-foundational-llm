@@ -27,6 +27,7 @@ from gibc_llm.llr import HTSRLLR, LLRSettings, build_llr_optimizer
 from gibc_llm.magma import MagmaAdamW, MagmaSettings, magma_blocks
 from gibc_llm.train import (
     CosineWithWarmup,
+    DurableProgressLogger,
     JsonlLogger,
     RunState,
     WarmupStableDecay,
@@ -115,6 +116,7 @@ def main() -> None:
     parser.add_argument("--gradient-accumulation-steps", type=int, default=2)
     parser.add_argument("--checkpoint-interval", type=int)
     parser.add_argument("--validation-interval", type=int)
+    parser.add_argument("--progress-interval-updates", type=int, default=100)
     parser.add_argument("--recorded-source-commit", help="Pre-training source/spec commit recorded by an external clean checkout.")
     parser.add_argument("--sequence-schedule", type=Path)
     parser.add_argument("--schedule-arm", choices=("A", "B", "C"))
@@ -132,6 +134,8 @@ def main() -> None:
     assert_physical_batch_control(config, args.microbatch_sequences, args.gradient_accumulation_steps)
     if args.checkpoint_interval <= 0 or args.validation_interval <= 0:
         raise ValueError("Checkpoint and validation intervals must be positive.")
+    if not 0 < args.progress_interval_updates <= 100:
+        raise ValueError("--progress-interval-updates must be in [1, 100].")
     artifact = load_full_run_artifact(args.artifact_dir, config)
     sequence_schedule = None
     schedule_metadata = None
@@ -202,6 +206,7 @@ def main() -> None:
     state = RunState()
     args.run_dir.mkdir(parents=True, exist_ok=True)
     logger = JsonlLogger(args.run_dir / "metrics.jsonl")
+    progress_logger = DurableProgressLogger(args.run_dir / "progress.jsonl")
     if args.resume is not None:
         _verify_resume_provenance(args.resume, config, artifact, common["tokenizer_sha256"], artifact.manifest_sha256)
         if schedule_metadata is not None:
@@ -274,6 +279,9 @@ def main() -> None:
             config.training.gradient_clip_norm,
             lr_controller=llr_controller,
             sequence_schedule=sequence_schedule,
+            progress_logger=progress_logger,
+            progress_interval_updates=args.progress_interval_updates,
+            progress_metadata=common,
         )
         for record in chunk:
             record_step = int(record["step"])

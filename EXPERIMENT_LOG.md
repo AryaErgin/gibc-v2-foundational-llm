@@ -1,6 +1,8 @@
 ## EXP-017A — 2.4B WSD horizon branch (2026-08-30)
 
-Status: preregistered and preflighted; not launched. EXP-016 is closed as a
+Status: preregistered and preflighted; Attempt 1 was thermally aborted with
+no scientific result; unattended relaunch is prohibited pending a trustworthy
+CPU-package temperature source. EXP-016 is closed as a
 negative result: Magma combined NLL `3.4620570689439774` versus Control
 `3.3697906136512756` (`+0.09226645529270172` nat), failing capability and both
 domain guards despite passing its efficiency guard. Magma is rejected without
@@ -15,6 +17,26 @@ internal EXP-012 cosine reference is General `3.190959542989731`, Edu
 `2.8499483168125153`, combined `3.020453929901123`. SUCCESS requires at least
 0.010 combined improvement and neither domain worse by more than 0.020. No
 training, benchmark, or data rebuild is authorized. See `experiments/EXP-017A-2.4b-wsd.md`.
+
+### Attempt 1 thermal record
+
+`EXP-017A Attempt 1` started as the required fresh seed-42 lineage and was
+gracefully terminated on 2026-08-30 after the user observed sustained CPU
+package temperature near 95 C. It is classified `TECHNICAL_ABORT_THERMAL` and
+`NO SCIENTIFIC RESULT`; its partial metrics must not be used for model
+selection. Preserved evidence is in
+`artifacts/exp017a-wsd-2p4b/attempt-1-thermal-abort.json` with the existing
+logs, telemetry, and recorded hashes. No checkpoint was written.
+
+The interruption exposed a durability limitation: chunk-local per-update
+records were only transferred to `metrics.jsonl` when a long `train_smoke`
+call returned. The runner now has a separate fsynced `progress.jsonl` stream
+at intervals no greater than 100 completed updates; it is output-only and was
+tested for identical tiny-run model, optimizer, scheduler, run-state,
+checkpoint, and RNG state. The existing system exposes only ACPI thermal zone
+`_tz.tz00`, not an identified CPU-package sensor. Therefore
+`UNATTENDED_EXP017A_ALLOWED = NO`; neither shakedown nor Attempt 2 is
+authorized by this record.
 
 # Experiment Log
 

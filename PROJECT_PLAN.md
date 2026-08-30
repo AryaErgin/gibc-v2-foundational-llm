@@ -4,13 +4,36 @@ EXP-016 is finalized negative: Magma worsened combined frozen NLL by
 `0.09226645529270172` nat and failed both domain guards. It is rejected with
 no tuning or seed-43; Recipe v3 + WSD remains promoted.
 
-EXP-017A is preregistered only, not launched: a fresh seed-42 2.4B-token
+EXP-017A Attempt 1 was a fresh seed-42 start but was gracefully terminated for
+sustained user-observed CPU package temperature near 95 C. It is
+`TECHNICAL_ABORT_THERMAL`, has `NO SCIENTIFIC RESULT`, and must not be resumed.
+Its partial logs/telemetry are preserved. The next attempt, if separately
+authorized, remains a fresh step-0 lineage; Attempt 1 is not a continuation
+source. EXP-017A otherwise remains preregistered as a fresh seed-42 2.4B-token
 Recipe-v3 + WSD lineage on the immutable EXP-012 stream. Scheduler-derived
 WSD is stable through 65,918 and cools down across updates 65,919-73,242
 (7,324 updates), ending at `6e-5`. The pre-cooldown checkpoint at
 2,160,001,024 prediction tokens is the required future continuation trunk;
 the cooled endpoint does not continue. Future 4.8B/7.2B/9.6B branches require
 separate authorization. No benchmark or training is authorized by this plan.
+
+### Thermal and instrumentation gate
+
+Long-run progress is now written to a separate fsynced `progress.jsonl` after
+each configured completed-update interval (maximum 100). It contains only
+observed scalar telemetry and does not alter data ordering, RNG, model,
+optimizer, scheduler, or checkpoint state; a focused deterministic tiny-run
+control equality test covers this boundary.
+
+Read-only inspection found the running OMEN services/app and Windows ACPI
+thermal-zone counter `_tz.tz00`, but no documented existing source that
+identifies its value as CPU package temperature; WSL exposed no thermal/hwmon
+sensor. Accordingly, `UNATTENDED_EXP017A_ALLOWED = NO`. No thermal shakedown
+or Attempt 2 may launch until a trustworthy read-only CPU-package source is
+available and a detached supervisor has logged and demonstrated sustained 95 C
+(30–60 seconds), immediate 100 C, and GPU 85 C abort handling. Visual checks
+of AC connection, flat hard surface, and unobstructed vents remain user-side
+requirements.
 
 # Project Plan
 
