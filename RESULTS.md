@@ -116,3 +116,8 @@ failing. **EXP-016 is a preserved negative result; Magma is rejected without
 tuning or seed-43 confirmation.** The efficiency guard passed with a 7.43%
 mean-throughput degradation, which does not alter capability failure. Details:
 [results/EXP-016-summary.md](results/EXP-016-summary.md).
+
+
+## EXP-018 QK-Norm — finalized 2026-09-02
+
+EXP-018 executed its full fresh 45,777-update / 1,500,020,736-token horizon. Terminal frozen validation was General 3.2337925136089325, Edu 2.9020539820194244, Combined 3.0679232478141785; versus EXP-011 Combined 3.0800857544, this is a -0.0121625066-nat improvement. Although neither domain guard failed, this misses the preregistered >=0.015-nat promotion threshold. EXP-018 is an execution pass and scientific promotion fail: QK-Norm is rejected from the final recipe without retuning. No required benchmark was run.

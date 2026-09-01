@@ -153,3 +153,12 @@ domain guards failed. Its 7.43% throughput decline passed the efficiency guard
 but cannot rescue capability failure. Reject Magma without tuning; no seed-43,
 benchmark, or new experiment is authorized. Recipe v3 + WSD remains promoted.
 See `results/EXP-016-summary.md`.
+
+
+## EXP-018 — QK-Norm closure (2026-09-02)
+
+Status: execution PASS; scientific promotion FAIL. Fresh seed-42 EXP-018 completed 45,777 updates / 1,500,020,736 prediction tokens with 49,860,489 parameters and terminal General 3.2337925136089325, Edu 2.9020539820194244, Combined 3.0679232478141785. Against EXP-011 Combined 3.0800857544, the improvement was 0.0121625066 nat, below the preregistered 0.015-nat promotion requirement; the domain guards passed. The matched combined advantages were approximately -0.02233, -0.01640, -0.01306, -0.01288, and -0.01216 at 300M through 1.5B, respectively, strengthening the project's proxy/horizon-decay warning. QK-Norm is rejected from the final recipe without retuning, but remains implemented behind its default-off configuration. No held-out benchmark was invoked. See provenance/exp018-closure.json.
+
+## EXP-019 — Cautious Weight Decay preregistration (2026-09-02)
+
+Status: pre-launch. EXP-019 is the sole remaining method ablation: a fresh seed-42 Recipe-v3, 1.5B-token, EXP-011-matched cosine run using only source-faithful CWD. All architecture, data/order, tokenizer, batch, Adam betas/epsilon, nominal 0.1 decay coefficient, LR/warmup/cosine, validation, and pacing controls remain fixed; QK-Norm is off. CWD replaces ordinary decoupled decay entrywise with Algorithm 1's I(u*x >= 0) mask using the pre-update parameter and Adam adaptive update. The frozen gate is Combined <=3.0700857544 for PASS, <=3.0650857544 for STRONG PASS, with General <=3.2571743524 and Edu <=2.9229971564. Frozen matched horizon measurements are at steps 9,156, 18,312, 27,468, 36,624, and 45,777. No benchmark or post-result retuning is authorized. Full provenance is in provenance/exp019-cwd-preregistration.json.

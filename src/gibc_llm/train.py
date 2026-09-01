@@ -12,7 +12,7 @@ import time
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable, Protocol
+from typing import Any, Callable, Iterable, Protocol
 
 import numpy as np
 import torch
@@ -148,6 +148,92 @@ class WarmupStableDecay:
         self._set_lr(self.lr_at_step(self.step_count))
 
 
+class CautiousAdamW(torch.optim.Optimizer):
+    """AdamW with the source-faithful Cautious Weight Decay mask.
+
+    Chen et al. (arXiv:2510.12402v2, Algorithm 1) define the entrywise update
+    x_next = x - lr * (u + weight_decay * I(u * x >= 0) * x). The Adam
+    moments and bias corrections remain ordinary decoupled AdamW semantics;
+    only the pre-update decay term is sign-selective.
+    """
+
+    def __init__(
+        self,
+        params: Iterable[torch.Tensor] | Iterable[dict[str, Any]],
+        lr: float = 1.0e-3,
+        betas: tuple[float, float] = (0.9, 0.999),
+        eps: float = 1.0e-8,
+        weight_decay: float = 1.0e-2,
+        *,
+        maximize: bool = False,
+        foreach: bool | None = None,
+        fused: bool | None = None,
+    ) -> None:
+        if lr < 0.0:
+            raise ValueError(f"Invalid learning rate: {lr}")
+        if eps < 0.0:
+            raise ValueError(f"Invalid epsilon: {eps}")
+        if not 0.0 <= betas[0] < 1.0 or not 0.0 <= betas[1] < 1.0:
+            raise ValueError(f"Invalid AdamW betas: {betas}")
+        if weight_decay < 0.0:
+            raise ValueError(f"Invalid weight decay: {weight_decay}")
+        if foreach is True or fused is True:
+            raise ValueError("CautiousAdamW uses an eager source-faithful per-parameter update; foreach/fused are unsupported.")
+        super().__init__(
+            params,
+            {
+                "lr": lr,
+                "betas": betas,
+                "eps": eps,
+                "weight_decay": weight_decay,
+                "maximize": maximize,
+                "foreach": foreach,
+                "fused": fused,
+            },
+        )
+
+    @torch.no_grad()
+    def step(self, closure: Callable[[], torch.Tensor] | None = None) -> torch.Tensor | None:
+        loss = None
+        if closure is not None:
+            with torch.enable_grad():
+                loss = closure()
+        for group in self.param_groups:
+            beta1, beta2 = group["betas"]
+            learning_rate = group["lr"]
+            epsilon = group["eps"]
+            weight_decay = group["weight_decay"]
+            maximize = group["maximize"]
+            for parameter in group["params"]:
+                gradient = parameter.grad
+                if gradient is None:
+                    continue
+                if gradient.is_sparse:
+                    raise RuntimeError("CautiousAdamW does not support sparse gradients.")
+                if maximize:
+                    gradient = -gradient
+                state = self.state[parameter]
+                if not state:
+                    state["step"] = 0
+                    state["exp_avg"] = torch.zeros_like(parameter, memory_format=torch.preserve_format)
+                    state["exp_avg_sq"] = torch.zeros_like(parameter, memory_format=torch.preserve_format)
+                state["step"] += 1
+                step = state["step"]
+                exp_avg = state["exp_avg"]
+                exp_avg_sq = state["exp_avg_sq"]
+                exp_avg.lerp_(gradient, 1.0 - beta1)
+                exp_avg_sq.mul_(beta2).addcmul_(gradient, gradient, value=1.0 - beta2)
+                bias_correction1 = 1.0 - beta1**step
+                bias_correction2 = 1.0 - beta2**step
+                denominator = exp_avg_sq.sqrt().div_(bias_correction2**0.5).add_(epsilon)
+                update = exp_avg / denominator
+                if weight_decay != 0.0:
+                    decay_mask = update.mul(parameter).ge(0.0)
+                    parameter.add_(parameter * decay_mask, alpha=-learning_rate * weight_decay)
+                parameter.add_(update, alpha=-learning_rate / bias_correction1)
+        return loss
+
+
 def build_optimizer(
     model: nn.Module,
     peak_learning_rate: float,
@@ -156,7 +242,8 @@ def build_optimizer(
     eps: float,
     *,
     fused: bool | None = None,
-) -> torch.optim.AdamW:
+    cautious_weight_decay: bool = False,
+) -> torch.optim.Optimizer:
     """Decay matrices (including tied embeddings), not one-dimensional RMSNorm scales."""
     decay, no_decay = [], []
     for parameter in model.parameters():
@@ -170,10 +257,10 @@ def build_optimizer(
     }
     if fused is not None:
         options["fused"] = fused
-    return torch.optim.AdamW(
-        [{"params": decay, "weight_decay": weight_decay}, {"params": no_decay, "weight_decay": 0.0}],
-        **options,
-    )
+    parameter_groups = [{"params": decay, "weight_decay": weight_decay}, {"params": no_decay, "weight_decay": 0.0}]
+    if cautious_weight_decay:
+        return CautiousAdamW(parameter_groups, **options)
+    return torch.optim.AdamW(parameter_groups, **options)
 
 
 def _autocast(device: torch.device) -> contextlib.AbstractContextManager[Any]:

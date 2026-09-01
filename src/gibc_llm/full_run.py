@@ -20,6 +20,7 @@ EXP009_IDS = {"EXP-009A", "EXP-009B"}
 EXP010_IDS = {"EXP-010A"}
 EXP011_ID = "EXP-011"
 EXP018_ID = "EXP-018"
+EXP019_ID = "EXP-019"
 EXP012_ID = "EXP-012"
 EXP013_IDS = {"EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43"}
 EXP014_IDS = {"EXP-014"}
@@ -62,10 +63,10 @@ def expected_artifact_sequences(config: ExperimentConfig, artifact_experiment_id
         allowed = {EXP006_ID: EXP006_PREDICTION_TOKENS, EXP011_ID: EXP011_PREDICTION_TOKENS}
         if allowed.get(artifact_experiment_id) != prediction_tokens:
             raise RuntimeError("EXP-011 artifact capacity does not match its approved experiment identity.")
-    elif config.experiment_id == EXP018_ID:
+    elif config.experiment_id in {EXP018_ID, EXP019_ID}:
         allowed = {EXP011_ID: EXP011_PREDICTION_TOKENS, EXP012_ID: EXP012_PREDICTION_TOKENS}
         if allowed.get(artifact_experiment_id) != prediction_tokens:
-            raise RuntimeError("EXP-018 requires either the exact EXP-011 1.5B artifact or the verified EXP-012 2.4B source stream.")
+            raise RuntimeError("EXP-018/EXP-019 requires either the exact EXP-011 1.5B artifact or the verified EXP-012 2.4B source stream.")
     elif prediction_tokens != config.training.full_training_tokens:
         raise RuntimeError("Full-run artifact token capacity differs from the supplied experiment configuration.")
     return prediction_tokens // config.training.sequence_predictions
@@ -77,9 +78,9 @@ def full_run_milestones(config: ExperimentConfig) -> tuple[int, ...]:
         if config.training.full_schedule_steps != 27_468:
             raise RuntimeError("The EXP-006 milestone plan must remain 0/9156/18312/27468.")
         return (0, 9_156, 18_312, 27_468)
-    if config.experiment_id in {EXP011_ID, EXP018_ID}:
+    if config.experiment_id in {EXP011_ID, EXP018_ID, EXP019_ID}:
         if config.training.full_schedule_steps != 45_777:
-            raise RuntimeError("The EXP-011/EXP-018 milestone plan must remain 0/9156/18312/27468/36624/45777.")
+            raise RuntimeError("The EXP-011/EXP-018/EXP-019 milestone plan must remain 0/9156/18312/27468/36624/45777.")
         return (0, 9_156, 18_312, 27_468, 36_624, 45_777)
     if config.experiment_id == EXP012_ID:
         if config.training.full_schedule_steps != 73_242:
@@ -104,7 +105,7 @@ def assert_physical_batch_control(config: ExperimentConfig, microbatch_sequences
     """Preserve the explicit physical batch where an experiment fixes it."""
     if microbatch_sequences * accumulation_steps != sequences_per_update(config):
         raise RuntimeError("Full runner must retain exactly 64 sequences / 32,768 prediction tokens per update.")
-    if config.experiment_id in {"EXP-003", "EXP-004", *EXP005_IDS, *EXP007_IDS, *EXP008_IDS, *EXP009_IDS, *EXP010_IDS, *EXP013_IDS, *EXP016_IDS, EXP006_ID, EXP011_ID, EXP018_ID, EXP012_ID, EXP017A_ID} and (
+    if config.experiment_id in {"EXP-003", "EXP-004", *EXP005_IDS, *EXP007_IDS, *EXP008_IDS, *EXP009_IDS, *EXP010_IDS, *EXP013_IDS, *EXP016_IDS, EXP006_ID, EXP011_ID, EXP018_ID, EXP019_ID, EXP012_ID, EXP017A_ID} and (
         microbatch_sequences != config.training.default_microbatch_sequences
         or accumulation_steps != config.training.default_gradient_accumulation_steps
     ):
@@ -133,21 +134,21 @@ def assert_exp011_phase_capacity(
     config: ExperimentConfig, artifact_experiment_id: str | None, artifact_prediction_tokens: int, planned_end_step: int
 ) -> None:
     """Allow only the audited 900M EXP-006 prefix before its boundary, then only the verified 1.5B artifact."""
-    if config.experiment_id not in {EXP011_ID, EXP018_ID}:
+    if config.experiment_id not in {EXP011_ID, EXP018_ID, EXP019_ID}:
         return
     if config.experiment_id == EXP011_ID and artifact_experiment_id == EXP006_ID and artifact_prediction_tokens == EXP006_PREDICTION_TOKENS:
         if planned_end_step > EXP011_EXP006_FINAL_STEP:
             raise RuntimeError("EXP-011 may use the immutable EXP-006 artifact only through step 27,468; build and verify EXP-011 before resume.")
         return
-    if config.experiment_id == EXP018_ID and artifact_experiment_id == EXP012_ID and artifact_prediction_tokens == EXP011_PREDICTION_TOKENS:
+    if config.experiment_id in {EXP018_ID, EXP019_ID} and artifact_experiment_id == EXP012_ID and artifact_prediction_tokens == EXP011_PREDICTION_TOKENS:
         if planned_end_step > config.training.full_schedule_steps:
-            raise RuntimeError("EXP-018 planned end exceeds the fixed 45,777-step horizon.")
+            raise RuntimeError("EXP-018/EXP-019 planned end exceeds the fixed 45,777-step horizon.")
         return
     if artifact_experiment_id == EXP011_ID and artifact_prediction_tokens == EXP011_PREDICTION_TOKENS:
         if planned_end_step > config.training.full_schedule_steps:
-            raise RuntimeError("EXP-011/EXP-018 planned end exceeds the fixed 45,777-step horizon.")
+            raise RuntimeError("EXP-011/EXP-018/EXP-019 planned end exceeds the fixed 45,777-step horizon.")
         return
-    raise RuntimeError("EXP-011 requires either the validated EXP-006 900M artifact or EXP-011 1.5B artifact; EXP-018 requires the independently verified EXP-011 prefix of EXP-012 or the original EXP-011 artifact.")
+    raise RuntimeError("EXP-011 requires either the validated EXP-006 900M artifact or EXP-011 1.5B artifact; EXP-018/EXP-019 require the independently verified EXP-011 prefix of EXP-012 or the original EXP-011 artifact.")
 
 
 def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> FullRunArtifact:
@@ -157,17 +158,17 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
     if not manifest_path.is_file():
         raise RuntimeError("Full-run artifact is missing manifest.json.")
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    expected_manifest_id = "EXP-004" if config.experiment_id in {*EXP005_IDS, *EXP007_IDS, *EXP008_IDS, *EXP009_IDS, *EXP010_IDS, *EXP013_IDS, *EXP014_IDS, *EXP016_IDS} else EXP012_ID if config.experiment_id == EXP017A_ID else EXP011_ID if config.experiment_id == EXP018_ID else config.experiment_id
+    expected_manifest_id = "EXP-004" if config.experiment_id in {*EXP005_IDS, *EXP007_IDS, *EXP008_IDS, *EXP009_IDS, *EXP010_IDS, *EXP013_IDS, *EXP014_IDS, *EXP016_IDS} else EXP012_ID if config.experiment_id == EXP017A_ID else EXP011_ID if config.experiment_id in {EXP018_ID, EXP019_ID} else config.experiment_id
     accepted_manifest_ids = (
         {EXP006_ID, EXP011_ID}
         if config.experiment_id == EXP011_ID
         else {EXP011_ID, EXP012_ID}
-        if config.experiment_id == EXP018_ID
+        if config.experiment_id in {EXP018_ID, EXP019_ID}
         else {expected_manifest_id}
     )
     if manifest.get("experiment_id") not in accepted_manifest_ids:
         raise RuntimeError("Full-run manifest experiment identity differs from the supplied configuration.")
-    dual_validation_experiment = config.experiment_id in {"EXP-003", "EXP-004", *EXP005_IDS, *EXP007_IDS, *EXP008_IDS, *EXP009_IDS, *EXP010_IDS, *EXP013_IDS, *EXP014_IDS, *EXP016_IDS, EXP006_ID, EXP011_ID, EXP018_ID, EXP012_ID, EXP017A_ID}
+    dual_validation_experiment = config.experiment_id in {"EXP-003", "EXP-004", *EXP005_IDS, *EXP007_IDS, *EXP008_IDS, *EXP009_IDS, *EXP010_IDS, *EXP013_IDS, *EXP014_IDS, *EXP016_IDS, EXP006_ID, EXP011_ID, EXP018_ID, EXP019_ID, EXP012_ID, EXP017A_ID}
     if dual_validation_experiment and manifest.get("preparation_mode") != "full_stream":
         raise RuntimeError(f"{config.experiment_id} full runner requires a complete stream materialization, not validation-only preparation.")
     dataset = manifest.get("dataset", {})
@@ -194,12 +195,12 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
     packed = manifest.get("packed", {})
     train_tokens = config.training.full_training_tokens
     source_tokens = train_tokens
-    if config.experiment_id in {EXP011_ID, EXP018_ID}:
+    if config.experiment_id in {EXP011_ID, EXP018_ID, EXP019_ID}:
         source_tokens = (
             EXP006_PREDICTION_TOKENS
             if config.experiment_id == EXP011_ID and manifest["experiment_id"] == EXP006_ID
             else EXP012_PREDICTION_TOKENS
-            if config.experiment_id == EXP018_ID and manifest["experiment_id"] == EXP012_ID
+            if config.experiment_id in {EXP018_ID, EXP019_ID} and manifest["experiment_id"] == EXP012_ID
             else EXP011_PREDICTION_TOKENS
         )
     source_stored = source_tokens + 1
@@ -217,7 +218,7 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
     stream_path = artifact_dir / packed.get("train_stream_file", "train-token-stream.uint16")
     if not stream_path.is_file() or stream_path.stat().st_size != source_stored * 2:
         raise RuntimeError("Full-run uint16 token stream is missing or has the wrong exact size.")
-    if config.experiment_id == EXP018_ID and manifest["experiment_id"] == EXP012_ID and packed.get("train_stream_sha256") != EXP012_STREAM_SHA256:
+    if config.experiment_id in {EXP018_ID, EXP019_ID} and manifest["experiment_id"] == EXP012_ID and packed.get("train_stream_sha256") != EXP012_STREAM_SHA256:
         raise RuntimeError("EXP-018 EXP-012 source stream hash differs from the independently verified 2.4B artifact.")
     if config.experiment_id in {*EXP005_IDS, *EXP007_IDS, *EXP008_IDS, *EXP009_IDS, *EXP010_IDS, *EXP013_IDS, *EXP014_IDS, *EXP016_IDS} and packed.get("train_stream_sha256") != EXP004_FROZEN_STREAM_SHA256:
         raise RuntimeError("This controlled arm requires the exact frozen EXP-004 stream SHA-256; rematerialized streams are forbidden.")
@@ -234,7 +235,7 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
             raise RuntimeError("EXP-006 manifest lacks a verified exact EXP-004 byte prefix.")
         if sha256_file_prefix(stream_path, EXP004_PREFIX_BYTE_COUNT) != EXP004_FROZEN_STREAM_SHA256:
             raise RuntimeError("EXP-006 stream fails independent EXP-004 prefix verification.")
-    if config.experiment_id in {EXP011_ID, EXP018_ID} and manifest["experiment_id"] == EXP011_ID:
+    if config.experiment_id in {EXP011_ID, EXP018_ID, EXP019_ID} and manifest["experiment_id"] == EXP011_ID:
         exp006_prefix = manifest.get("exp006_prefix", {})
         frozen_exp006 = manifest.get("frozen_exp006_source", {})
         if (
@@ -258,7 +259,7 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
             or sha256_file_prefix(stream_path, EXP004_PREFIX_BYTE_COUNT) != EXP004_FROZEN_STREAM_SHA256
         ):
             raise RuntimeError("EXP-011 stream fails independent EXP-004 prefix verification.")
-    if config.experiment_id in {EXP012_ID, EXP017A_ID} or (config.experiment_id == EXP018_ID and manifest["experiment_id"] == EXP012_ID):
+    if config.experiment_id in {EXP012_ID, EXP017A_ID} or (config.experiment_id in {EXP018_ID, EXP019_ID} and manifest["experiment_id"] == EXP012_ID):
         from .exp012 import assert_exp012_prefix_provenance
 
         assert_exp012_prefix_provenance(manifest, stream_path)
@@ -306,12 +307,12 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
             raise RuntimeError(f"{config.experiment_id} educational validation material does not match its held-out manifest invariants.")
         expected_edu_hashes = (
             ("cc75580b854b69846b1ff15385fbb87adf5bdf1701c1bfe9e8e8d5fdb651fb1a", "300608bc74e052f1580d78e3ad5e1174312360a766f3278c6ce2bdf3336a48b4")
-            if config.experiment_id in {"EXP-004", *EXP005_IDS, *EXP007_IDS, *EXP008_IDS, *EXP009_IDS, *EXP010_IDS, *EXP013_IDS, *EXP014_IDS, *EXP016_IDS, EXP006_ID, EXP011_ID, EXP018_ID, EXP012_ID, EXP017A_ID}
+            if config.experiment_id in {"EXP-004", *EXP005_IDS, *EXP007_IDS, *EXP008_IDS, *EXP009_IDS, *EXP010_IDS, *EXP013_IDS, *EXP014_IDS, *EXP016_IDS, EXP006_ID, EXP011_ID, EXP018_ID, EXP019_ID, EXP012_ID, EXP017A_ID}
             else (edu_validation["inputs_sha256"], edu_validation["targets_sha256"])
         )
         if (edu_validation["inputs_sha256"], edu_validation["targets_sha256"]) != expected_edu_hashes:
             raise RuntimeError(f"{config.experiment_id} educational validation is not the frozen approved tensor.")
-    if config.experiment_id in {"EXP-004", *EXP005_IDS, *EXP007_IDS, *EXP008_IDS, *EXP009_IDS, *EXP010_IDS, *EXP013_IDS, *EXP014_IDS, *EXP016_IDS, EXP006_ID, EXP011_ID, EXP018_ID, EXP012_ID, EXP017A_ID}:
+    if config.experiment_id in {"EXP-004", *EXP005_IDS, *EXP007_IDS, *EXP008_IDS, *EXP009_IDS, *EXP010_IDS, *EXP013_IDS, *EXP014_IDS, *EXP016_IDS, EXP006_ID, EXP011_ID, EXP018_ID, EXP019_ID, EXP012_ID, EXP017A_ID}:
         mixture = manifest.get("mixture", {})
         expected_mixture = config.mixture or {}
         if config.experiment_id == EXP011_ID and manifest["experiment_id"] == EXP006_ID:
@@ -319,7 +320,7 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
                 **expected_mixture,
                 "target_prediction_tokens": {"fineweb": 600_047_616, "fineweb_edu": 300_023_808},
             }
-        using_exp012_prefix = config.experiment_id == EXP018_ID and manifest["experiment_id"] == EXP012_ID
+        using_exp012_prefix = config.experiment_id in {EXP018_ID, EXP019_ID} and manifest["experiment_id"] == EXP012_ID
         if (
             mixture.get("global_deduplication") != "canonical_content_sha256"
             or mixture.get("sources") != expected_mixture.get("sources")
@@ -335,7 +336,7 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
             raise RuntimeError(f"{config.experiment_id} mixture provenance, deduplication, or source-token accounting is invalid.")
     visible_stored = source_stored if config.experiment_id == EXP011_ID and manifest["experiment_id"] == EXP006_ID else train_tokens + 1
     return FullRunArtifact(
-        # EXP-018 deliberately exposes only the independently hash-verified EXP-011-length prefix.
+        # EXP-018/EXP-019 deliberately expose only the independently hash-verified EXP-011-length prefix.
         train=TokenStreamDataset(stream_path, visible_stored, config.data.context_length),
         validation_inputs=inputs,
         validation_targets=targets,

@@ -123,9 +123,9 @@ def main() -> None:
     parser.add_argument("--schedule-arm", choices=("A", "B", "C"))
     args = parser.parse_args()
     config = load_config(args.config)
-    if config.experiment_id in {"EXP-017A", "EXP-018"} and args.resume is not None:
+    if config.experiment_id in {"EXP-017A", "EXP-018", "EXP-019"} and args.resume is not None:
         raise RuntimeError(f"{config.experiment_id} requires a fresh step-0 lineage; --resume is forbidden.")
-    fixed_milestone_experiment = config.experiment_id in {"EXP-003", "EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-018", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014", "EXP-016-C", "EXP-016-M", "EXP-017A"}
+    fixed_milestone_experiment = config.experiment_id in {"EXP-003", "EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-018", "EXP-019", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014", "EXP-016-C", "EXP-016-M", "EXP-017A"}
     if args.checkpoint_interval is None:
         args.checkpoint_interval = full_run_milestones(config)[1] if fixed_milestone_experiment else 500
     if args.validation_interval is None:
@@ -157,20 +157,31 @@ def main() -> None:
         "data_manifest_sha256": artifact.manifest_sha256,
         "dry_run": args.max_steps is not None,
         "inter_update_sleep_seconds": args.inter_update_sleep_seconds,
+        "cautious_weight_decay": config.training.cautious_weight_decay,
     }
     set_global_seed(config.training.seed)
     model = DecoderOnlyTransformer(config.model).to(device)
     parameters = parameter_breakdown(model).total
-    expected_parameters = {"EXP-005A": 20_984_064, "EXP-005B": 20_848_512, "EXP-006": 20_848_512, "EXP-007A": 49_353_184, "EXP-007B": 49_491_840, "EXP-008A": 49_860_480, "EXP-009A": 49_860_480, "EXP-009B": 49_860_480, "EXP-010A": 49_985_504, "EXP-011": 49_860_480, "EXP-018": 49_860_489, "EXP-012": 49_860_480, "EXP-013-C": 49_860_480, "EXP-013-W": 49_860_480, "EXP-013-C43": 49_860_480, "EXP-013-W43": 49_860_480, "EXP-014": 49_860_480, "EXP-016-C": 49_860_480, "EXP-016-M": 49_860_480, "EXP-017A": 49_860_480}.get(config.experiment_id, 8_392_960)
+    expected_parameters = {"EXP-005A": 20_984_064, "EXP-005B": 20_848_512, "EXP-006": 20_848_512, "EXP-007A": 49_353_184, "EXP-007B": 49_491_840, "EXP-008A": 49_860_480, "EXP-009A": 49_860_480, "EXP-009B": 49_860_480, "EXP-010A": 49_985_504, "EXP-011": 49_860_480, "EXP-018": 49_860_489, "EXP-019": 49_860_480, "EXP-012": 49_860_480, "EXP-013-C": 49_860_480, "EXP-013-W": 49_860_480, "EXP-013-C43": 49_860_480, "EXP-013-W43": 49_860_480, "EXP-014": 49_860_480, "EXP-016-C": 49_860_480, "EXP-016-M": 49_860_480, "EXP-017A": 49_860_480}.get(config.experiment_id, 8_392_960)
     if parameters != expected_parameters:
         raise RuntimeError(f"{config.experiment_id} model parameter invariant failed: {parameters} != {expected_parameters:,}.")
-    base_optimizer = (build_llr_optimizer if config.llr is not None else build_optimizer)(
-        model,
-        config.training.peak_learning_rate,
-        config.training.weight_decay,
-        (config.training.beta1, config.training.beta2),
-        config.training.eps,
-    )
+    if config.llr is not None:
+        base_optimizer = build_llr_optimizer(
+            model,
+            config.training.peak_learning_rate,
+            config.training.weight_decay,
+            (config.training.beta1, config.training.beta2),
+            config.training.eps,
+        )
+    else:
+        base_optimizer = build_optimizer(
+            model,
+            config.training.peak_learning_rate,
+            config.training.weight_decay,
+            (config.training.beta1, config.training.beta2),
+            config.training.eps,
+            cautious_weight_decay=config.training.cautious_weight_decay,
+        )
     optimizer = (
         MagmaAdamW(
             base_optimizer,

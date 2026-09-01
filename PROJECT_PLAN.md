@@ -1,16 +1,10 @@
-## EXP-017A closure and EXP-018 preregistration (2026-09-01)
+## EXP-017A closure, EXP-018 closure, and EXP-019 CWD preregistration (2026-09-02)
 
-EXP-017A Attempt 3 completed the full 2.4B WSD horizon but failed its frozen
-scientific promotion gate (Combined 3.0358807146549225 versus required
-<= 3.010453929901123). EXP-012 cosine remains promoted; WSD is rejected for
-the final recipe without retuning. The combined thermally paced production
-configuration was stable for the full run; no individual thermal control is
-given causal credit.
+EXP-017A Attempt 3 completed the full 2.4B WSD horizon but failed its frozen scientific promotion gate (Combined 3.0358807146549225 versus required <= 3.010453929901123). EXP-012 cosine remains promoted; WSD is rejected for the final recipe without retuning. The combined thermally paced production configuration was stable for the full run; no individual thermal control is given causal credit.
 
-EXP-018 is a fresh seed-42, 1.5B-token, EXP-011-matched cosine ablation of
-source-faithful QK-Norm only. It reuses only the independently re-verified
-EXP-011-identical prefix of the verified EXP-012 stream and is not launched by
-this record.
+EXP-018 completed its fresh seed-42, 1.5B-token, EXP-011-matched cosine QK-Norm ablation. Its terminal Combined NLL was 3.0679232478141785 versus EXP-011's 3.0800857544: a 0.0121625066-nat improvement, below the frozen 0.015-nat promotion threshold. Domain guards passed, but scientific promotion fails. The shrinking advantage from about -0.02233 at 300M to -0.01216 at 1.5B is recorded as a proxy/horizon-decay warning. QK-Norm remains implemented but disabled by default and rejected from the final recipe; no retuning is authorized.
+
+EXP-019 is the one remaining, preregistered source-faithful Cautious Weight Decay (CWD) ablation. It holds the EXP-011 1.5B Recipe-v3 cosine protocol fixed and changes only ordinary decoupled weight decay to the source Algorithm 1 entrywise mask. It must use the independently verified EXP-011-identical prefix of EXP-012, start fresh at seed 42, run 45,777 updates, and use frozen General/Edu validation only. The pass, strong-pass, domain, horizon, and systems gates are recorded in provenance/exp019-cwd-preregistration.json. Broad method hunting is closed; EXP-020 final-scale recipe selection waits for this result.
 
 # Project Plan
 

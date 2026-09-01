@@ -70,6 +70,7 @@ class TrainingConfig:
     smoke_validation_tokens: int
     seed: int
     cooldown_steps: int | None = None
+    cautious_weight_decay: bool = False
 
 
 @dataclass(frozen=True)
@@ -180,6 +181,7 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         "EXP-010A": (9156, 300_023_808),
         "EXP-011": (45_777, 1_500_020_736),
         "EXP-018": (45_777, 1_500_020_736),
+        "EXP-019": (45_777, 1_500_020_736),
         "EXP-012": (73_242, 2_399_993_856),
         "EXP-013-C": (9_156, 300_023_808),
         "EXP-013-W": (9_156, 300_023_808),
@@ -204,6 +206,7 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         "EXP-010A": (8192, 608, 10, 19, 32, 1656),
         "EXP-011": (8192, 640, 9, 20, 32, 1728),
         "EXP-018": (8192, 640, 9, 20, 32, 1728),
+        "EXP-019": (8192, 640, 9, 20, 32, 1728),
         "EXP-012": (8192, 640, 9, 20, 32, 1728),
         "EXP-013-C": (8192, 640, 9, 20, 32, 1728),
         "EXP-013-W": (8192, 640, 9, 20, 32, 1728),
@@ -226,7 +229,7 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
         raise ValueError("Controlled causal/tied/bias/dropout invariants are violated.")
     if (
         model.architecture != "decoder_only_transformer"
-        or model.activation != ("swiglu" if config.experiment_id in {"EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-018", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014", "EXP-016-C", "EXP-016-M", "EXP-017A"} else "gelu")
+        or model.activation != ("swiglu" if config.experiment_id in {"EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-018", "EXP-019", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014", "EXP-016-C", "EXP-016-M", "EXP-017A"} else "gelu")
         or model.norm != "rmsnorm"
         or model.norm_placement != "pre_norm"
         or model.positional_encoding != "rope"
@@ -240,11 +243,16 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
             raise ValueError("EXP-018 must enable only QK-Norm with epsilon=1e-6.")
     elif model.qk_norm:
         raise ValueError("QK-Norm is disabled for every controlled experiment other than EXP-018.")
+    if config.experiment_id == "EXP-019":
+        if not training.cautious_weight_decay:
+            raise ValueError("EXP-019 must enable source-faithful Cautious Weight Decay.")
+    elif training.cautious_weight_decay:
+        raise ValueError("Cautious Weight Decay is disabled for every controlled experiment other than EXP-019.")
     if training.effective_batch_tokens != 32768 or training.sequence_predictions != 512:
         raise ValueError("Controlled effective batch is 64 x 512 prediction tokens.")
     if training.default_microbatch_sequences * training.default_gradient_accumulation_steps * 512 != 32768:
         raise ValueError("Configured microbatch/accumulation does not preserve effective batch tokens.")
-    if config.experiment_id in {"EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-018", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014", "EXP-016-C", "EXP-016-M", "EXP-017A"} and (
+    if config.experiment_id in {"EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-018", "EXP-019", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014", "EXP-016-C", "EXP-016-M", "EXP-017A"} and (
         training.default_microbatch_sequences,
         training.default_gradient_accumulation_steps,
     ) != (32, 2):
@@ -289,12 +297,12 @@ def _validate_controlled_experiment(config: ExperimentConfig) -> None:
     )
     if (data.dataset_repo, data.dataset_config, data.dataset_revision) != expected_data:
         raise ValueError(f"{config.experiment_id} dataset pin is invalid.")
-    if config.experiment_id in {"EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-018", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014", "EXP-016-C", "EXP-016-M", "EXP-017A"}:
+    if config.experiment_id in {"EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-018", "EXP-019", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014", "EXP-016-C", "EXP-016-M", "EXP-017A"}:
         target_prediction_tokens = (
             {"fineweb": 600_047_616, "fineweb_edu": 300_023_808}
             if config.experiment_id == "EXP-006"
             else {"fineweb": 1_000_013_824, "fineweb_edu": 500_006_912}
-            if config.experiment_id in {"EXP-011", "EXP-018"}
+            if config.experiment_id in {"EXP-011", "EXP-018", "EXP-019"}
             else {"fineweb": 1_599_995_904, "fineweb_edu": 799_997_952}
             if config.experiment_id in {"EXP-012", "EXP-017A"}
             else {"fineweb": 200_015_872, "fineweb_edu": 100_007_936}
