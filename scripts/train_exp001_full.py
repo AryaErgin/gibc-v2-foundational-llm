@@ -117,14 +117,15 @@ def main() -> None:
     parser.add_argument("--checkpoint-interval", type=int)
     parser.add_argument("--validation-interval", type=int)
     parser.add_argument("--progress-interval-updates", type=int, default=100)
+    parser.add_argument("--inter-update-sleep-seconds", type=float, default=0.0)
     parser.add_argument("--recorded-source-commit", help="Pre-training source/spec commit recorded by an external clean checkout.")
     parser.add_argument("--sequence-schedule", type=Path)
     parser.add_argument("--schedule-arm", choices=("A", "B", "C"))
     args = parser.parse_args()
     config = load_config(args.config)
-    if config.experiment_id == "EXP-017A" and args.resume is not None:
-        raise RuntimeError("EXP-017A requires a fresh step-0 lineage; --resume is forbidden.")
-    fixed_milestone_experiment = config.experiment_id in {"EXP-003", "EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014", "EXP-016-C", "EXP-016-M", "EXP-017A"}
+    if config.experiment_id in {"EXP-017A", "EXP-018"} and args.resume is not None:
+        raise RuntimeError(f"{config.experiment_id} requires a fresh step-0 lineage; --resume is forbidden.")
+    fixed_milestone_experiment = config.experiment_id in {"EXP-003", "EXP-004", "EXP-005A", "EXP-005B", "EXP-006", "EXP-007A", "EXP-007B", "EXP-008A", "EXP-009A", "EXP-009B", "EXP-010A", "EXP-011", "EXP-018", "EXP-012", "EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43", "EXP-014", "EXP-016-C", "EXP-016-M", "EXP-017A"}
     if args.checkpoint_interval is None:
         args.checkpoint_interval = full_run_milestones(config)[1] if fixed_milestone_experiment else 500
     if args.validation_interval is None:
@@ -136,6 +137,8 @@ def main() -> None:
         raise ValueError("Checkpoint and validation intervals must be positive.")
     if not 0 < args.progress_interval_updates <= 100:
         raise ValueError("--progress-interval-updates must be in [1, 100].")
+    if args.inter_update_sleep_seconds < 0.0:
+        raise ValueError("--inter-update-sleep-seconds must be non-negative.")
     artifact = load_full_run_artifact(args.artifact_dir, config)
     sequence_schedule = None
     schedule_metadata = None
@@ -153,11 +156,12 @@ def main() -> None:
         "tokenizer_sha256": artifact.manifest["tokenizer"]["sha256"],
         "data_manifest_sha256": artifact.manifest_sha256,
         "dry_run": args.max_steps is not None,
+        "inter_update_sleep_seconds": args.inter_update_sleep_seconds,
     }
     set_global_seed(config.training.seed)
     model = DecoderOnlyTransformer(config.model).to(device)
     parameters = parameter_breakdown(model).total
-    expected_parameters = {"EXP-005A": 20_984_064, "EXP-005B": 20_848_512, "EXP-006": 20_848_512, "EXP-007A": 49_353_184, "EXP-007B": 49_491_840, "EXP-008A": 49_860_480, "EXP-009A": 49_860_480, "EXP-009B": 49_860_480, "EXP-010A": 49_985_504, "EXP-011": 49_860_480, "EXP-012": 49_860_480, "EXP-013-C": 49_860_480, "EXP-013-W": 49_860_480, "EXP-013-C43": 49_860_480, "EXP-013-W43": 49_860_480, "EXP-014": 49_860_480, "EXP-016-C": 49_860_480, "EXP-016-M": 49_860_480, "EXP-017A": 49_860_480}.get(config.experiment_id, 8_392_960)
+    expected_parameters = {"EXP-005A": 20_984_064, "EXP-005B": 20_848_512, "EXP-006": 20_848_512, "EXP-007A": 49_353_184, "EXP-007B": 49_491_840, "EXP-008A": 49_860_480, "EXP-009A": 49_860_480, "EXP-009B": 49_860_480, "EXP-010A": 49_985_504, "EXP-011": 49_860_480, "EXP-018": 49_860_489, "EXP-012": 49_860_480, "EXP-013-C": 49_860_480, "EXP-013-W": 49_860_480, "EXP-013-C43": 49_860_480, "EXP-013-W43": 49_860_480, "EXP-014": 49_860_480, "EXP-016-C": 49_860_480, "EXP-016-M": 49_860_480, "EXP-017A": 49_860_480}.get(config.experiment_id, 8_392_960)
     if parameters != expected_parameters:
         raise RuntimeError(f"{config.experiment_id} model parameter invariant failed: {parameters} != {expected_parameters:,}.")
     base_optimizer = (build_llr_optimizer if config.llr is not None else build_optimizer)(
@@ -282,6 +286,7 @@ def main() -> None:
             progress_logger=progress_logger,
             progress_interval_updates=args.progress_interval_updates,
             progress_metadata=common,
+            inter_update_sleep_seconds=args.inter_update_sleep_seconds,
         )
         for record in chunk:
             record_step = int(record["step"])
@@ -335,6 +340,8 @@ def main() -> None:
         "final_train_loss": float(records[-1]["loss"]) if records else None,
         "mean_tokens_per_second": sum(float(item["tokens_per_second"]) for item in records) / len(records) if records else 0.0,
         "final_tokens_per_second": float(records[-1]["tokens_per_second"]) if records else 0.0,
+        "mean_paced_tokens_per_second": sum(float(item["paced_tokens_per_second"]) for item in records) / len(records) if records else 0.0,
+        "final_paced_tokens_per_second": float(records[-1]["paced_tokens_per_second"]) if records else 0.0,
         "peak_allocated_bytes": torch.cuda.max_memory_allocated(device),
         "peak_reserved_bytes": torch.cuda.max_memory_reserved(device),
         "wall_seconds": elapsed,

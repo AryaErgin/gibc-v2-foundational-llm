@@ -1,12 +1,30 @@
-## EXP-016 closure and EXP-017A preregistration - 2026-08-30
+## EXP-017A  final closure (2026-09-01)
 
-**EXP-016 is a negative result.** Magma combined NLL `3.4620570689439774`
-versus Control `3.3697906136512756` is `+0.09226645529270172` nat, and both
-domain guards failed; passing the efficiency guard does not rescue capability.
-Magma is rejected without tuning or seed-43. Recipe v3 + WSD remains promoted.
-EXP-017A Attempt 1 is `TECHNICAL_ABORT_THERMAL` with `NO SCIENTIFIC RESULT`;
-it remains a fresh 2.4B WSD internal-validation branch with no model-selection
-effect and no official benchmark invocation.
+Status: **execution PASS; scientific promotion FAIL**. Attempt 3 completed the
+full fresh seed-42 horizon: 73,242 updates, 2,399,993,856 prediction tokens,
+49,860,480 parameters, and a final checkpoint at step 73,242. stderr was
+empty. Wall time was 45,052.716201469 seconds; mean active-compute throughput
+was 104,962.2439 tokens/s and mean paced throughput was 53,494.0248 tokens/s,
+with operational inter-update sleep of 0.300 seconds.
+
+Frozen final validation was General 3.2023668587207794, Edu
+2.8693945705890656, Combined 3.0358807146549225. This misses the
+predeclared gate of Combined <= 3.010453929901123; EXP-012 cosine remains
+the promoted scientific baseline (General 3.1909595430, Edu
+2.8499483168, Combined 3.020453929901123). WSD is rejected for the final
+recipe. No post-hoc WSD retuning is authorized.
+
+Thermal history is preserved accurately: Attempt 1 aborted for thermal
+concern; Test B passed its 15-minute qualification but was insufficient to
+expose longer heat soak; Attempt 2 was a genuine thermal abort after the user
+directly observed repeated 100 C CPU temperatures; Attempt 3 completed under
+combined operational thermal controls. **The combined thermally paced
+production configuration was stable for the full run.** No individual control
+is assigned causal credit.
+
+The closure record is
+provenance/exp017a-attempt-3-closure.json. The EXP-017A terminal checkpoint
+is preserved but must not be used to claim scientific promotion.
 
 # Results Index
 

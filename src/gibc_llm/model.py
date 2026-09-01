@@ -98,6 +98,25 @@ class CausalSelfAttention(nn.Module):
         self.v_proj = nn.Linear(config.d_model, config.d_model, bias=False)
         self.o_proj = nn.Linear(config.d_model, config.d_model, bias=False)
         self.rope = RotaryEmbedding(config.rotary_dim, config.rope_theta)
+        self.qk_norm = config.qk_norm
+        self.qk_norm_epsilon = config.qk_norm_epsilon
+        self.qk_norm_gain = nn.Parameter(torch.ones(())) if config.qk_norm else None
+
+    @staticmethod
+    def rms_normalize_qk(queries: Tensor, keys: Tensor, epsilon: float) -> tuple[Tensor, Tensor]:
+        """Compute source-faithful FP32 RMS-normalized post-RoPE Q/K values."""
+        queries_float = queries.float()
+        keys_float = keys.float()
+        normalized_queries = queries_float * torch.rsqrt(queries_float.square().mean(dim=-1, keepdim=True) + epsilon)
+        normalized_keys = keys_float * torch.rsqrt(keys_float.square().mean(dim=-1, keepdim=True) + epsilon)
+        return normalized_queries, normalized_keys
+
+    def normalize_qk(self, queries: Tensor, keys: Tensor) -> tuple[Tensor, Tensor]:
+        """Apply the one learned Q gain, then return Q/K in the existing SDPA dtype."""
+        if self.qk_norm_gain is None:
+            raise RuntimeError("QK-Norm normalization was called while disabled.")
+        normalized_queries, normalized_keys = self.rms_normalize_qk(queries, keys, self.qk_norm_epsilon)
+        return (normalized_queries * self.qk_norm_gain).to(dtype=queries.dtype), normalized_keys.to(dtype=keys.dtype)
 
     def project_qkv(self, hidden: Tensor) -> tuple[Tensor, Tensor, Tensor]:
         batch, sequence, _ = hidden.shape
@@ -109,6 +128,8 @@ class CausalSelfAttention(nn.Module):
         keys = split_heads(self.k_proj(hidden))
         values = split_heads(self.v_proj(hidden))
         queries, keys = self.rope(queries, keys)
+        if self.qk_norm:
+            queries, keys = self.normalize_qk(queries, keys)
         return queries, keys, values
 
     def forward(self, hidden: Tensor) -> Tensor:

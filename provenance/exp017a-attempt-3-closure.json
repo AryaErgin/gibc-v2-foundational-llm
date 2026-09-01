@@ -1,0 +1,46 @@
+{
+  "causal_claim": "No individual thermal control is assigned causal credit because multiple operational controls changed together.",
+  "classification": "FULL_HORIZON_COMPLETE_SCIENTIFIC_PROMOTION_FAIL",
+  "execution": {
+    "final_checkpoint_step": 73242,
+    "final_step": 73242,
+    "inter_update_sleep_seconds": 0.3,
+    "mean_active_compute_tokens_per_second": 104962.2439,
+    "mean_paced_tokens_per_second": 53494.0248,
+    "parameters": 49860480,
+    "prediction_tokens": 2399993856,
+    "seed": 42,
+    "status": "PASS",
+    "stderr": "empty",
+    "wall_seconds": 45052.716201469
+  },
+  "exp012_cosine_reference": {
+    "combined_nll": 3.020453929901123,
+    "edu_nll": 2.8499483168,
+    "general_nll": 3.190959543
+  },
+  "experiment": "EXP-017A",
+  "final_validation": {
+    "combined_nll": 3.0358807146549225,
+    "edu_nll": 2.8693945705890656,
+    "general_nll": 3.2023668587207794
+  },
+  "run": "Attempt 3",
+  "scientific_decision": {
+    "post_hoc_wsd_retuning": "forbidden",
+    "promoted_baseline": "EXP-012 cosine",
+    "promotion": "FAIL",
+    "wsd": "rejected_for_final_recipe"
+  },
+  "scientific_result": "NO PROMOTION",
+  "success_gate": {
+    "combined_nll_max": 3.010453929901123,
+    "domain_regression_max": 0.02
+  },
+  "thermal_history": {
+    "attempt_1": "aborted for thermal concern",
+    "attempt_2": "genuine thermal abort; user directly observed CPU reaching 100 C repeatedly",
+    "attempt_3": "The combined thermally paced production configuration was stable for the full run.",
+    "test_b": "15-minute qualification passed but did not expose longer heat-soak behavior"
+  }
+}

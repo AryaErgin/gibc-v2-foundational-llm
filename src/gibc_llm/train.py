@@ -384,9 +384,12 @@ def train_smoke(
     progress_logger: DurableProgressLogger | None = None,
     progress_interval_updates: int = 100,
     progress_metadata: dict[str, Any] | None = None,
+    inter_update_sleep_seconds: float = 0.0,
 ) -> list[dict[str, float]]:
     if progress_logger is not None and not 0 < progress_interval_updates <= 100:
         raise ValueError("Durable progress interval must be in [1, 100] completed optimizer updates.")
+    if inter_update_sleep_seconds < 0.0:
+        raise ValueError("Inter-update sleep seconds must be non-negative.")
     if isinstance(train_inputs, TokenStreamDataset):
         if train_inputs.context_length != 512 or train_targets is not None:
             raise ValueError("TokenStreamDataset training expects 512-token views and no duplicate target tensor.")
@@ -432,6 +435,17 @@ def train_smoke(
         state.tokens += int(metrics["tokens"])
         state.next_sequence_index = next_cursor
         metrics.update({"step": float(state.step), "cumulative_tokens": float(state.tokens), "wall_seconds": elapsed, "tokens_per_second": metrics["tokens"] / elapsed})
+        if inter_update_sleep_seconds:
+            time.sleep(inter_update_sleep_seconds)
+        paced_wall_seconds = time.perf_counter() - start
+        metrics.update(
+            {
+                "active_compute_tokens_per_second": metrics["tokens_per_second"],
+                "inter_update_sleep_seconds": inter_update_sleep_seconds,
+                "paced_wall_seconds": paced_wall_seconds,
+                "paced_tokens_per_second": metrics["tokens"] / paced_wall_seconds,
+            }
+        )
         if device.type == "cuda":
             metrics["peak_allocated_bytes"] = float(torch.cuda.max_memory_allocated(device))
             metrics["peak_reserved_bytes"] = float(torch.cuda.max_memory_reserved(device))
@@ -450,6 +464,8 @@ def train_smoke(
                     "train_loss": float(metrics["loss"]),
                     "learning_rate": float(metrics["learning_rate"]),
                     "tokens_per_second": float(metrics["tokens_per_second"]),
+                    "active_compute_tokens_per_second": float(metrics["active_compute_tokens_per_second"]),
+                    "paced_tokens_per_second": float(metrics["paced_tokens_per_second"]),
                 }
             )
     return records

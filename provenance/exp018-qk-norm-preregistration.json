@@ -1,0 +1,52 @@
+{
+  "baseline": {
+    "combined_nll": 3.0800857544,
+    "edu_nll": 2.9129971564,
+    "general_nll": 3.2471743524
+  },
+  "control": "EXP-011 Recipe-v3 cosine",
+  "data": {
+    "data_rebuild": "forbidden",
+    "frozen_exp011_manifest_sha256": "b2ed5e461d753beb581c0d88668371c16abc63c6c9a67673f453a46f27d9feeb",
+    "prefix_prediction_tokens": 1500020736,
+    "prefix_stored_token_ids": 1500020737,
+    "prefix_stream_sha256": "092fc4a02f991b15fd8fcd2c209754e014485c74bea642c1a57270462141b671",
+    "selection": "Approved fallback: EXP-012 exact first 1,500,020,737 stored IDs, independently re-verified against the recorded EXP-011 prefix before launch.",
+    "source_artifact": "/mnt/c/Users/aryae/Desktop/gibc_v2/artifacts/exp012-full-data",
+    "source_experiment": "EXP-012",
+    "source_stream_sha256": "27c1c8d06da579d443ee19017e12dd28a7c3fb8c6387cff76e9128c7c5fba82c",
+    "tokenizer_sha256": "c5592fba176c3d2f7915a3812559a24d7a669206f4a22484b053c8a9ce08be14"
+  },
+  "experiment": "EXP-018",
+  "frozen_gate": {
+    "edu_nll_max": 2.9229971564,
+    "general_nll_max": 3.2571743524,
+    "pass_combined_nll_max": 3.0650857544,
+    "strong_pass_combined_nll_max": 3.0600857544
+  },
+  "operational_controls": {
+    "external": "Balanced mode, CPU Boost off, AC maximum processor state 60%, max fans if applicable, AC power",
+    "inter_update_sleep_seconds": 0.3,
+    "thread_environment": {
+      "MKL_NUM_THREADS": 1,
+      "NUMEXPR_NUM_THREADS": 1,
+      "OMP_NUM_THREADS": 1,
+      "OPENBLAS_NUM_THREADS": 1
+    }
+  },
+  "principal_scientific_change": {
+    "epsilon": 1e-06,
+    "gain": "one scalar applied to Q per attention layer",
+    "gain_initialization": 1.0,
+    "placement": "after RoPE before existing SDPA",
+    "qk_norm": true
+  },
+  "prohibited": [
+    "resume",
+    "trained-weight reuse",
+    "data rebuild",
+    "held-out benchmark evaluation",
+    "post-hoc QK-Norm retuning"
+  ],
+  "question": "Does source-faithful QK-Norm improve Recipe-v3 at the exact EXP-011 1.5B-token cosine horizon?"
+}

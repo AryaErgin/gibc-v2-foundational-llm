@@ -1,42 +1,30 @@
-## EXP-017A — 2.4B WSD horizon branch (2026-08-30)
+## EXP-017A  final closure (2026-09-01)
 
-Status: preregistered and preflighted; Attempt 1 was thermally aborted with
-no scientific result; unattended relaunch is prohibited pending a trustworthy
-CPU-package temperature source. EXP-016 is closed as a
-negative result: Magma combined NLL `3.4620570689439774` versus Control
-`3.3697906136512756` (`+0.09226645529270172` nat), failing capability and both
-domain guards despite passing its efficiency guard. Magma is rejected without
-tuning or seed-43; Recipe v3 + WSD remains promoted.
+Status: **execution PASS; scientific promotion FAIL**. Attempt 3 completed the
+full fresh seed-42 horizon: 73,242 updates, 2,399,993,856 prediction tokens,
+49,860,480 parameters, and a final checkpoint at step 73,242. stderr was
+empty. Wall time was 45,052.716201469 seconds; mean active-compute throughput
+was 104,962.2439 tokens/s and mean paced throughput was 53,494.0248 tokens/s,
+with operational inter-update sleep of 0.300 seconds.
 
-EXP-017A is fresh seed-42 Recipe-v3 + WSD at 73,242 updates / 2,399,993,856
-prediction tokens using the immutable EXP-012 2.4B stream after exact
-stream/manifest/tokenizer/validation/prefix verification. WSD is warmup 100,
-stable through 65,918, then 7,324 cooldown updates from 65,919 to final LR
-`6e-5`; checkpoint-step-65918 is the required stable-trunk artifact. Its
-internal EXP-012 cosine reference is General `3.190959542989731`, Edu
-`2.8499483168125153`, combined `3.020453929901123`. SUCCESS requires at least
-0.010 combined improvement and neither domain worse by more than 0.020. No
-training, benchmark, or data rebuild is authorized. See `experiments/EXP-017A-2.4b-wsd.md`.
+Frozen final validation was General 3.2023668587207794, Edu
+2.8693945705890656, Combined 3.0358807146549225. This misses the
+predeclared gate of Combined <= 3.010453929901123; EXP-012 cosine remains
+the promoted scientific baseline (General 3.1909595430, Edu
+2.8499483168, Combined 3.020453929901123). WSD is rejected for the final
+recipe. No post-hoc WSD retuning is authorized.
 
-### Attempt 1 thermal record
+Thermal history is preserved accurately: Attempt 1 aborted for thermal
+concern; Test B passed its 15-minute qualification but was insufficient to
+expose longer heat soak; Attempt 2 was a genuine thermal abort after the user
+directly observed repeated 100 C CPU temperatures; Attempt 3 completed under
+combined operational thermal controls. **The combined thermally paced
+production configuration was stable for the full run.** No individual control
+is assigned causal credit.
 
-`EXP-017A Attempt 1` started as the required fresh seed-42 lineage and was
-gracefully terminated on 2026-08-30 after the user observed sustained CPU
-package temperature near 95 C. It is classified `TECHNICAL_ABORT_THERMAL` and
-`NO SCIENTIFIC RESULT`; its partial metrics must not be used for model
-selection. Preserved evidence is in
-`artifacts/exp017a-wsd-2p4b/attempt-1-thermal-abort.json` with the existing
-logs, telemetry, and recorded hashes. No checkpoint was written.
-
-The interruption exposed a durability limitation: chunk-local per-update
-records were only transferred to `metrics.jsonl` when a long `train_smoke`
-call returned. The runner now has a separate fsynced `progress.jsonl` stream
-at intervals no greater than 100 completed updates; it is output-only and was
-tested for identical tiny-run model, optimizer, scheduler, run-state,
-checkpoint, and RNG state. The existing system exposes only ACPI thermal zone
-`_tz.tz00`, not an identified CPU-package sensor. Therefore
-`UNATTENDED_EXP017A_ALLOWED = NO`; neither shakedown nor Attempt 2 is
-authorized by this record.
+The closure record is
+provenance/exp017a-attempt-3-closure.json. The EXP-017A terminal checkpoint
+is preserved but must not be used to claim scientific promotion.
 
 # Experiment Log
 

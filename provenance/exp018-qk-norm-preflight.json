@@ -1,0 +1,136 @@
+{
+  "config": {
+    "context": 512,
+    "control_config_sha256": "dd7d506f5ec581a28027af0f7a1982a72f065cac4a3dc8885b53e45b428e9020",
+    "fresh_seed": 42,
+    "gradient_accumulation_steps": 2,
+    "microbatch_sequences": 32,
+    "optimizer": "AdamW",
+    "path": "configs/exp018-qk-norm.yaml",
+    "precision": "BF16",
+    "prediction_tokens": 1500020736,
+    "resume": "forbidden",
+    "schedule": "EXP-011 cosine",
+    "sha256": "aca0137fbfaa5f659cb448ba6cab02a9faf9d5cd8a89b0886494785c9907cae7",
+    "tokens_per_update": 32768,
+    "updates": 45777
+  },
+  "data_reuse": {
+    "data_rebuild": false,
+    "first_token_id": 92,
+    "frozen_exp011_manifest_sha256": "b2ed5e461d753beb581c0d88668371c16abc63c6c9a67673f453a46f27d9feeb",
+    "last_prefix_token_id": 6087,
+    "prefix_prediction_tokens": 1500020736,
+    "prefix_sequences": 2929728,
+    "prefix_sha256": "092fc4a02f991b15fd8fcd2c209754e014485c74bea642c1a57270462141b671",
+    "prefix_stored_token_ids": 1500020737,
+    "source_path": "/mnt/c/Users/aryae/Desktop/gibc_v2/artifacts/exp012-full-data/train-token-stream.uint16",
+    "source_stored_token_ids": 2399993857,
+    "source_stream_sha256": "27c1c8d06da579d443ee19017e12dd28a7c3fb8c6387cff76e9128c7c5fba82c",
+    "tokenizer_sha256": "c5592fba176c3d2f7915a3812559a24d7a669206f4a22484b053c8a9ce08be14",
+    "verification": "full source hash plus independent EXP-011/006/004 prefix chain check; TokenStreamDataset is bounded to prefix length"
+  },
+  "experiment": "EXP-018",
+  "manual_adversarial_review": {
+    "checked": [
+      "QK normalization is after RoPE and before SDPA",
+      "RMS dimension is head_dim and statistics are FP32",
+      "epsilon is 1e-6 and one scalar gain is applied only to Q",
+      "SDPA default scale is retained without a scale override",
+      "old configs retain qk_norm=false semantics",
+      "EXP-018 config differs from EXP-011 only in QK-Norm fields",
+      "pacing occurs after completed update state advancement and before next update",
+      "pacing tests cover model, optimizer, scheduler, cursor, tokens, and RNG equality",
+      "EXP-018 forbids resume and bounds EXP-012 access to verified EXP-011 prefix"
+    ],
+    "result": "PASS"
+  },
+  "model": {
+    "epsilon": 1e-06,
+    "expected_added_parameters": 9,
+    "parameters": 49860489,
+    "placement": "after RoPE, before existing SDPA; FP32 RMS statistics; Q/K restored to attention dtype",
+    "qk_gain": "one learned scalar per 9 attention layers, initialized to 1.0, applied only to normalized Q",
+    "qk_norm": true,
+    "sdpa_scaling": "unchanged default 1/sqrt(head_dim)"
+  },
+  "official_benchmarks": "not invoked",
+  "operational_controls": {
+    "external_expected": "OMEN Balanced, CPU Boost off, Windows AC maximum processor state 60%, max fans if applicable, AC power",
+    "inter_update_sleep_seconds": 0.3,
+    "scientific_variable": false,
+    "thread_environment": {
+      "MKL_NUM_THREADS": 1,
+      "NUMEXPR_NUM_THREADS": 1,
+      "OMP_NUM_THREADS": 1,
+      "OPENBLAS_NUM_THREADS": 1
+    },
+    "torch_num_interop_threads_observed": 24,
+    "torch_num_threads_observed": 1
+  },
+  "output": {
+    "contents": [],
+    "estimate_gib": 4.0,
+    "free_gib_at_preflight": 936,
+    "fresh": true,
+    "path": "artifacts/exp018-qk-norm-1p5b"
+  },
+  "preflight": "PASS",
+  "recorded_at_utc": "2026-09-01T11:47:52.567951+00:00",
+  "repository": {
+    "authority": "current local /home/aryae/gibc-v2-foundational-llm checkout; not reset to public main",
+    "head": "cd259d14d4ddbefd58449abe1021834411784fac",
+    "implementation_files_sha256": {
+      "configs/exp018-qk-norm.yaml": "aca0137fbfaa5f659cb448ba6cab02a9faf9d5cd8a89b0886494785c9907cae7",
+      "scripts/train_exp001_full.py": "acc27621f37888d5923c4fa4377502d61438e393def9689db8995bba40ffd730",
+      "scripts/verify_exp018_preflight.py": "7df6076c68ef258d4c1e4b389d23d1b941e066717754253fae93534d24ae0add",
+      "src/gibc_llm/full_run.py": "e6244e50394c06c1b9c2dced8567d415c1d2983f65ee45742930f17e63298d5b",
+      "src/gibc_llm/model.py": "882d05e028788c38842fb0d26c34d287d0d8431cd57feef0e9aa185e5b99930e",
+      "src/gibc_llm/train.py": "a746ef599a426a0aad9caee969233ecd1bd9d4c29b2ff6947dd18a2d1e9ca30c",
+      "tests/test_exp017a_inter_update_pacing.py": "af036f25b4daf3f6c78ec90e5d1f874809966172b342f899c397f56f3d5af681",
+      "tests/test_exp018_data_reuse.py": "c750eb2bb21cbc6f6fe551840e974a23e98be1a8ddaa4c9e0eca840b74912082",
+      "tests/test_exp018_qk_norm.py": "24432ab94ff880bfe7879ca1671f7f84b354f574bdc97580ba25bac32f92763c"
+    },
+    "staging": "scoped changes staged for review; no commit created"
+  },
+  "runtime_estimate": {
+    "attempt3_paced_reference_tok_s": 53494.0248,
+    "caveat": "The QK impact is from one synthetic update-shaped timing; it is not a production run.",
+    "central_hours": 9.7,
+    "range_hours": [
+      9.0,
+      11.0
+    ],
+    "smoke_adjusted_paced_tok_s": 42980
+  },
+  "smoke": {
+    "dataset_used": false,
+    "optimizer_step_count": 0,
+    "peak_allocated_bytes": 878493184,
+    "peak_reserved_bytes": 954204160,
+    "production_shape_qk_off_tok_s": 105348.92615323488,
+    "production_shape_qk_on_tok_s": 71126.31343449595,
+    "production_shape_qk_on_vs_off_ratio": 0.6751498665590521,
+    "qk_gain_gradients_finite": true,
+    "qk_gain_gradients_nonzero": true,
+    "sdpa_enabled_flags": {
+      "flash": true,
+      "math": true,
+      "mem_efficient": true
+    },
+    "type": "synthetic CUDA/BF16 forward/backward only",
+    "validation_used": false
+  },
+  "software_environment": {
+    "bf16_supported": true,
+    "cuda_available": true,
+    "gpu": "NVIDIA GeForce RTX 5090 Laptop GPU",
+    "python": "3.11.16",
+    "torch": "2.13.0+cu132"
+  },
+  "tests": {
+    "complete_suite": "150 passed in 105.06s",
+    "focused": "15 passed in 8.08s"
+  },
+  "training_launch": false
+}
