@@ -121,3 +121,12 @@ mean-throughput degradation, which does not alter capability failure. Details:
 ## EXP-018 QK-Norm — finalized 2026-09-02
 
 EXP-018 executed its full fresh 45,777-update / 1,500,020,736-token horizon. Terminal frozen validation was General 3.2337925136089325, Edu 2.9020539820194244, Combined 3.0679232478141785; versus EXP-011 Combined 3.0800857544, this is a -0.0121625066-nat improvement. Although neither domain guard failed, this misses the preregistered >=0.015-nat promotion threshold. EXP-018 is an execution pass and scientific promotion fail: QK-Norm is rejected from the final recipe without retuning. No required benchmark was run.
+
+
+## EXP-019 Cautious Weight Decay - finalized 2026-09-02
+
+EXP-019 completed the exact 1.5B EXP-011-matched Recipe-v3 cosine horizon with source-faithful CWD, QK-Norm off, and no benchmark evaluation. Terminal General/Edu/Combined validation was 3.253117263317108 / 2.919591575860977 / 3.0863544195890425, compared with EXP-011s Combined 3.0800857544. The +0.0062686652 endpoint regression fails the preregistered PASS threshold (Combined <=3.0700857544). CWD is rejected from the final recipe without retuning. It appeared favorable through intermediate horizons but reversed by 1.5B; this is project-specific evidence that short-horizon method rankings were insufficiently reliable for further method hunting.
+
+## EXP-020 final scaling run - preregistered, not launched
+
+EXP-020 is the sole final fresh 7.2B-token Recipe-v3 ordinary-AdamW cosine run. QK-Norm and CWD are off. Its data must be a fresh deterministic 2:1 FineWeb/FineWeb-Edu 7.2B stream with exact inherited EXP-012 and EXP-011 prefix checks. No training or benchmark result exists yet.

@@ -1,0 +1,103 @@
+{
+  "experiment": "EXP-020",
+  "status": "PREREGISTERED_DATA_BUILD_PENDING",
+  "question": "How far can the promoted Recipe-v3 improve when trained from scratch on substantially more unique data under the fixed <=50M parameter constraint?",
+  "hypothesis": "EXP-012 remained validation-data-limited at its 2.4B endpoint. A fresh cosine schedule designed for a 7.2B horizon should lower held-out General/Edu NLL without changing architecture, optimizer, tokenizer, or source mixture.",
+  "baseline": {
+    "experiment": "EXP-012",
+    "general_nll": 3.190959543,
+    "edu_nll": 2.8499483168,
+    "combined_nll": 3.0204539299
+  },
+  "scientific_freeze": {
+    "recipe": "Recipe-v3",
+    "parameters": 49860480,
+    "qk_norm": false,
+    "cautious_weight_decay": false,
+    "optimizer": "ordinary AdamW",
+    "betas": [
+      0.9,
+      0.95
+    ],
+    "eps": 1e-08,
+    "weight_decay": 0.1,
+    "peak_learning_rate": 0.0006,
+    "minimum_learning_rate": 6e-05,
+    "warmup_updates": 100,
+    "schedule": "cosine_decay over all 219726 updates",
+    "gradient_clip_norm": 1.0,
+    "precision": "bf16_autocast_fp32_parameters",
+    "seed": 42,
+    "context": 512,
+    "microbatch_sequences": 32,
+    "gradient_accumulation_steps": 2,
+    "tokens_per_update": 32768,
+    "updates": 219726,
+    "prediction_tokens": 7199981568,
+    "stored_token_ids": 7199981569,
+    "fresh_initialization": true,
+    "resume_forbidden": true
+  },
+  "data": {
+    "mixture": "2:1 FineWeb/FineWeb-Edu deterministic whole-document deficit balancing",
+    "targets_prediction_tokens": {
+      "fineweb": 4799987712,
+      "fineweb_edu": 2399993856
+    },
+    "unique_non_cycled": true,
+    "tokenizer_sha256": "c5592fba176c3d2f7915a3812559a24d7a669206f4a22484b053c8a9ce08be14",
+    "exp012_stream_sha256": "27c1c8d06da579d443ee19017e12dd28a7c3fb8c6387cff76e9128c7c5fba82c",
+    "exp011_prefix_sha256": "092fc4a02f991b15fd8fcd2c209754e014485c74bea642c1a57270462141b671",
+    "construction": "deterministic rebuild from stream zero unless and until extension equivalence is proven",
+    "extension_decision": "rejected: EXP-012 did not serialize live global document-dedup, source cursor/shard position, mixture deficit, or RNG continuation state"
+  },
+  "config": {
+    "path": "configs/exp020-final-7p2b-cosine.yaml",
+    "sha256": "25f473f27a3ba673d3e32cb10845e47bf7f4abf0dd47e891db812d6871c3bace"
+  },
+  "validation": {
+    "milestone_steps": [
+      0,
+      45777,
+      73242,
+      91553,
+      109863,
+      128174,
+      146484,
+      164795,
+      183105,
+      201416,
+      219726
+    ],
+    "milestone_prediction_tokens": [
+      0,
+      1500020736,
+      2399993856,
+      3000008704,
+      3599990784,
+      4200005632,
+      4799987712,
+      5400002560,
+      5999984640,
+      6599999488,
+      7199981568
+    ],
+    "sets": "frozen General/Edu only",
+    "required_benchmarks": "embargoed until checkpoint selection is frozen"
+  },
+  "checkpoint_selection_rule": "Default terminal 7.2B. From 4.8B onward, choose the candidate with lowest Combined=(General+Edu)/2; if candidates differ by <=0.003 NLL, prefer the later checkpoint. Required benchmark results cannot participate.",
+  "technical_stop_rule": "Stop for non-finite state, corrupted data/cursor/hash mismatch, checkpoint corruption, unrecoverable CUDA/driver fault, hardware safety, or duplicate trainer. After 4.8B, stop for human review only if Combined is >=0.020 worse at two consecutive scheduled validations with no evaluator/data anomaly.",
+  "operational_controls_not_scientific": {
+    "inter_update_sleep_seconds_initial": 0.3,
+    "thermal_qualification": "30-minute production-shaped soak before final launch; may use fixed 0.5 seconds only if 0.3 is unsafe, then hold fixed for production",
+    "threads": {
+      "OMP_NUM_THREADS": 1,
+      "MKL_NUM_THREADS": 1,
+      "OPENBLAS_NUM_THREADS": 1,
+      "NUMEXPR_NUM_THREADS": 1
+    },
+    "external": "OMEN Balanced, Turbo/Boost off, AC maximum processor state 60%, AC power, OMEN AUTO fans; human/system evidence recorded without assigning individual causal credit."
+  },
+  "source_commit": "Recorded after the preregistration commit in builder and run artifacts; no self-referential commit field.",
+  "result": "No data build or EXP-020 training result exists at preregistration."
+}

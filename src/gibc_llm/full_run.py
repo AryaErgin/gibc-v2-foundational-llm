@@ -21,6 +21,7 @@ EXP010_IDS = {"EXP-010A"}
 EXP011_ID = "EXP-011"
 EXP018_ID = "EXP-018"
 EXP019_ID = "EXP-019"
+EXP020_ID = "EXP-020"
 EXP012_ID = "EXP-012"
 EXP013_IDS = {"EXP-013-C", "EXP-013-W", "EXP-013-C43", "EXP-013-W43"}
 EXP014_IDS = {"EXP-014"}
@@ -30,6 +31,7 @@ EXP006_ID = "EXP-006"
 EXP006_PREDICTION_TOKENS = 900_071_424
 EXP011_PREDICTION_TOKENS = 1_500_020_736
 EXP012_PREDICTION_TOKENS = 2_399_993_856
+EXP020_PREDICTION_TOKENS = 7_199_981_568
 EXP012_STREAM_SHA256 = "27c1c8d06da579d443ee19017e12dd28a7c3fb8c6387cff76e9128c7c5fba82c"
 EXP011_EXP006_FINAL_STEP = 27_468
 EXP004_FROZEN_STREAM_SHA256 = "8e727fa2a2614751a1c34d7f9ac411dfebeb379a09f584ba4f7f418d1059cea1"
@@ -82,6 +84,10 @@ def full_run_milestones(config: ExperimentConfig) -> tuple[int, ...]:
         if config.training.full_schedule_steps != 45_777:
             raise RuntimeError("The EXP-011/EXP-018/EXP-019 milestone plan must remain 0/9156/18312/27468/36624/45777.")
         return (0, 9_156, 18_312, 27_468, 36_624, 45_777)
+    if config.experiment_id == EXP020_ID:
+        if config.training.full_schedule_steps != 219_726:
+            raise RuntimeError("EXP-020 must retain its fixed 219,726-step cosine horizon.")
+        return (0, 45_777, 73_242, 91_553, 109_863, 128_174, 146_484, 164_795, 183_105, 201_416, 219_726)
     if config.experiment_id == EXP012_ID:
         if config.training.full_schedule_steps != 73_242:
             raise RuntimeError("The EXP-012 milestone plan must retain its 73,242-step schedule from step zero.")
@@ -105,7 +111,7 @@ def assert_physical_batch_control(config: ExperimentConfig, microbatch_sequences
     """Preserve the explicit physical batch where an experiment fixes it."""
     if microbatch_sequences * accumulation_steps != sequences_per_update(config):
         raise RuntimeError("Full runner must retain exactly 64 sequences / 32,768 prediction tokens per update.")
-    if config.experiment_id in {"EXP-003", "EXP-004", *EXP005_IDS, *EXP007_IDS, *EXP008_IDS, *EXP009_IDS, *EXP010_IDS, *EXP013_IDS, *EXP016_IDS, EXP006_ID, EXP011_ID, EXP018_ID, EXP019_ID, EXP012_ID, EXP017A_ID} and (
+    if config.experiment_id in {"EXP-003", "EXP-004", *EXP005_IDS, *EXP007_IDS, *EXP008_IDS, *EXP009_IDS, *EXP010_IDS, *EXP013_IDS, *EXP016_IDS, EXP006_ID, EXP011_ID, EXP018_ID, EXP019_ID, EXP020_ID, EXP012_ID, EXP017A_ID} and (
         microbatch_sequences != config.training.default_microbatch_sequences
         or accumulation_steps != config.training.default_gradient_accumulation_steps
     ):
@@ -168,7 +174,7 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
     )
     if manifest.get("experiment_id") not in accepted_manifest_ids:
         raise RuntimeError("Full-run manifest experiment identity differs from the supplied configuration.")
-    dual_validation_experiment = config.experiment_id in {"EXP-003", "EXP-004", *EXP005_IDS, *EXP007_IDS, *EXP008_IDS, *EXP009_IDS, *EXP010_IDS, *EXP013_IDS, *EXP014_IDS, *EXP016_IDS, EXP006_ID, EXP011_ID, EXP018_ID, EXP019_ID, EXP012_ID, EXP017A_ID}
+    dual_validation_experiment = config.experiment_id in {"EXP-003", "EXP-004", *EXP005_IDS, *EXP007_IDS, *EXP008_IDS, *EXP009_IDS, *EXP010_IDS, *EXP013_IDS, *EXP014_IDS, *EXP016_IDS, EXP006_ID, EXP011_ID, EXP018_ID, EXP019_ID, EXP020_ID, EXP012_ID, EXP017A_ID}
     if dual_validation_experiment and manifest.get("preparation_mode") != "full_stream":
         raise RuntimeError(f"{config.experiment_id} full runner requires a complete stream materialization, not validation-only preparation.")
     dataset = manifest.get("dataset", {})
@@ -307,12 +313,12 @@ def load_full_run_artifact(artifact_dir: Path, config: ExperimentConfig) -> Full
             raise RuntimeError(f"{config.experiment_id} educational validation material does not match its held-out manifest invariants.")
         expected_edu_hashes = (
             ("cc75580b854b69846b1ff15385fbb87adf5bdf1701c1bfe9e8e8d5fdb651fb1a", "300608bc74e052f1580d78e3ad5e1174312360a766f3278c6ce2bdf3336a48b4")
-            if config.experiment_id in {"EXP-004", *EXP005_IDS, *EXP007_IDS, *EXP008_IDS, *EXP009_IDS, *EXP010_IDS, *EXP013_IDS, *EXP014_IDS, *EXP016_IDS, EXP006_ID, EXP011_ID, EXP018_ID, EXP019_ID, EXP012_ID, EXP017A_ID}
+            if config.experiment_id in {"EXP-004", *EXP005_IDS, *EXP007_IDS, *EXP008_IDS, *EXP009_IDS, *EXP010_IDS, *EXP013_IDS, *EXP014_IDS, *EXP016_IDS, EXP006_ID, EXP011_ID, EXP018_ID, EXP019_ID, EXP020_ID, EXP012_ID, EXP017A_ID}
             else (edu_validation["inputs_sha256"], edu_validation["targets_sha256"])
         )
         if (edu_validation["inputs_sha256"], edu_validation["targets_sha256"]) != expected_edu_hashes:
             raise RuntimeError(f"{config.experiment_id} educational validation is not the frozen approved tensor.")
-    if config.experiment_id in {"EXP-004", *EXP005_IDS, *EXP007_IDS, *EXP008_IDS, *EXP009_IDS, *EXP010_IDS, *EXP013_IDS, *EXP014_IDS, *EXP016_IDS, EXP006_ID, EXP011_ID, EXP018_ID, EXP019_ID, EXP012_ID, EXP017A_ID}:
+    if config.experiment_id in {"EXP-004", *EXP005_IDS, *EXP007_IDS, *EXP008_IDS, *EXP009_IDS, *EXP010_IDS, *EXP013_IDS, *EXP014_IDS, *EXP016_IDS, EXP006_ID, EXP011_ID, EXP018_ID, EXP019_ID, EXP020_ID, EXP012_ID, EXP017A_ID}:
         mixture = manifest.get("mixture", {})
         expected_mixture = config.mixture or {}
         if config.experiment_id == EXP011_ID and manifest["experiment_id"] == EXP006_ID:

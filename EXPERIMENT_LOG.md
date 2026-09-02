@@ -162,3 +162,12 @@ Status: execution PASS; scientific promotion FAIL. Fresh seed-42 EXP-018 complet
 ## EXP-019 — Cautious Weight Decay preregistration (2026-09-02)
 
 Status: pre-launch. EXP-019 is the sole remaining method ablation: a fresh seed-42 Recipe-v3, 1.5B-token, EXP-011-matched cosine run using only source-faithful CWD. All architecture, data/order, tokenizer, batch, Adam betas/epsilon, nominal 0.1 decay coefficient, LR/warmup/cosine, validation, and pacing controls remain fixed; QK-Norm is off. CWD replaces ordinary decoupled decay entrywise with Algorithm 1's I(u*x >= 0) mask using the pre-update parameter and Adam adaptive update. The frozen gate is Combined <=3.0700857544 for PASS, <=3.0650857544 for STRONG PASS, with General <=3.2571743524 and Edu <=2.9229971564. Frozen matched horizon measurements are at steps 9,156, 18,312, 27,468, 36,624, and 45,777. No benchmark or post-result retuning is authorized. Full provenance is in provenance/exp019-cwd-preregistration.json.
+
+
+## EXP-019 - Cautious Weight Decay closure (2026-09-02)
+
+Status: execution PASS; scientific FAIL; promotion REJECT. Fresh seed-42 EXP-019 completed its exact EXP-011-matched 45,777-update / 1,500,020,736-token horizon with 49,860,480 parameters, QK-Norm off, CWD on, and the verified EXP-011 prefix. Terminal General/Edu/Combined NLL were 3.253117263317108 / 2.919591575860977 / 3.0863544195890425, versus EXP-011 Combined 3.0800857544. CWD is therefore +0.0062686652 NLL worse at the matched endpoint and fails the preregistered PASS threshold <=3.0700857544. CWD was advantageous at 300M, 600M, 900M, and narrowly at 1.2B, then reversed by 1.5B. Reject CWD with no retuning or benchmark evaluation; provenance/exp019-closure.json is the durable result.
+
+## EXP-020 - final 7.2B cosine preregistration (2026-09-02)
+
+Status: data-build preparation only; no EXP-020 trainer has been launched. The final recipe is fresh Recipe-v3 plus ordinary AdamW and a full-horizon cosine schedule, with QK-Norm and CWD disabled. It freezes 219,726 updates / 7,199,981,568 prediction tokens at seed 42, a 2:1 FineWeb/FineWeb-Edu unique stream, and frozen General/Edu validation only. The EXP-012 artifact cannot be scientifically extended because its live global dedup/source-cursor/mixture state was not serialized; EXP-020 will deterministically rebuild the 7.2B stream from zero and must prove the EXP-012 and EXP-011 prefixes. The milestone, checkpoint-selection, stop, thermal, and benchmark-embargo rules are frozen in provenance/exp020-final-preregistration.json.

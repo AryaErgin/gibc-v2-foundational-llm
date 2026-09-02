@@ -69,3 +69,10 @@ nat and failed both domain guards. Its <=10% throughput guard passed but does
 not rescue capability failure. Magma is rejected without tuning; no seed-43,
 benchmark, or additional experiment is authorized. Recipe v3 + WSD remains the
 promoted training recipe.
+
+
+## Final recipe freeze and EXP-020 preparation (2026-09-02)
+
+EXP-019 CWD completed but regressed the exact EXP-011 1.5B endpoint by 0.0062686652 Combined NLL, so CWD is rejected without retuning. Method hunting is closed. The sole final training plan is EXP-020: fresh 49,860,480-parameter Recipe-v3, ordinary AdamW, 2:1 FineWeb/FineWeb-Edu, seed 42, and a 219,726-step / 7,199,981,568-token cosine schedule. QK-Norm and CWD are explicitly disabled. This is one final model run, not a paired 7.2B comparison.
+
+Because the EXP-012 materialization did not retain serializable global-dedup/cursor/mixture continuation state, a 7.2B append is not defensible. EXP-020 first rebuilds a unique token stream deterministically from zero and must reverify both EXP-012 and EXP-011 byte-prefix SHA-256 gates before a trainer may start. Required competition benchmarks remain embargoed until post-training checkpoint selection is frozen using the preregistered General/Edu-only rule.

@@ -1,0 +1,80 @@
+{
+  "experiment": "EXP-019",
+  "status": {
+    "execution": "PASS",
+    "scientific": "FAIL",
+    "promotion": "REJECT"
+  },
+  "execution": {
+    "full_horizon_complete": true,
+    "updates": 45777,
+    "prediction_tokens": 1500020736,
+    "parameters": 49860480,
+    "seed": 42,
+    "qk_norm": false,
+    "cautious_weight_decay": true,
+    "data": "exact EXP-011 prefix of verified EXP-012 stream",
+    "official_benchmarks": "not invoked"
+  },
+  "terminal_validation": {
+    "general_nll": 3.253117263317108,
+    "edu_nll": 2.919591575860977,
+    "combined_nll": 3.0863544195890427
+  },
+  "control": {
+    "experiment": "EXP-011",
+    "general_nll": 3.2471743524,
+    "edu_nll": 2.9129971564,
+    "combined_nll": 3.0800857544
+  },
+  "terminal_delta_cwd_minus_adamw": {
+    "general_nll": 0.005942910917107872,
+    "edu_nll": 0.006594419460976883,
+    "combined_nll": 0.006268665194511441
+  },
+  "preregistered_gate": {
+    "pass_combined_nll_max": 3.0700857544,
+    "strong_pass_combined_nll_max": 3.0650857544,
+    "general_nll_max": 3.2571743524,
+    "edu_nll_max": 2.9229971564
+  },
+  "horizon": {
+    "steps": [
+      9156,
+      18312,
+      27468,
+      36624,
+      45777
+    ],
+    "tokens": [
+      300023808,
+      600047616,
+      900071424,
+      1200095232,
+      1500020736
+    ],
+    "cwd_combined_nll": [
+      3.4660312831401825,
+      3.298982799053192,
+      3.198634177446366,
+      3.1242928206920624,
+      3.0863544195890427
+    ],
+    "exp011_combined_nll": [
+      3.474220663309097,
+      3.313881367444992,
+      3.2085965275764465,
+      3.1256043761968613,
+      3.080085754394531
+    ],
+    "cwd_minus_control_nll": [
+      -0.008189380168914562,
+      -0.01489856839179981,
+      -0.00996235013008085,
+      -0.0013115555047988974,
+      0.006268665194511441
+    ]
+  },
+  "interpretation": "CWD looked beneficial at intermediate matched horizons and reversed by the 1.5B endpoint. Together with project WSD and QK-Norm horizon observations, this is project-specific evidence that short-horizon method rankings were not reliable enough to justify further method hunting; it is not a universal law.",
+  "decision": "CWD is rejected from the final recipe. No CWD retuning, rescue run, or benchmark evaluation is authorized."
+}
