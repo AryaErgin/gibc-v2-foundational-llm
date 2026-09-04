@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import itertools
 import json
+import os
 import re
 import sqlite3
 import time
@@ -12,7 +13,7 @@ import unicodedata
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable, Iterator, Sequence
+from typing import Any, Callable, Iterable, Iterator, Sequence
 
 import numpy as np
 import torch
@@ -84,7 +85,29 @@ class NgramContaminationFilter:
         self.ngram_hashes = ngram_hashes
         self.ngram_size = ngram_size
         self.benchmark_source_hashes = benchmark_source_hashes or []
-        self.sqlite_path = sqlite_path
+        self.sqlite_path = Path(sqlite_path) if sqlite_path is not None else None
+        self._sqlite_connection: sqlite3.Connection | None = None
+
+    def _read_only_sqlite_connection(self) -> sqlite3.Connection:
+        if self.sqlite_path is None:
+            raise RuntimeError("Contamination filter has no on-disk index.")
+        if self._sqlite_connection is None:
+            uri = f"{self.sqlite_path.resolve().as_uri()}?mode=ro"
+            connection = sqlite3.connect(uri, uri=True)
+            connection.execute("PRAGMA query_only = ON")
+            self._sqlite_connection = connection
+        return self._sqlite_connection
+
+    @property
+    def sqlite_connection(self) -> sqlite3.Connection | None:
+        # Expose the active read-only connection for operational diagnostics/tests.
+        return self._sqlite_connection
+
+    def close(self) -> None:
+        # Explicitly release the single persistent read-only SQLite connection.
+        if self._sqlite_connection is not None:
+            self._sqlite_connection.close()
+            self._sqlite_connection = None
 
     @classmethod
     def from_texts(cls, texts: Iterable[str], ngram_size: int = 13) -> "NgramContaminationFilter":
@@ -121,13 +144,13 @@ class NgramContaminationFilter:
             overlap = sorted(value.hex() for value in (candidates & self.ngram_hashes))
         elif self.sqlite_path is not None:
             matched: set[bytes] = set()
-            with sqlite3.connect(self.sqlite_path) as connection:
-                candidate_list = list(candidates)
-                for start in range(0, len(candidate_list), 900):
-                    chunk = candidate_list[start : start + 900]
-                    if chunk:
-                        placeholders = ",".join("?" for _ in chunk)
-                        matched.update(row[0] for row in connection.execute(f"SELECT value FROM ngram_hashes WHERE value IN ({placeholders})", chunk))
+            connection = self._read_only_sqlite_connection()
+            candidate_list = list(candidates)
+            for start in range(0, len(candidate_list), 900):
+                chunk = candidate_list[start : start + 900]
+                if chunk:
+                    placeholders = ",".join("?" for _ in chunk)
+                    matched.update(row[0] for row in connection.execute(f"SELECT value FROM ngram_hashes WHERE value IN ({placeholders})", chunk))
             overlap = sorted(value.hex() for value in matched)
         else:
             raise RuntimeError("Contamination filter has neither in-memory nor on-disk index.")
@@ -225,26 +248,54 @@ class TokenStreamDataset:
 
 
 def write_token_stream(
-    path: Path, token_ids: Iterable[int], token_count: int, context_length: int = 512
+    path: Path,
+    token_ids: Iterable[int],
+    token_count: int,
+    context_length: int = 512,
+    *,
+    chunk_size_ids: int = 1_048_576,
+    progress_callback: Callable[[int], None] | None = None,
 ) -> TokenStreamDataset:
-    """Write one exact uint16 stream and reject short/overflowing token feeds."""
+    """Write one exact uint16 stream with bounded contiguous serialization.
+
+    The bounded chunk changes only materialization of already-emitted IDs. It
+    cannot alter token order, document boundaries, or the exact count contract.
+    """
+    if chunk_size_ids <= 0:
+        raise ValueError("chunk_size_ids must be positive.")
+    if token_count <= 0:
+        raise ValueError("token_count must be positive.")
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
-    values = np.memmap(target, mode="w+", dtype=np.uint16, shape=(token_count,))
-    written = 0
-    try:
+
+    def validated_tokens() -> Iterator[int]:
         for token_id in token_ids:
-            if written >= token_count:
-                raise ValueError("Token stream source exceeds the declared exact token count.")
-            if not 0 <= int(token_id) < 8192:
+            value = int(token_id)
+            if not 0 <= value < 8192:
                 raise ValueError("EXP-001 uint16 token stream received an out-of-vocabulary token ID.")
-            values[written] = token_id
-            written += 1
-        if written != token_count:
-            raise ValueError(f"Token stream source ended at {written} tokens; expected {token_count}.")
-        values.flush()
-    finally:
-        del values
+            yield value
+
+    validated = validated_tokens()
+    written = 0
+    with target.open("wb") as handle:
+        while written < token_count:
+            requested = min(chunk_size_ids, token_count - written)
+            chunk = np.fromiter(itertools.islice(validated, requested), dtype=np.uint16)
+            if chunk.size:
+                handle.write(chunk.tobytes())
+                written += int(chunk.size)
+                if progress_callback is not None:
+                    progress_callback(written)
+            if chunk.size != requested:
+                raise ValueError(f"Token stream source ended at {written} tokens; expected {token_count}.")
+        try:
+            next(validated)
+        except StopIteration:
+            pass
+        else:
+            raise ValueError("Token stream source exceeds the declared exact token count.")
+        handle.flush()
+        os.fsync(handle.fileno())
     return TokenStreamDataset(target, token_count, context_length)
 
 

@@ -76,3 +76,10 @@ promoted training recipe.
 EXP-019 CWD completed but regressed the exact EXP-011 1.5B endpoint by 0.0062686652 Combined NLL, so CWD is rejected without retuning. Method hunting is closed. The sole final training plan is EXP-020: fresh 49,860,480-parameter Recipe-v3, ordinary AdamW, 2:1 FineWeb/FineWeb-Edu, seed 42, and a 219,726-step / 7,199,981,568-token cosine schedule. QK-Norm and CWD are explicitly disabled. This is one final model run, not a paired 7.2B comparison.
 
 Because the EXP-012 materialization did not retain serializable global-dedup/cursor/mixture continuation state, a 7.2B append is not defensible. EXP-020 first rebuilds a unique token stream deterministically from zero and must reverify both EXP-012 and EXP-011 byte-prefix SHA-256 gates before a trainer may start. Required competition benchmarks remain embargoed until post-training checkpoint selection is frozen using the preregistered General/Edu-only rule.
+
+
+## EXP-020 data-builder recovery gate (2026-09-04)
+
+The first 7.2B data-preparation attempt is a systems-performance abort, not an EXP-020 scientific result: no trainer ran and no valid stream/manifest was produced. The partial artifact is retained only with an explicit INVALID/ABORTED marker. Its live frontier was roughly 530.6M / 7,199,981,569 stored IDs after roughly 46.5 hours, dominated by DrvFS SQLite contamination screening and scalar serialization.
+
+The source-faithful recovery path is now independently equivalence-tested: immutable benchmark-index bytes are staged to native WSL ext4, one read-only connection is reused, serialization is bounded and vectorized, and durable progress reports exact emitted IDs plus source/dedup/screening counters. The 15M-ID production-shaped proxy achieved 107,620 accepted prediction tokens/s, while prefix/manifest gates and all scientific controls remain untouched. Its projected raw materialization time is about 18.6 hours before final SHA/prefix work, so the explicit <=12-hour build-performance gate is currently **not met**. Do not start another 7.2B rebuild or model trainer until a further source-faithful systems improvement is profiled and passes the gate.
