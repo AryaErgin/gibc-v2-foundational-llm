@@ -12,7 +12,7 @@ from typing import Any
 
 import torch
 
-from .data import NgramContaminationFilter, write_token_stream
+from .data import NgramContaminationFilter, load_sqlite_ngram_hashes, write_token_stream
 from .exp003 import FROZEN_TOKENIZER_SHA256
 from .exp004 import SOURCE_ORDER, GlobalDeduplicatedTokenMixer, _screened_train_documents, _validation_record
 from .exp012 import (
@@ -46,6 +46,17 @@ class NativeScratch:
     benchmark_index_sha256: str
     required_free_bytes: int
     available_free_bytes: int
+
+
+def make_exp020_contamination_filter(
+    benchmark_index: Path, ngram_size: int, *, index_mode: str = "sqlite"
+) -> NgramContaminationFilter:
+    """Create an exact operational index path without changing contamination semantics."""
+    if index_mode == "sqlite":
+        return NgramContaminationFilter(None, ngram_size, sqlite_path=benchmark_index)
+    if index_mode == "memory":
+        return NgramContaminationFilter(load_sqlite_ngram_hashes(benchmark_index), ngram_size)
+    raise ValueError(f"EXP-020 contamination index mode must be sqlite or memory, got {index_mode!r}.")
 
 
 class BuildProgressRecorder:
@@ -201,6 +212,7 @@ def prepare_exp020(
     recorded_source_commit: str,
     scratch_dir: Path,
     progress_interval_stored_ids: int = BUILD_PROGRESS_INTERVAL_IDS,
+    contamination_index_mode: str = "sqlite",
 ) -> dict[str, Any]:
     """Rebuild a unique 7.2B stream from zero; never append an insufficiently stateful artifact."""
     from .tokenizer import load_tokenizer
@@ -248,7 +260,7 @@ def prepare_exp020(
 
     benchmark_index = scratch.benchmark_index
     benchmark_index_sha256 = scratch.benchmark_index_sha256
-    contamination_filter = NgramContaminationFilter(None, config.data.contamination_ngram_size, sqlite_path=benchmark_index)
+    contamination_filter = make_exp020_contamination_filter(benchmark_index, config.data.contamination_ngram_size, index_mode=contamination_index_mode)
     source_configs = {
         "fineweb": config.data,
         "fineweb_edu": replace(config.data, dataset_repo="HuggingFaceFW/fineweb-edu", dataset_config="default", dataset_revision="87f09149ef4734204d70ed1d046ddc9ca3f2b8f9"),
@@ -312,7 +324,7 @@ def prepare_exp020(
         "mixture": {**config.mixture, "deterministic_mixing_method": "token-deficit-balanced whole-document selection; FineWeb wins deterministic ties", "actual_prediction_token_contributions": mixer.prediction_token_contributions, "actual_stored_token_contributions": mixer.stored_token_contributions, "documents_contributed": mixer.documents_contributed, "cross_source_duplicates_skipped": mixer.cross_source_duplicates_skipped, "intra_source_duplicates_skipped": mixer.intra_source_duplicates_skipped, "unique_document_count": len(mixer.selected_document_ids), "global_dedup_scope": "entire 7.2B artifact from stream zero"},
         "split": frozen_manifest["split"],
         "contamination": {"method": contamination["method"], "ngram_size": contamination["ngram_size"], "benchmark_sources": contamination["benchmark_sources"], "frozen_exp012_index_sha256": benchmark_index_sha256, "index_reused_byte_for_byte": True, "sources": source_counters},
-        "operational_build": {"native_wsl_scratch": True, "native_scratch_required_free_bytes": scratch.required_free_bytes, "native_scratch_available_free_bytes_at_start": scratch.available_free_bytes, "sqlite_index_staged_byte_for_byte": True, "source_cache_on_native_scratch": True, "stream_materialized_on_native_scratch": True, "stream_serialization_chunk_ids": BUILD_STREAM_CHUNK_IDS, "durable_progress_interval_stored_ids": progress_interval_stored_ids},
+        "operational_build": {"native_wsl_scratch": True, "native_scratch_required_free_bytes": scratch.required_free_bytes, "native_scratch_available_free_bytes_at_start": scratch.available_free_bytes, "sqlite_index_staged_byte_for_byte": True, "contamination_index_mode": contamination_index_mode, "source_cache_on_native_scratch": True, "stream_materialized_on_native_scratch": True, "stream_serialization_chunk_ids": BUILD_STREAM_CHUNK_IDS, "durable_progress_interval_stored_ids": progress_interval_stored_ids},
         "frozen_exp012_source": {"manifest_sha256": EXP012_MANIFEST_SHA256, "stream_sha256": EXP012_STREAM_SHA256, "stored_token_ids": EXP012_STORED_TOKEN_IDS, "prediction_tokens": EXP012_PREDICTION_TOKENS},
         "exp012_prefix": {"byte_count": EXP012_PREFIX_BYTE_COUNT, "expected_sha256": EXP012_STREAM_SHA256, "observed_sha256": observed_exp012, "prefix_match": True, "stored_token_ids": EXP012_STORED_TOKEN_IDS},
         "exp011_prefix": dict(frozen_manifest["exp011_prefix"]),

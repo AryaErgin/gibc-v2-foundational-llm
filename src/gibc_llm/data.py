@@ -72,6 +72,20 @@ def _ngram_hashes(text: str, ngram_size: int) -> set[bytes]:
     }
 
 
+def load_sqlite_ngram_hashes(sqlite_path: Path) -> set[bytes]:
+    """Load exact n-gram SHA-256 BLOBs for the existing in-memory screen path."""
+    path = Path(sqlite_path)
+    if not path.is_file():
+        raise FileNotFoundError(f"Contamination index is missing: {path}")
+    uri = f"{path.resolve().as_uri()}?mode=ro"
+    with sqlite3.connect(uri, uri=True) as connection:
+        connection.execute("PRAGMA query_only = ON")
+        values = {value for (value,) in connection.execute("SELECT value FROM ngram_hashes")}
+    if any(not isinstance(value, bytes) or len(value) != 32 for value in values):
+        raise RuntimeError("Contamination SQLite index contains a non-SHA-256 value.")
+    return values
+
+
 class NgramContaminationFilter:
     """Privacy-preserving normalized n-gram overlap index."""
 

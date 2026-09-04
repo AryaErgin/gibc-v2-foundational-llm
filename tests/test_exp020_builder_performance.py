@@ -173,3 +173,27 @@ def test_native_scratch_stages_only_a_byte_identical_index_and_rejects_drvfs(tmp
             stage_exp020_native_scratch(source_index, Path("/mnt/c/forbidden-exp020-scratch"), "runtime")
     finally:
         shutil.rmtree(native_root, ignore_errors=True)
+
+
+def test_exp020_ram_index_mode_is_exact_and_sqlite_remains_default(tmp_path: Path) -> None:
+    """Breaks if the operational RAM mode changes complete decisions or default behavior."""
+    import pytest
+    from gibc_llm.exp020 import make_exp020_contamination_filter
+
+    benchmark = "one two three four five six seven eight nine ten eleven twelve thirteen fourteen"
+    reference = NgramContaminationFilter.from_texts([benchmark], ngram_size=13)
+    index = tmp_path / "index.sqlite"
+    _create_index(index, reference.ngram_hashes or set())
+    default = make_exp020_contamination_filter(index, 13)
+    memory = make_exp020_contamination_filter(index, 13, index_mode="memory")
+    text = "prefix one two three four five six seven eight nine ten eleven twelve thirteen fourteen suffix"
+    assert default.screen(text).as_dict() == memory.screen(text).as_dict() == reference.screen(text).as_dict()
+    default.close()
+    memory.close()
+
+
+def test_exp020_prepare_keeps_sqlite_index_mode_as_the_default() -> None:
+    """Breaks if the full builder silently changes its established index mode."""
+    from gibc_llm.exp020 import prepare_exp020
+
+    assert inspect.signature(prepare_exp020).parameters["contamination_index_mode"].default == "sqlite"

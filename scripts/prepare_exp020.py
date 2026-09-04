@@ -17,6 +17,7 @@ def main() -> None:
     parser.add_argument("--exp012-artifact-dir", type=Path, required=True)
     parser.add_argument("--scratch-dir", type=Path, required=True, help="Fresh native-WSL hot scratch root; never /mnt.")
     parser.add_argument("--progress-interval-stored-ids", type=int, default=10_000_000)
+    parser.add_argument("--contamination-index-mode", choices=("sqlite", "memory"), default="sqlite")
     parser.add_argument("--recorded-source-commit", required=True, help="Immutable committed EXP-020 builder/config source SHA.")
     args = parser.parse_args()
     print(
@@ -28,6 +29,7 @@ def main() -> None:
                 args.recorded_source_commit,
                 args.scratch_dir,
                 args.progress_interval_stored_ids,
+                contamination_index_mode=args.contamination_index_mode,
             ),
             indent=2,
             sort_keys=True,
