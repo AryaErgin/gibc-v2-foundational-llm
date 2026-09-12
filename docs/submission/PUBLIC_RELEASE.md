@@ -26,7 +26,7 @@ Follow the [pinned download/install/verification instructions](EXP020_RELEASE.md
 
 The packaged README and evidence remain frozen snapshots of the original export. Current source-repository documentation records subsequent smoke and publication events; it does not silently rewrite package manifests or historical no-inference observations. Public delivery changes no benchmark score, selected checkpoint, model weight, scientific gate or license limitation.
 
-Model delivery is complete. Final source commit/tag/push, demo video, team/eligibility and Devpost completion remain separate human actions. No upload, source publication or model execution was performed in this reconciliation.
+Model delivery is complete. At the time of this original receipt, final source commit/tag/push, demo video, team/eligibility and Devpost completion remained separate human actions. No upload, source publication or model execution was performed in this reconciliation.
 
 ## Subsequent public-user audit
 

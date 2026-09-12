@@ -18,6 +18,8 @@ HellaSwag and ARC-Easy improved; PIQA was roughly stable; WinoGrande regressed. 
 
 **Frozen competition submission:** [`gibc-v2-track01-exp020-v1.0.0`](https://github.com/AryaErgin/gibc-v2-foundational-llm/tree/gibc-v2-track01-exp020-v1.0.0), commit `69f56d7b1f4f377f94a30216a9945df8a6662cce`. Later commits polish documentation/media only; the competition model and scores are unchanged.
 
+**Judge map:** [Run model](#run-the-public-model--no-gpu-or-benchmark-download) · [Results](RESULTS.md) · [Experiment log](EXPERIMENT_LOG.md) · [Architecture](ARCHITECTURE.md) · [Data](DATA_SOURCES.md) · [Reproducibility](docs/submission/REPRODUCIBILITY.md) · [AI assistance](AI_ASSISTANCE.md)
+
 ![EXP-020 final results: 31.783 WikiText-103 perplexity at 49.86M parameters](docs/assets/exp020-devpost/01-exp020-final-results.png)
 
 ## Run the public model — no GPU or benchmark download
