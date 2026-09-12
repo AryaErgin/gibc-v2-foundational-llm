@@ -74,11 +74,15 @@ def test_readme_is_finalized_for_judges() -> None:
 
     assert "Official benchmarks have not run" not in readme
     for required in (
-        "0.28759211312487554",
-        "0.36447811447811446",
-        "0.6022850924918389",
-        "0.5035516969218626",
-        "35.93897257521639",
+        "EXP-020",
+        "49,860,480",
+        "7,199,981,568",
+        "30.163%",
+        "39.141%",
+        "60.446%",
+        "48.777%",
+        "31.783",
+        "WinoGrande regressed",
         "AI assistance",
         "count_parameters.py",
         "generate.py",

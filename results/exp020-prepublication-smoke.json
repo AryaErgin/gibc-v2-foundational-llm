@@ -1,0 +1,259 @@
+{
+  "smoke": {
+    "status": "PASS",
+    "scratch": "/home/aryae/exp020-judge-smoke-0jqw3gqm",
+    "commands": [
+      {
+        "command": [
+          "python",
+          "-B",
+          "verify.py"
+        ],
+        "returncode": 0,
+        "seconds": 5.075897693634033,
+        "log": "/home/aryae/exp020-judge-smoke-0jqw3gqm/logs/06-release-verifier.log"
+      },
+      {
+        "command": [
+          "python",
+          "-B",
+          "/home/aryae/exp020-judge-smoke-0jqw3gqm/offline_probe.py"
+        ],
+        "returncode": 0,
+        "seconds": 3.4195520877838135,
+        "log": "/home/aryae/exp020-judge-smoke-0jqw3gqm/logs/07-offline-probe.log"
+      },
+      {
+        "command": [
+          "python",
+          "-B",
+          "generate.py",
+          "The small robot moved",
+          "--temperature",
+          "0",
+          "--max-new-tokens",
+          "12"
+        ],
+        "returncode": 0,
+        "seconds": 4.166301250457764,
+        "log": "/home/aryae/exp020-judge-smoke-0jqw3gqm/logs/08-generation.log"
+      },
+      {
+        "command": [
+          "python",
+          "-B",
+          "verify.py"
+        ],
+        "returncode": 0,
+        "seconds": 3.232074499130249,
+        "log": "/home/aryae/exp020-judge-smoke-0jqw3gqm/logs/09-post-generation-verifier.log"
+      }
+    ],
+    "isolation_argv": [
+      "bwrap",
+      "--unshare-net",
+      "--die-with-parent",
+      "--new-session",
+      "--ro-bind",
+      "/usr",
+      "/usr",
+      "--ro-bind",
+      "/lib",
+      "/lib",
+      "--ro-bind",
+      "/lib64",
+      "/lib64",
+      "--ro-bind",
+      "/bin",
+      "/bin",
+      "--ro-bind",
+      "/etc",
+      "/etc",
+      "--proc",
+      "/proc",
+      "--dev",
+      "/dev",
+      "--tmpfs",
+      "/tmp",
+      "--dir",
+      "/home",
+      "--dir",
+      "/home/aryae",
+      "--bind",
+      "/home/aryae/exp020-judge-smoke-0jqw3gqm",
+      "/home/aryae/exp020-judge-smoke-0jqw3gqm",
+      "--ro-bind",
+      "/home/aryae/exp020-judge-smoke-0jqw3gqm/package",
+      "/home/aryae/exp020-judge-smoke-0jqw3gqm/package",
+      "--chdir",
+      "/home/aryae/exp020-judge-smoke-0jqw3gqm/package"
+    ],
+    "exactly_one_generation_command": true,
+    "temperature": 0,
+    "new_token_limit": 12,
+    "prompt": "The small robot moved",
+    "generation_stdout": "The small robot moved from the ground to the ground, and the robot was\n",
+    "package_bytes_unchanged": true,
+    "network_disabled": true,
+    "repository_and_windows_artifacts_not_mounted": true,
+    "probe": {
+      "status": "PASS",
+      "python": "3.11.9 (main, Aug 14 2024, 05:07:28) [Clang 18.1.8 ]",
+      "executable": "/home/aryae/exp020-judge-smoke-0jqw3gqm/exp020-inference-venv/bin/python",
+      "prefix": "/home/aryae/exp020-judge-smoke-0jqw3gqm/exp020-inference-venv",
+      "base_prefix": "/home/aryae/exp020-judge-smoke-0jqw3gqm/python311",
+      "sys_path": [
+        "/home/aryae/exp020-judge-smoke-0jqw3gqm/package",
+        "/home/aryae/exp020-judge-smoke-0jqw3gqm",
+        "/home/aryae/exp020-judge-smoke-0jqw3gqm/python311/lib/python311.zip",
+        "/home/aryae/exp020-judge-smoke-0jqw3gqm/python311/lib/python3.11",
+        "/home/aryae/exp020-judge-smoke-0jqw3gqm/python311/lib/python3.11/lib-dynload",
+        "/home/aryae/exp020-judge-smoke-0jqw3gqm/exp020-inference-venv/lib/python3.11/site-packages"
+      ],
+      "gibc_module": "/home/aryae/exp020-judge-smoke-0jqw3gqm/package/gibc_llm/__init__.py",
+      "torch_module": "/home/aryae/exp020-judge-smoke-0jqw3gqm/exp020-inference-venv/lib/python3.11/site-packages/torch/__init__.py",
+      "packages": {
+        "torch": "2.13.0+cu132",
+        "numpy": "2.4.6",
+        "PyYAML": "6.0.2",
+        "tokenizers": "0.21.4",
+        "safetensors": "0.8.0"
+      },
+      "parameters": 49860480,
+      "tensors": 83,
+      "tokenizer_vocabulary": 8192,
+      "dev_repo_accessible": false,
+      "windows_artifacts_accessible": false,
+      "datasets_installed": false,
+      "lm_eval_installed": false,
+      "cuda_available": false,
+      "network_interfaces": [
+        [
+          1,
+          "lo"
+        ]
+      ],
+      "network_route_table": "Iface\tDestination\tGateway \tFlags\tRefCnt\tUse\tMetric\tMask\t\tMTU\tWindow\tIRTT                                                       \n",
+      "inference_executed_by_probe": false
+    }
+  },
+  "source_equivalence": {
+    "status": "PASS",
+    "scope": "separate custodian audit; source is unavailable to judge smoke",
+    "source_checkpoint_sha256": "95338530dcfa660acb149c94d72c07173c14dece6de7da4a22d7aa856723ce89",
+    "source_bytes": 598447091,
+    "released_weight_sha256": "4c4f97801ce0c3d0cee52172bfe851b57690b81d153775a33107b8aaed1bc129",
+    "manifest": {
+      "file_count": 17,
+      "payload_bytes": 200162343,
+      "manifest_sha256": "b3f9cdadce6757d7134834303b76c254caa3433c667fb2f191e4c21375c2fe2e"
+    },
+    "tensor_names_shapes_dtypes_and_bits_equal": true,
+    "tensors": 83,
+    "tensor_elements": 49860480,
+    "model_forward_executed": false,
+    "run_state": {
+      "step": 219726,
+      "tokens": 7199981568,
+      "next_sequence_index": 14062464
+    }
+  },
+  "setup": {
+    "scratch": "/home/aryae/exp020-judge-smoke-0jqw3gqm",
+    "package": "/home/aryae/exp020-judge-smoke-0jqw3gqm/package",
+    "base_interpreter_source": "/home/aryae/.local/share/uv/python/cpython-3.11.9-linux-x86_64-gnu",
+    "interpreter_copy": "/home/aryae/exp020-judge-smoke-0jqw3gqm/python311",
+    "environment": {
+      "PATH": "/home/aryae/exp020-judge-smoke-0jqw3gqm/exp020-inference-venv/bin:/usr/bin:/bin",
+      "HOME": "/home/aryae/exp020-judge-smoke-0jqw3gqm/empty-home",
+      "LANG": "C.UTF-8",
+      "PYTHONNOUSERSITE": "1",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "PIP_CONFIG_FILE": "/dev/null",
+      "PIP_NO_CACHE_DIR": "1",
+      "XDG_CACHE_HOME": "/home/aryae/exp020-judge-smoke-0jqw3gqm/cache",
+      "HF_HOME": "/home/aryae/exp020-judge-smoke-0jqw3gqm/hf-cache",
+      "CUDA_VISIBLE_DEVICES": "",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1"
+    },
+    "commands": [
+      {
+        "argv": [
+          "python3.11",
+          "-m",
+          "venv",
+          "../exp020-inference-venv"
+        ],
+        "returncode": 0,
+        "seconds": 3.03350830078125,
+        "log": "/home/aryae/exp020-judge-smoke-0jqw3gqm/logs/01-venv.log"
+      },
+      {
+        "argv": [
+          "python",
+          "-m",
+          "pip",
+          "install",
+          "torch==2.13.0",
+          "--index-url",
+          "https://download.pytorch.org/whl/cu132"
+        ],
+        "returncode": 0,
+        "seconds": 298.7616534233093,
+        "log": "/home/aryae/exp020-judge-smoke-0jqw3gqm/logs/02-pytorch-install.log"
+      },
+      {
+        "argv": [
+          "python",
+          "-m",
+          "pip",
+          "install",
+          "-r",
+          "requirements.txt"
+        ],
+        "returncode": 0,
+        "seconds": 11.101353883743286,
+        "log": "/home/aryae/exp020-judge-smoke-0jqw3gqm/logs/03-requirements-install.log"
+      },
+      {
+        "argv": [
+          "python",
+          "-m",
+          "pip",
+          "check"
+        ],
+        "returncode": 0,
+        "seconds": 0.6873209476470947,
+        "log": "/home/aryae/exp020-judge-smoke-0jqw3gqm/logs/04-pip-check.log"
+      },
+      {
+        "argv": [
+          "python",
+          "-m",
+          "pip",
+          "freeze",
+          "--all"
+        ],
+        "returncode": 0,
+        "seconds": 0.3436472415924072,
+        "log": "/home/aryae/exp020-judge-smoke-0jqw3gqm/logs/05-pip-freeze.log"
+      }
+    ]
+  },
+  "installed_packages": "certifi==2026.7.22\ncharset-normalizer==3.5.1\ncuda-bindings==13.3.1\ncuda-pathfinder==1.6.0\ncuda-toolkit==13.2.1\nfilelock==3.32.3\nfsspec==2026.7.0\nhf-xet==1.6.0\nhuggingface_hub==0.36.2\nidna==3.19\nJinja2==3.1.6\nMarkupSafe==3.0.3\nmpmath==1.3.0\nnetworkx==3.6.1\nnumpy==2.4.6\nnvidia-cublas==13.4.0.1\nnvidia-cuda-cupti==13.2.75\nnvidia-cuda-nvrtc==13.2.78\nnvidia-cuda-runtime==13.2.75\nnvidia-cudnn-cu13==9.20.0.48\nnvidia-cufft==12.2.0.46\nnvidia-cufile==1.17.1.22\nnvidia-curand==10.4.2.55\nnvidia-cusolver==12.2.0.1\nnvidia-cusparse==12.7.10.1\nnvidia-cusparselt-cu13==0.8.1\nnvidia-nccl-cu13==2.29.7\nnvidia-nvjitlink==13.3.33\nnvidia-nvshmem-cu13==3.4.5\nnvidia-nvtx==13.2.75\npackaging==26.3\npip==24.0\nPyYAML==6.0.2\nrequests==2.34.2\nsafetensors==0.8.0\nsetuptools==78.1.0\nsympy==1.14.0\ntokenizers==0.21.4\ntorch==2.13.0+cu132\ntqdm==4.70.0\ntriton==3.7.1\ntyping_extensions==4.16.0\nurllib3==2.7.0\n",
+  "repository_checks": {
+    "focused_tests": {
+      "command": "CUDA_VISIBLE_DEVICES=\"\" OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 .venv/bin/python -m pytest tests/test_inference_release.py tests/test_submission_package.py tests/test_submission_contract.py -q",
+      "passed": 21,
+      "seconds": 6.99,
+      "exit_code": 0
+    },
+    "submission_verifier": "PASS",
+    "diff_check": "PASS",
+    "head": "37332797909df963ca7c77a945cea8752b60d481",
+    "scope": "New report and evidence only; existing working-tree changes preserved"
+  }
+}

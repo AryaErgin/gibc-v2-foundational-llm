@@ -1,0 +1,130 @@
+EXP-020 final reconciliation worktree inventory — 2026-09-09
+
+Authoritative repository: /home/aryae/gibc-v2-foundational-llm
+HEAD: 37332797909df963ca7c77a945cea8752b60d481
+Git index: empty diff (nothing staged).
+Entries include this inventory and the occurrence-audit file created for this handoff.
+No file below is automatically authorized for staging. In particular preserve egg-info untracked.
+Existing submission work is included so it cannot be mistaken for changes made in this turn.
+
+git status --short --untracked-files=all:
+ M AGENTS.md
+ M AI_ASSISTANCE.md
+ M ARCHITECTURE.md
+ M CODE_ATTRIBUTION.md
+ M DATA_SOURCES.md
+?? docs/assets/exp020/decisions.png
+?? docs/assets/exp020/decisions.svg
+?? docs/assets/exp020/figure-provenance.json
+?? docs/assets/exp020/pipeline.png
+?? docs/assets/exp020/pipeline.svg
+?? docs/assets/exp020/progression.png
+?? docs/assets/exp020/progression.svg
+?? docs/assets/exp020/README.md
+?? docs/assets/exp020/trajectory.png
+?? docs/assets/exp020/trajectory.svg
+ M docs/drafts/EXP-011-result-report.md
+ M docs/drafts/OFFICIAL-EVALUATION-READINESS.md
+ M docs/EXP-012-INFERENCE-PUBLICATION.md
+ M docs/EXP020_OFFICIAL_EVALUATION_PROTOCOL.md
+ M docs/OPERATIONAL_THERMAL_CONTROLS.md
+ M docs/storage-manifest-2026-08-30.md
+?? docs/submission/CHANGES.md
+?? docs/submission/COMPLIANCE_VALIDATION.md
+?? docs/submission/COMPLIANCE.md
+?? docs/submission/DEMO_STORYBOARD.md
+?? docs/submission/DEVPOST_DRAFT.md
+?? docs/submission/DOCUMENT_FRESHNESS.md
+?? docs/submission/EVIDENCE_AUDIT.md
+?? docs/submission/EXP020_MODEL_CARD.md
+?? docs/submission/EXP020_RELEASE.md
+?? docs/submission/FINAL_RECONCILIATION.md
+?? docs/submission/JUDGE_REVIEW.md
+?? docs/submission/LICENSE_AUDIT.md
+?? docs/submission/PREPUBLICATION_SMOKE.md
+?? docs/submission/PUBLIC_RELEASE.md
+?? docs/submission/RECONCILIATION_WORKTREE.txt
+?? docs/submission/REPRODUCIBILITY.md
+?? docs/submission/VALIDATION.md
+?? docs/submission/WORK_PLAN.md
+?? docs/submission/WORKING_FILES.md
+ M docs/superpowers/plans/2026-08-23-exp001a-implementation.md
+ M docs/superpowers/plans/2026-08-24-exp005-architecture-preflight.md
+ M docs/superpowers/plans/2026-08-24-exp006-preparation.md
+ M docs/superpowers/plans/2026-08-25-exp007-preflight.md
+ M docs/superpowers/plans/2026-08-26-exp011-long-horizon-preparation.md
+ M docs/superpowers/plans/2026-08-28-exp013-wsd-ablation.md
+ M docs/superpowers/plans/2026-08-30-exp017a-thermal-recovery.md
+?? docs/superpowers/plans/2026-09-08-exp020-release-compliance.md
+ M docs/superpowers/specs/2026-08-23-exp001a-design.md
+ M EXPERIMENT_LOG.md
+ M paper/claims_and_evidence.md
+ M paper/experiment_matrix.md
+ M paper/figures_plan.md
+ M paper/outline.md
+ M paper/related_work.md
+ M paper/reviewer_risks.md
+ M PROJECT_PLAN.md
+ M pyproject.toml
+ M README.md
+ M REFERENCES.bib
+ M RESULTS.md
+?? results/EXP-020-summary.md
+?? results/exp020-evaluation-source-provenance.json
+?? results/exp020-inference-release.json
+?? results/exp020-placeholder-audit.json
+?? results/exp020-prepublication-smoke.json
+?? results/exp020-public-release.json
+?? results/exp020-submission-evidence.json
+?? scripts/build_exp020_publication.py
+?? scripts/exp020_release_generate.py
+?? scripts/export_submission_evidence.py
+?? scripts/render_submission_figures.py
+?? scripts/verify_exp020_publication.py
+?? scripts/verify_submission_package.py
+ M SOURCE_LEDGER.md
+?? src/gibc_llm/inference_release.py
+?? src/gibc_v2_foundational_llm.egg-info/dependency_links.txt
+?? src/gibc_v2_foundational_llm.egg-info/PKG-INFO
+?? src/gibc_v2_foundational_llm.egg-info/requires.txt
+?? src/gibc_v2_foundational_llm.egg-info/SOURCES.txt
+?? src/gibc_v2_foundational_llm.egg-info/top_level.txt
+?? tests/test_inference_release.py
+ M tests/test_submission_contract.py
+?? tests/test_submission_package.py
+
+Tracked diff --stat (includes previous submission work; excludes untracked file contents):
+ AGENTS.md                                          |  16 +-
+ AI_ASSISTANCE.md                                   |  25 ++-
+ ARCHITECTURE.md                                    |  42 +++-
+ CODE_ATTRIBUTION.md                                |   6 +
+ DATA_SOURCES.md                                    |  53 +++--
+ EXPERIMENT_LOG.md                                  |  18 +-
+ PROJECT_PLAN.md                                    |  99 +++-------
+ README.md                                          | 213 +++++++++------------
+ REFERENCES.bib                                     |  40 +++-
+ RESULTS.md                                         | 164 +++++-----------
+ SOURCE_LEDGER.md                                   |  10 +-
+ docs/EXP-012-INFERENCE-PUBLICATION.md              |   2 +
+ docs/EXP020_OFFICIAL_EVALUATION_PROTOCOL.md        |  14 +-
+ docs/OPERATIONAL_THERMAL_CONTROLS.md               |   6 +
+ docs/drafts/EXP-011-result-report.md               |   2 +
+ docs/drafts/OFFICIAL-EVALUATION-READINESS.md       |   2 +
+ docs/storage-manifest-2026-08-30.md                |   2 +
+ .../plans/2026-08-23-exp001a-implementation.md     |   2 +
+ .../2026-08-24-exp005-architecture-preflight.md    |   2 +
+ .../plans/2026-08-24-exp006-preparation.md         |   2 +
+ .../plans/2026-08-25-exp007-preflight.md           |   2 +
+ .../2026-08-26-exp011-long-horizon-preparation.md  |   2 +
+ .../plans/2026-08-28-exp013-wsd-ablation.md        |   2 +
+ .../plans/2026-08-30-exp017a-thermal-recovery.md   |   2 +
+ .../superpowers/specs/2026-08-23-exp001a-design.md |   2 +
+ paper/claims_and_evidence.md                       |  20 +-
+ paper/experiment_matrix.md                         |  25 ++-
+ paper/figures_plan.md                              |  11 +-
+ paper/outline.md                                   |  25 +--
+ paper/related_work.md                              |  16 +-
+ paper/reviewer_risks.md                            |  24 +--
+ pyproject.toml                                     |   2 +-
+ tests/test_submission_contract.py                  |  14 +-
+ 33 files changed, 444 insertions(+), 423 deletions(-)

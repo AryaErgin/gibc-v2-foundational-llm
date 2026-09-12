@@ -1,4 +1,20 @@
-## EXP-017A  final closure (2026-09-01)
+# Experiment log — current freeze and historical chronology
+
+**Current state (2026-09-08): EXP-020 is the immutable competition model.** Full-horizon training completed: 219,726 updates, 7,199,981,568 prediction tokens, 49,860,480 parameters. Final official evaluation completed successfully on 2026-09-08, after internal-validation checkpoint selection.
+
+Terminal General / Edu / Combined internal NLL: 3.1007972359657288 / 2.769774168729782 / 2.9352857023477554. Official WikiText-103 token PPL 31.783151406614728; HellaSwag acc_norm 0.3016331408086039; ARC-Easy acc_norm 0.39141414141414144; PIQA acc_norm 0.6044613710554951; WinoGrande acc 0.4877663772691397. [Exact frozen evidence](results/exp020-submission-evidence.json) · [final run report](results/EXP-020-summary.md).
+
+Training source: `d88800733846c7a30e2044fa0a20f9e4a448f328`; evaluator implementation in Git: `37332797909df963ca7c77a945cea8752b60d481`. Final model training took 136,589.44783848198 seconds on one RTX 5090 Laptop GPU with fixed 0.300-second pacing. Required benchmark results cannot authorize further model development, checkpoint changes or reruns.
+
+The second completed corpus is the deterministic rebuild-2 artifact, not the invalid aborted directory. Current independent full/prefix hashes and successful official output hashes are documented in the [submission audit](docs/submission/EVIDENCE_AUDIT.md). EXP-019 remains a rejected CWD result, not a final-scale recipe.
+
+## Reading the historical entries
+
+Entries below preserve the project’s chronological decision evidence. “Promoted,” “pending,” “not launched,” and permissions refer to the stage when an entry was written. In particular, WSD’s EXP-013 proxy promotion was superseded by EXP-017A, and EXP-012 is now the historical reference. These entries are not current execution instructions.
+
+---
+
+## EXP-017A — final closure (2026-09-01)
 
 Status: **execution PASS; scientific promotion FAIL**. Attempt 3 completed the
 full fresh seed-42 horizon: 73,242 updates, 2,399,993,856 prediction tokens,

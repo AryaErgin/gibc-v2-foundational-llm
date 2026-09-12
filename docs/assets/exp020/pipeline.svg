@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img">
+<title>One reproducible path | Data → training → freeze → reporting</title>
+<desc>No pretrained weights. Required benchmark scores cannot change the frozen final model.</desc>
+<rect width="1280" height="720" fill="#f5f8fa"/>
+<text x="48" y="52.6" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="32" font-weight="700" fill="#152c40">One reproducible path | Data → training → freeze → reporting</text>
+<text x="48" y="89.4" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="18" font-weight="400" fill="#53687a">No pretrained weights. Required benchmark scores cannot change the frozen final model.</text>
+<rect x="48" y="139" width="367" height="186" fill="#ffffff"/>
+<text x="65" y="169.0" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="20" font-weight="700" fill="#087f83">01  DATA</text>
+<text x="65" y="211.6" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="22" font-weight="400" fill="#152c40">2:1 FineWeb / FineWeb-Edu</text>
+<text x="65" y="238.4" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="18" font-weight="400" fill="#152c40">Frozen revisions + scratch tokenizer</text>
+<text x="65" y="267.6" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="17" font-weight="400" fill="#152c40">Exact-document dedup + 13-gram screen</text>
+<text x="65" y="298.4" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="18" font-weight="400" fill="#152c40">7,750,968 unique selected documents</text>
+<rect x="457" y="139" width="367" height="186" fill="#ffffff"/>
+<text x="474" y="169.0" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="20" font-weight="700" fill="#087f83">02  MODEL</text>
+<text x="474" y="214.0" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="25" font-weight="400" fill="#152c40">49,860,480 parameters</text>
+<text x="474" y="238.4" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="18" font-weight="400" fill="#152c40">9 × width 640; 20 heads; context 512</text>
+<text x="474" y="268.4" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="18" font-weight="400" fill="#152c40">SwiGLU · RoPE · pre-RMSNorm</text>
+<text x="474" y="298.4" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="18" font-weight="400" fill="#152c40">Tied 8,192-token embedding / head</text>
+<rect x="866" y="139" width="367" height="186" fill="#ffffff"/>
+<text x="883" y="169.0" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="20" font-weight="700" fill="#087f83">03  TRAIN</text>
+<text x="883" y="211.6" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="22" font-weight="400" fill="#152c40">7,199,981,568 prediction tokens</text>
+<text x="883" y="239.2" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="19" font-weight="400" fill="#152c40">Fresh seed 42 · AdamW · cosine</text>
+<text x="883" y="268.4" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="18" font-weight="400" fill="#152c40">219,726 updates · BF16 / FP32 state</text>
+<text x="883" y="298.4" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="18" font-weight="400" fill="#152c40">One laptop GPU · 37.94 h incl. pacing</text>
+<polyline points="418,223 453,223" fill="none" stroke="#226aa1" stroke-width="4"/>
+<polyline points="827,223 862,223" fill="none" stroke="#226aa1" stroke-width="4"/>
+<text x="48" y="381.0" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="25" font-weight="700" fill="#152c40">Internal General/Edu validation</text>
+<text x="48" y="419.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="21" font-weight="400" fill="#152c40">Frozen milestones; late-checkpoint rule</text>
+<text x="48" y="454.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="21" font-weight="400" fill="#152c40">Lowest Combined; later within 0.003 NLL</text>
+<polyline points="523,410 608,410" fill="none" stroke="#226aa1" stroke-width="4"/>
+<rect x="623" y="357" width="610" height="122" fill="#152c40"/>
+<text x="646" y="396.0" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="25" font-weight="700" fill="#ffffff">04  FREEZE: terminal step 219,726</text>
+<text x="646" y="436.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="21" font-weight="400" fill="#ffffff">Checkpoint / config / tokenizer identities verified</text>
+<rect x="48" y="528" width="1184" height="91" fill="#ffffff"/>
+<text x="70" y="563.0" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="25" font-weight="700" fill="#087f83">05  OFFICIAL REPORTING ONLY · CPU FP32 · zero-shot</text>
+<text x="70" y="602.6" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="22" font-weight="400" fill="#152c40">HellaSwag · ARC-Easy · PIQA · WinoGrande · separate held-out WikiText-103 token PPL</text>
+<text x="48" y="665.6" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="17" font-weight="400" fill="#53687a">Historical benchmark exposure and public-text exclusion screening are disclosed; final selection precedes its scoring.</text>
+<text x="48" y="699.0" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="15" font-weight="400" fill="#53687a">Sources: frozen config; corpus manifest; training summary; preregistration; completed official task metadata.</text>
+</svg>

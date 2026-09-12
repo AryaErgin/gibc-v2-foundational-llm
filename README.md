@@ -1,133 +1,100 @@
-# GIBC V2 Track 01 — from-scratch foundational language model
+# GIBC V2 Track 01 · 49.86M parameters, trained from scratch
 
-## 30-second summary
+**EXP-020 is the frozen competition model:** **49,860,480 trainable parameters** (below the 50M cap), **7,199,981,568 prediction tokens**, **one RTX 5090 Laptop GPU**, and **37.94 hours** of final training including thermal pacing. No pretrained model initialization, fine-tuning or distillation.
 
-This repository contains the reproducible source, configurations, tests, and
-provenance for a from-scratch, decoder-only GIBC Track 01 model. The final
-EXP-012 checkpoint was selected by frozen validation before benchmarks,
-contains exactly **49,860,480** trainable parameters, and completed the
-required official evaluation on 2026-08-28. No pretrained weights,
-fine-tuning, distillation, benchmark-answer training, or benchmark-driven
-checkpoint selection was used.
+**[Download the frozen EXP-020 model, tokenizer and inference package](https://huggingface.co/AryaErgin/gibc-v2-exp020)** · [Pinned release and hash verification](docs/submission/PUBLIC_RELEASE.md)
 
-The public source is intentionally separate from large local checkpoints,
-datasets, caches, and benchmark outputs. EXP-012 has a validated local
-inference-only publication candidate, but public model publication is deferred
-until the final GIBC model is selected. Its exact local-package record is in
-[the publication plan](docs/EXP-012-INFERENCE-PUBLICATION.md).
+| Required benchmark | Final result | EXP-012 reference | Change |
+|---|---:|---:|---:|
+| WikiText-103 held-out token PPL ↓ | **31.783** | 35.939 | −4.156 |
+| HellaSwag acc_norm ↑ | **30.163%** | 28.759% | +1.404 pp |
+| ARC-Easy acc_norm ↑ | **39.141%** | 36.448% | +2.694 pp |
+| PIQA acc_norm ↑ | **60.446%** | 60.229% | +0.218 pp |
+| WinoGrande acc ↑ | **48.777%** | 50.355% | −1.579 pp |
 
-## Final model and official results
+HellaSwag and ARC-Easy improved; PIQA was roughly stable; WinoGrande regressed. These are descriptive single-run comparisons, not evidence of universal reasoning improvement or statistical significance.
 
-| Item | Final record |
-|---|---|
-| Architecture | Decoder-only causal Transformer; vocab 8,192; width 640; 9 layers; 20 heads × 32; SwiGLU `d_ff=1728`; RoPE; pre-RMSNorm; tied embedding/output; context 512 |
-| Trainable parameters | 49,860,480 exactly; [checked-in count evidence](results/exp012-parameter-count.json) |
-| Selected checkpoint SHA-256 | `cacb728b3963c10af8f4613149d8b879b0ef6e44558069726c621c1cb1bb981c` |
-| Tokenizer SHA-256 | `c5592fba176c3d2f7915a3812559a24d7a669206f4a22484b053c8a9ce08be14` |
-| HellaSwag acc_norm | 0.28759211312487554 |
-| ARC-Easy acc_norm | 0.36447811447811446 |
-| PIQA acc_norm | 0.6022850924918389 |
-| WinoGrande acc | 0.5035516969218626 |
-| WikiText-103 held-out PPL / BPB | 35.93897257521639 / 1.4083853215598 |
+[Exact results & uncertainty](RESULTS.md) · [Frozen evidence & hashes](results/exp020-submission-evidence.json) · [Reproducibility](docs/submission/REPRODUCIBILITY.md) · [3:30 demo storyboard](docs/submission/DEMO_STORYBOARD.md)
 
-The compact, safe-to-publish official provenance record is
-[results/exp012-official-provenance.json](results/exp012-official-provenance.json).
-Raw official evaluator artifacts remain local because they are large; their
-SHA-256 values, protocol, exact metrics, and runtime are recorded in
-[the EXP-012 official-evaluation record](experiments/EXP-012-official-evaluation.md).
+![Final EXP-020 training loss and frozen internal validation trajectory](docs/assets/exp020/trajectory.png)
 
-## Training data, efficiency, and hardware
+*Measured training-loss bins and frozen General/Edu validation, extracted from the final run logs. These validation curves are not official benchmark scores. [Figure data and captions](docs/assets/exp020/README.md).*
 
-EXP-012 trained from scratch on the frozen Data Recipe v1: a deterministic 2:1
-FineWeb/FineWeb-Edu mixture with global canonical-content SHA-256
-deduplication and an indexed normalized 13-gram contamination screen. The
-final run used 2,399,993,856 prediction tokens over 73,242 updates.
+## What we built—and learned
 
-Training ran on Windows 10.0.26200 with an NVIDIA GeForce RTX 5090 Laptop GPU,
-Python 3.11.9, PyTorch 2.13.0+cu132 / CUDA 13.2, BF16 autocast and FP32
-parameters/optimizer state. Model-training wall time was 24,362.3826 seconds;
-separate data preparation took 29,422.8518 seconds. Approximate training
-compute was 717,989,073,943,265,280 FLOPs (`6 × parameters × prediction
-tokens`). Full run evidence is in [results/EXP-012-summary.md](results/EXP-012-summary.md).
+A compact decoder-only Transformer: 8,192-token byte-level BPE, width 640, nine blocks, twenty attention heads, SwiGLU, RoPE, pre-RMSNorm and tied embeddings. The final optimizer is ordinary AdamW with a cosine schedule fixed over all 219,726 updates. [Architecture and exact parameter accounting](ARCHITECTURE.md).
 
-## Quick start
+Our contribution is the experimental evidence and the instrument that produced it: controlled interventions, preregistered promotion gates, retained negative results, a deterministic contamination-screened corpus, and checkpoint selection using internal validation before final-model benchmark scoring.
 
-Prerequisites: Python 3.11 and a compatible PyTorch installation for the
-intended platform. PyTorch is deliberately not pinned in `pyproject.toml`
-because its build is platform/CUDA-specific; install the appropriate build from
-[the official PyTorch selector](https://pytorch.org/get-started/locally/) first,
-then install this project.
+Short-horizon wins did not consistently survive longer training here. WSD passed a replicated 300M-token comparison but missed its 2.4B gate; QK-Norm's advantage narrowed below its 1.5B promotion gate; Cautious Weight Decay's intermediate advantage reversed at 1.5B. None is in EXP-020. [Experiment decisions](EXPERIMENT_LOG.md) · [Method results](RESULTS.md).
 
-```powershell
-py -3.11 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install --upgrade pip
-# Install the platform-appropriate PyTorch build from pytorch.org.
-.\.venv\Scripts\python.exe -m pip install --no-build-isolation -e .
-.\.venv\Scripts\python.exe -m pytest -q
+![Controlled interventions and retained final recipe](docs/assets/exp020/decisions.png)
+
+![Frozen EXP-020 architecture, data and benchmark-blind evaluation pipeline](docs/assets/exp020/pipeline.png)
+
+*Recorded configuration and provenance, not a new experiment. [Pipeline sources and caption](docs/assets/exp020/README.md).*
+
+## Training and data
+
+The final run read a non-cycled 2:1 FineWeb/FineWeb-Edu stream, built from zero with global exact-document deduplication. It contains **7,750,968 unique selected documents**. The first EXP-011 and EXP-012 token prefixes match their historical SHA-256 identities exactly. The frozen tokenizer was trained from scratch. [Data revisions, counts and contamination limits](DATA_SOURCES.md).
+
+Training used WSL2, Python 3.11.9, PyTorch 2.13.0+cu132, BF16 forward computation with FP32 model/optimizer state, context 512, microbatch 32 × accumulation 2, seed 42, and fixed 0.300-second sleep after updates. Logged mean active throughput was 104,140 tok/s; mean paced step throughput was 53,276 tok/s. Total tokens divided by total training wall time is about 52,713 tok/s. Peak reserved VRAM was 8.680 GB decimal (8.084 GiB). The 37.94 hours describes this final run, not the entire research campaign. [Full training record](results/EXP-020-summary.md).
+
+**Approximate final-run training compute:** using the conventional 6NT estimate, `6 × 49,860,480 × 7,199,981,568 = 2,153,967,221,829,795,840 FLOPs ≈ 2.154e18 FLOPs ≈ 2.154 EFLOPs`. This is an approximate theoretical training-compute estimate—not measured electrical energy, exact hardware FLOPs, or total research-campaign compute.
+
+## Frozen evaluation, transparent limitations
+
+Official EXP-020 scoring completed on 2026-09-08, after checkpoint selection. The four multiple-choice tasks used unchanged lm-eval 0.4.9.1 task definitions, CPU FP32, zero-shot, batch 16, context 512. WikiText-103 used the separately pinned held-out rolling evaluator. Internal General/Edu validation selected the checkpoint; required benchmark results are final reporting only.
+
+Historical models had earlier benchmark evaluations, and public benchmark text was used for exclusion screening. “Benchmark-blind selection” refers specifically to selection of the final EXP-020 checkpoint before its official scores, not a claim that no benchmark had ever been accessed.
+
+The normalized 13-gram screen cannot rule out every semantic overlap. The final scale has one seed and no contemporaneous 7.2B alternative; performance changes cannot be causally assigned to an individual component. This is a base language model, not an instruction-tuned assistant. No SOTA, energy-efficiency or generalized-reasoning claim is made.
+
+## Audit in minutes
+
+The checked-in digest and figures can be inspected without weights, GPU access, network access or benchmark requests:
+
+```bash
+python scripts/verify_submission_package.py
 ```
 
-### Verify the final parameter count
+A model-count check is also available with the project's existing PyTorch environment:
 
-```powershell
-.\.venv\Scripts\python.exe scripts\count_parameters.py `
-  --config configs\exp012.yaml --expected-total 49860480 --json
+```bash
+python scripts/count_parameters.py \
+  --config configs/exp020-final-7p2b-cosine.yaml --expected-total 49860480 --json
 ```
 
-This command must exit zero and print `"total": 49860480`. Its committed
-output is [results/exp012-parameter-count.json](results/exp012-parameter-count.json).
+## Setup and local usage
 
-### Evaluated EXP-012 inference
+Prerequisites: Python 3.11, a virtual environment and the qualified PyTorch build; CPU inference needs no GPU. Clone the [source repository](https://github.com/AryaErgin/gibc-v2-foundational-llm), then:
 
-The validated EXP-012 package remains local-only and is not a final GIBC model.
-If a later approved release retains it, place its files in `FINAL_MODEL_DIR`
-without changing their names or manifest, then run:
-
-```powershell
-.\.venv\Scripts\python.exe scripts\generate.py "A short prompt" `
-  --config FINAL_MODEL_DIR\exp012.yaml `
-  --checkpoint FINAL_MODEL_DIR\model.safetensors `
-  --tokenizer FINAL_MODEL_DIR\tokenizer.json `
-  --device auto --max-new-tokens 64 --temperature 0.0
+```bash
+python3.11 -m venv .venv
+source .venv/bin/activate
+python -m pip install torch==2.13.0 --index-url https://download.pytorch.org/whl/cu132
+python -m pip install -e ".[dev]"
+python scripts/count_parameters.py --config configs/exp020-final-7p2b-cosine.yaml --expected-total 49860480 --json
 ```
 
-`generate.py` accepts only explicit config, checkpoint, and tokenizer paths;
-it loads the package's strict `model` state dictionary and performs local
-generation only.
+Do not change an existing qualified evaluation environment. The **[public inference-only safetensors package](https://huggingface.co/AryaErgin/gibc-v2-exp020)** includes the exact frozen weights, tokenizer/config, CPU loader, parameter/hash verifier, model card and provenance—no dataset or optimizer state. A separate [clean-environment smoke](docs/submission/PREPUBLICATION_SMOKE.md) passed offline loading and one deterministic non-benchmark generation. [Pinned download and verification instructions](docs/submission/EXP020_RELEASE.md). Once downloaded:
 
-### Evaluation reproduction
+```bash
+CUDA_VISIBLE_DEVICES="" python -B /path/to/exp020-package/verify.py
+CUDA_VISIBLE_DEVICES="" python -B /path/to/exp020-package/generate.py "The purpose of scientific measurement is" --max-new-tokens 64
+```
 
-The frozen official evaluators are present at
-`scripts/run_exp012_cpu_official_sequence.py`,
-`scripts/eval_exp012_cpu_task.py`, and
-`scripts/eval_exp012_wikitext103.py`. Their CPU FP32, zero-shot, batch-16,
-context-512 protocol and exact commands are recorded in
-[experiments/EXP-012-official-evaluation.md](experiments/EXP-012-official-evaluation.md).
-Do not use official results to select checkpoints or tune the model; no
-benchmark command is run by the ordinary test suite.
+The second command is for manual local use, not a benchmark or model-selection step. The architecture is custom PyTorch, not Transformers AutoModel-compatible. No inference was run during this final publication reconciliation; the separately authorized smoke is documented above.
 
-## Evidence, limitations, and credits
+[Reproducibility](docs/submission/REPRODUCIBILITY.md) maps frozen artifacts. Official evaluation used `scripts/run_exp020_official_sequence.py` and its CPU evaluator modules; see the [protocol](docs/EXP020_OFFICIAL_EVALUATION_PROTOCOL.md) for exact scripts, task order and WikiText rolling semantics. Full evaluator commit: `37332797909df963ca7c77a945cea8752b60d481`; four raw harness artifacts record short `3733279`. PIQA mirror/exclusion-snapshot byte equivalence is **not established**; this limits contamination-coverage claims, not permission to revise scores.
 
-- [RESULTS.md](RESULTS.md) records final results and the limited comparable
-  EXP-006A-to-EXP-012 reasoning-task comparison.
-- [EXPERIMENT_LOG.md](EXPERIMENT_LOG.md), [PROJECT_PLAN.md](PROJECT_PLAN.md),
-  [ARCHITECTURE.md](ARCHITECTURE.md), and
-  [results/EXP-012-summary.md](results/EXP-012-summary.md) retain training and
-  decision provenance.
-- The contamination screen detects only indexed normalized 13-gram overlap; it
-  does not prove absence of all lexical, semantic, or unknown-source overlap.
-- Exact recreation of the full training run requires the original hardware,
-  pinned data revisions, local data artifacts, and tokenizer/checkpoint files;
-  those large artifacts are intentionally not committed. The publication plan
-  makes inference reproduction possible once the model artifact is approved.
-- Third-party components include PyTorch, Hugging Face `datasets`,
-  `tokenizers`, `lm-evaluation-harness`, FineWeb, and FineWeb-Edu. See the
-  locked dependency versions and experiment records for provenance.
+## Submission map and credits
 
-## AI assistance disclosure
+Training data: HuggingFaceFW FineWeb/FineWeb-Edu and Common Crawl. Frameworks/tools: Python, PyTorch/native SDPA, Hugging Face datasets/tokenizers/safetensors, EleutherAI lm-eval, NumPy, PyArrow, PyYAML and SQLite; NVIDIA RTX 5090 Laptop GPU/CUDA, Windows/WSL and OMEN; Git/GitHub, pytest and Pillow. Benchmark authors are credited in the [license/bibliography audit](docs/submission/LICENSE_AUDIT.md). [All six Devpost components and complete Built With checklist](docs/submission/COMPLIANCE.md).
 
-AI assistance supported experiment specification review, implementation,
-testing, profiling, artifact audits, and documentation. Human research review
-retained authority over architecture, data, checkpoint selection, benchmark
-execution, and publication. AI did not provide pretrained weights, synthetic
-training data, benchmark answers, or benchmark-driven model selection. See
-[AI_ASSISTANCE.md](AI_ASSISTANCE.md).
+- [Devpost draft](docs/submission/DEVPOST_DRAFT.md), [demo storyboard](docs/submission/DEMO_STORYBOARD.md), [skeptical judge review](docs/submission/JUDGE_REVIEW.md)
+- [Results](RESULTS.md), [experiment log](EXPERIMENT_LOG.md), [current project status](PROJECT_PLAN.md)
+- [Evidence audit](docs/submission/EVIDENCE_AUDIT.md), [official evaluation protocol](docs/EXP020_OFFICIAL_EVALUATION_PROTOCOL.md)
+- [Source ledger](SOURCE_LEDGER.md), [code attribution](CODE_ATTRIBUTION.md), [bibliography](REFERENCES.bib), [license](LICENSE)
+
+**AI assistance:** ChatGPT, Deep Research and OpenAI Codex supported research review, implementation, testing, profiling, audits and documentation. Human review retained scientific and publication authority. [Disclosure](AI_ASSISTANCE.md).

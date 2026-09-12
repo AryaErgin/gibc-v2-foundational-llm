@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img">
+<title>EXP-001 → EXP-012 → EXP-020</title>
+<desc>Historical progression, not a one-variable ablation: model size, data and horizon changed.</desc>
+<rect width="1280" height="720" fill="#f5f8fa"/>
+<text x="48" y="52.6" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="32" font-weight="700" fill="#152c40">EXP-001 → EXP-012 → EXP-020</text>
+<text x="48" y="89.4" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="18" font-weight="400" fill="#53687a">Historical progression, not a one-variable ablation: model size, data and horizon changed.</text>
+<text x="60" y="142.2" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="19" font-weight="700" fill="#152c40">Scores (%) · first three: acc_norm; WinoGrande: acc · shared 0–70 scale</text>
+<text x="60" y="213.2" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="19" font-weight="700" fill="#152c40">HellaSwag</text>
+<rect x="208" y="190" width="218.1694027939796" height="16" fill="#53687a"/>
+<text x="438.1694027939796" y="199.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#53687a">25.453</text>
+<rect x="208" y="215" width="246.50752553560764" height="16" fill="#226aa1"/>
+<text x="466.50752553560767" y="224.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#226aa1">28.759</text>
+<rect x="208" y="240" width="258.5426921216605" height="16" fill="#087f83"/>
+<text x="478.5426921216605" y="249.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#087f83">30.163</text>
+<text x="60" y="315.2" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="19" font-weight="700" fill="#152c40">ARC-Easy</text>
+<rect x="208" y="292" width="239.53823953823954" height="16" fill="#53687a"/>
+<text x="459.5382395382395" y="301.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#53687a">27.946</text>
+<rect x="208" y="317" width="312.4098124098124" height="16" fill="#226aa1"/>
+<text x="532.4098124098124" y="326.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#226aa1">36.448</text>
+<rect x="208" y="342" width="335.4978354978356" height="16" fill="#087f83"/>
+<text x="555.4978354978356" y="351.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#087f83">39.141</text>
+<text x="60" y="417.2" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="19" font-weight="700" fill="#152c40">PIQA</text>
+<rect x="208" y="394" width="450.9560080833204" height="16" fill="#53687a"/>
+<text x="670.9560080833204" y="403.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#53687a">52.612</text>
+<rect x="208" y="419" width="516.2443649930049" height="16" fill="#226aa1"/>
+<text x="736.2443649930049" y="428.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#226aa1">60.229</text>
+<rect x="208" y="444" width="518.1097466189959" height="16" fill="#087f83"/>
+<text x="738.1097466189959" y="453.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#087f83">60.446</text>
+<text x="60" y="519.2" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="19" font-weight="700" fill="#152c40">WinoGrande</text>
+<rect x="208" y="496" width="418.7619799300936" height="16" fill="#53687a"/>
+<text x="638.7619799300936" y="505.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#53687a">48.856</text>
+<rect x="208" y="521" width="431.6157402187394" height="16" fill="#226aa1"/>
+<text x="651.6157402187393" y="530.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#226aa1">50.355</text>
+<rect x="208" y="546" width="418.08546623069117" height="16" fill="#087f83"/>
+<text x="638.0854662306912" y="555.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#087f83">48.777</text>
+<rect x="60" y="616" width="10" height="10" fill="#53687a"/>
+<text x="78" y="624.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#53687a">EXP-001 · 8.39M / 100M tokens</text>
+<rect x="60" y="639" width="10" height="10" fill="#226aa1"/>
+<text x="78" y="647.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#226aa1">EXP-012 · 49.86M / 2.4B</text>
+<rect x="60" y="662" width="10" height="10" fill="#087f83"/>
+<text x="78" y="670.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#087f83">EXP-020 · 49.86M / 7.2B</text>
+<rect x="902" y="157" width="327" height="427" fill="#ffffff"/>
+<text x="923" y="201.4" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="23" font-weight="700" fill="#152c40">Held-out token PPL ↓</text>
+<text x="923" y="256.0" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="25" font-weight="400" fill="#226aa1">EXP-012   35.939</text>
+<text x="923" y="301.0" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="25" font-weight="700" fill="#087f83">EXP-020   31.783</text>
+<text x="923" y="360.2" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="19" font-weight="400" fill="#152c40">HellaSwag / ARC: better</text>
+<text x="923" y="397.2" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="19" font-weight="400" fill="#152c40">PIQA: roughly stable</text>
+<text x="923" y="434.2" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="19" font-weight="400" fill="#ab4348">WinoGrande: regressed</text>
+<text x="923" y="491.6" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="17" font-weight="400" fill="#53687a">Single-run comparison.</text>
+<text x="923" y="519.6" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="17" font-weight="400" fill="#53687a">No significance claim.</text>
+<text x="48" y="703.2" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="14" font-weight="400" fill="#53687a">Sources: EXP-001D-summary.md and submission digest. Old harness word/byte PPL is not plotted.</text>
+</svg>

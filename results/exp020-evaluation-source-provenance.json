@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "audit_date": "2026-09-08",
+  "full_evaluation_source_commit": "37332797909df963ca7c77a945cea8752b60d481",
+  "raw_field": "raw_lm_eval_result.git_hash",
+  "recorded_short_hash": "3733279",
+  "resolution": "git rev-parse 3733279 resolves uniquely to full_evaluation_source_commit",
+  "raw_outputs_sha256": {
+    "hellaswag": "f2fc1e7025099f4e2a86992d3667bfa104d5ac5b5181243de75fa8fe7d99042c",
+    "arc_easy": "67ee8c6fa8615cfee78714c68676a4893634ed3f3923916f9a321ef4fc8ac1e0",
+    "piqa": "054226c2c94b4e6d36ddeaacd94fcfc2c9689387625a5fdf965406faaf85aa41",
+    "winogrande": "2d1fc93f634a940bd67cc33a919b6090f9bc4487f08d9df123b6593db56a2835"
+  },
+  "all_four_record_short_hash": true,
+  "raw_upper_git_hash": null,
+  "scope": "Corrects documentation only; no frozen artifact changed and no benchmark executed.",
+  "piqa": {
+    "evaluated_dataset_path": "baber/piqa",
+    "evaluated_split": "validation",
+    "explicit_revision_in_raw_task_config": null,
+    "historical_exclusion_source": "ybisk/piqa",
+    "historical_exclusion_revision": "2e8ac2dffd59bac8c3c6714948f4c551a0848bb0",
+    "exact_cross_snapshot_equivalence": "NOT ESTABLISHED",
+    "limitation": "Task definitions and results are frozen, but task name/sample count are not byte-equivalence proof. No retrospective decontamination guarantee or score correction is claimed."
+  }
+}

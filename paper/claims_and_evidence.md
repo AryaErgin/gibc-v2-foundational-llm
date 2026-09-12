@@ -1,12 +1,14 @@
-# Claims and evidence ledger
+# Final claims and evidence ledger
 
-| Candidate claim | Current evidence | Status / guardrail |
+| Claim | Evidence | Scope |
 |---|---|---|
-| WSD improves the promoted 300M Recipe-v3 protocol | EXP-013 seed-42 discovery and paired seed-43 confirmation | Established for this frozen system; WSD is not claimed novel. |
-| LLR transferred poorly | EXP-014 preregistered seed-42 negative internal validation | Do not claim LLR universally fails. |
-| Fixed-example temporal placement changed domain balance | EXP-015 A/B/C used identical fixed windows with swapped placement | Domain-specialization tradeoff; no promoted curriculum. |
-| Magma transferred poorly | EXP-016 preregistered control/treatment negative result | Do not claim Magma universally fails. |
-| WSD retains advantage at 2.4B | EXP-017A | Pending: Attempt 1 has no scientific result. |
+| 49,860,480 parameters; scratch training; 7,199,981,568 tokens | [architecture](../ARCHITECTURE.md), [audit](../results/exp020-submission-evidence.json) | Exact checkpoint/config/run identity |
+| 37.94h on one laptop GPU | [summary](../results/EXP-020-summary.md) | Final run including pacing, not campaign/energy |
+| PPL 31.783; mixed task changes | [RESULTS](../RESULTS.md) | HellaSwag/ARC better, PIQA roughly stable, WinoGrande worse |
+| WSD proxy gain did not meet 2.4B gate | [EXP-013](../results/EXP-013-summary.md), [EXP-017 closure](../provenance/exp017a-attempt-3-closure.json) | Local horizon sensitivity |
+| QK-Norm gain below promotion gate | [closure](../provenance/exp018-closure.json) | −0.01216 versus required −0.015; not “no gain” |
+| CWD intermediate win reversed | [closure](../provenance/exp019-closure.json) | +0.00627 terminal regression |
+| Final selection precedes its official scores | [chronology](../docs/submission/EVIDENCE_AUDIT.md) | Not absence of all historical exposure |
+| Exact dedup/screen/prefix controls | [data](../DATA_SOURCES.md) | Not proof of no semantic contamination |
 
-All claims require links to frozen configs, source commits, data provenance,
-and terminal internal-validation artifacts before manuscript use.
+No SOTA, universal reasoning improvement, universal method failure, energy advantage or causal single-control thermal claim is supported.

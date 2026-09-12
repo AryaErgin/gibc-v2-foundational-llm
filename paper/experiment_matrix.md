@@ -1,12 +1,17 @@
-# Experiment matrix (working)
+# Final experiment matrix
 
-| Area | Frozen comparison | Outcome | Promotion status |
-|---|---|---|---|
-| WSD | Recipe-v3 schedule comparison, 300M, seeds 42/43 | Replicated positive | Promoted recipe |
-| LLR | Recipe-v3 + WSD, 300M seed 42 | Negative transfer | Rejected; no tuning |
-| Fixed-example placement | EXP-015 A/B/C, same fixed examples | Domain tradeoff, no broad gain | Rejected |
-| Magma | EXP-016 contemporaneous control/treatment, 300M seed 42 | Strong negative transfer | Rejected; no tuning |
-| WSD horizon | EXP-017A versus fixed 2.4B cosine reference | Pending | No decision |
+| Comparison | Outcome / final decision |
+|---|---|
+| EXP-003/004 data | Pure Edu tradeoff; 2:1 mixture retained |
+| EXP-005–010 architecture | Near-cap Recipe-v3/SwiGLU retained |
+| EXP-011 1.5B / EXP-012 2.4B cosine | Historical scaling controls |
+| EXP-013 WSD 300M, seeds 42/43 | Replicated positive; provisional promotion later superseded |
+| EXP-014 LLR | Reject |
+| EXP-015 fixed-example placement | Domain tradeoff; not promoted |
+| EXP-016 Magma | Reject |
+| EXP-017A Attempt 3 WSD 2.4B | Execution complete; promotion FAIL; earlier thermal aborts retained |
+| EXP-018 QK-Norm 1.5B | Gain below gate; promotion FAIL |
+| EXP-019 CWD 1.5B | Endpoint worse; REJECT |
+| EXP-020 fresh 7.2B AdamW/cosine | Complete; terminal selected; official scoring complete; immutable |
 
-The table is not a benchmark leaderboard and must not be used to infer
-unmeasured official task performance.
+[RESULTS](../RESULTS.md) links exact measurements. Different controls/horizons are not a pooled benchmark leaderboard. Method hunting is closed.

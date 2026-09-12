@@ -1,0 +1,1004 @@
+{
+  "schema": 1,
+  "date": "2026-09-09",
+  "scope": "Tracked plus intended untracked Markdown/text/RST/BibTeX/TOML; egg-info and ignored artifact/scratch trees excluded. Snapshot taken before creating this JSON and inventory text; those audit outputs are not recursively rescanned.",
+  "scanned_text_paths": 111,
+  "matched_lines": 109,
+  "search": "TODO, TBD, PROVISIONAL, VERIFY, pending, not uploaded, not-yet-public, local-only, delivery/upload/download/endpoint and unresolved wording",
+  "unresolved_current_exp012_as_final": false,
+  "classification_definitions": {
+    "HISTORICAL": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status.",
+    "BIBLIOGRAPHY_LIMIT": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion.",
+    "LICENSE_PROVENANCE_LIMIT": "Retain disclosed PIQA/WikiText rights or snapshot uncertainty; public hosting does not resolve it and no dataset is redistributed.",
+    "MANUAL_SUBMISSION": "Retain video/team/eligibility/Devpost/final-source-publication action; model delivery itself is complete.",
+    "RESOLVED_OR_INSTRUCTIONAL": "Positive/resolved release evidence, negated old status, safe instructions, or search/classification vocabulary; not an unresolved model-publication placeholder."
+  },
+  "occurrences": [
+    {
+      "file": "docs/submission/CHANGES.md",
+      "line": 77,
+      "text": "- [Judge review](JUDGE_REVIEW.md): public model delivery/hash proof is complete; actual video, final source publication and attribution/provenance limits remain. See [final reconciliation](FINAL_RECONCILIATION.md) for the incremental changes and full working-tree inventory.",
+      "categories": [
+        "MANUAL_SUBMISSION"
+      ],
+      "disposition": "Retain video/team/eligibility/Devpost/final-source-publication action; model delivery itself is complete."
+    },
+    {
+      "file": "docs/submission/COMPLIANCE.md",
+      "line": 24,
+      "text": "| 2–5 minute English public/unlisted demo video | **PENDING**; [3:30 storyboard](DEMO_STORYBOARD.md) |",
+      "categories": [
+        "MANUAL_SUBMISSION"
+      ],
+      "disposition": "Retain video/team/eligibility/Devpost/final-source-publication action; model delivery itself is complete."
+    },
+    {
+      "file": "docs/submission/COMPLIANCE_VALIDATION.md",
+      "line": 3,
+      "text": "> Historical packaging receipt. Subsequent [clean-environment smoke](PREPUBLICATION_SMOKE.md) and [public delivery](PUBLIC_RELEASE.md) passed. The original no-inference/no-publication observations below describe that earlier pass, not current release status.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "docs/submission/COMPLIANCE_VALIDATION.md",
+      "line": 76,
+      "text": "Choose/confirm a public model-host namespace, upload only the verified final package, record its immutable public revision/URL, and publish reviewed source under separate authorization. Video recording and Devpost team/eligibility fields remain manual. PIQA license/snapshot equivalence and WikiText card license-version ambiguity remain explicitly unresolved; no such dataset is redistributed. [Upload steps](EXP020_RELEASE.md) · [Six-component checklist](COMPLIANCE.md) · [License evidence](LICENSE_AUDIT.md).",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "docs/submission/DOCUMENT_FRESHNESS.md",
+      "line": 5,
+      "text": "The search covered current best, final model, EXP-012/020, 2.4B/7.2B, WikiText/HellaSwag/ARC-Easy/PIQA/WinoGrande, parameter count, training time, current status, TODO, pending and not yet evaluated. Source-code/config/provenance matches were also reviewed as implementation/history; **none of those scientific artifacts is changed**. Historical code flags and old expected results must remain available for reproducibility.",
+      "categories": [
+        "LICENSE_PROVENANCE_LIMIT"
+      ],
+      "disposition": "Retain disclosed PIQA/WikiText rights or snapshot uncertainty; public hosting does not resolve it and no dataset is redistributed."
+    },
+    {
+      "file": "docs/submission/DOCUMENT_FRESHNESS.md",
+      "line": 17,
+      "text": "- All six paper notes: EXP-017 pending/WSD promoted language corrected; EXP-018/019 rejection and final official results included.",
+      "categories": [
+        "RESOLVED_OR_INSTRUCTIONAL"
+      ],
+      "disposition": "Positive/resolved release evidence, negated old status, safe instructions, or search/classification vocabulary; not an unresolved model-publication placeholder."
+    },
+    {
+      "file": "docs/submission/DOCUMENT_FRESHNESS.md",
+      "line": 120,
+      "text": "Update 2026-09-09: all four raw harness artifacts record `3733279`, resolved to full evaluator commit `37332797909df963ca7c77a945cea8752b60d481`. [Public model delivery and anonymous hash verification](PUBLIC_RELEASE.md) are complete. Video and final source publication remain human actions; PIQA evaluation/exclusion snapshot equivalence, PIQA/WikiText license limits and exploratory bibliography VERIFY items remain explicit. Full campaign energy/cost and continuous CPU temperature are unavailable, not invented. See [final reconciliation](FINAL_RECONCILIATION.md) for the new placeholder inventory. No scientific conflict between final hashes/scores was found.",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT",
+        "LICENSE_PROVENANCE_LIMIT",
+        "MANUAL_SUBMISSION"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion. Retain disclosed PIQA/WikiText rights or snapshot uncertainty; public hosting does not resolve it and no dataset is redistributed. Retain video/team/eligibility/Devpost/final-source-publication action; model delivery itself is complete."
+    },
+    {
+      "file": "docs/submission/EVIDENCE_AUDIT.md",
+      "line": 34,
+      "text": "| At the initial audit, no verified public EXP-020 weight-download endpoint | Resolved 2026-09-09: [public model and independent remote hash receipt](PUBLIC_RELEASE.md); original frozen evidence unchanged |",
+      "categories": [
+        "RESOLVED_OR_INSTRUCTIONAL"
+      ],
+      "disposition": "Positive/resolved release evidence, negated old status, safe instructions, or search/classification vocabulary; not an unresolved model-publication placeholder."
+    },
+    {
+      "file": "docs/submission/EXP020_RELEASE.md",
+      "line": 7,
+      "text": "**[Download EXP-020 from Hugging Face](https://huggingface.co/AryaErgin/gibc-v2-exp020)**. Verified public, ungated revision: `80703cd304d1d1b16abf6539dcb0ebe83386f0ca`. [Release evidence](PUBLIC_RELEASE.md) records the user-reported round trip and an independent anonymous streamed hash comparison of all 19 package files.",
+      "categories": [
+        "RESOLVED_OR_INSTRUCTIONAL"
+      ],
+      "disposition": "Positive/resolved release evidence, negated old status, safe instructions, or search/classification vocabulary; not an unresolved model-publication placeholder."
+    },
+    {
+      "file": "docs/submission/EXP020_RELEASE.md",
+      "line": 60,
+      "text": "## Pinned public download (no account required)",
+      "categories": [
+        "RESOLVED_OR_INSTRUCTIONAL"
+      ],
+      "disposition": "Positive/resolved release evidence, negated old status, safe instructions, or search/classification vocabulary; not an unresolved model-publication placeholder."
+    },
+    {
+      "file": "docs/submission/EXP020_RELEASE.md",
+      "line": 78,
+      "text": "Public model delivery is complete. Final source commit/tag/push and Devpost/video/team actions still require human authorization/completion; see [compliance checklist](COMPLIANCE.md). No upload is needed in this reconciliation.",
+      "categories": [
+        "MANUAL_SUBMISSION"
+      ],
+      "disposition": "Retain video/team/eligibility/Devpost/final-source-publication action; model delivery itself is complete."
+    },
+    {
+      "file": "docs/submission/FINAL_RECONCILIATION.md",
+      "line": 5,
+      "text": "## Public delivery and current story",
+      "categories": [
+        "RESOLVED_OR_INSTRUCTIONAL"
+      ],
+      "disposition": "Positive/resolved release evidence, negated old status, safe instructions, or search/classification vocabulary; not an unresolved model-publication placeholder."
+    },
+    {
+      "file": "docs/submission/FINAL_RECONCILIATION.md",
+      "line": 50,
+      "text": "- **Manual submission actions:** video, team/eligibility, Devpost fields, final source commit/tag/push. Public model delivery is complete.",
+      "categories": [
+        "MANUAL_SUBMISSION"
+      ],
+      "disposition": "Retain video/team/eligibility/Devpost/final-source-publication action; model delivery itself is complete."
+    },
+    {
+      "file": "docs/submission/FINAL_RECONCILIATION.md",
+      "line": 54,
+      "text": "- **Historical evidence:** EXP-specific earlier pending/local-only statuses, archival notices, the original packaging plan and dated validation/smoke receipts remain true to their original scopes. Later completion links are explicit.",
+      "categories": [
+        "RESOLVED_OR_INSTRUCTIONAL"
+      ],
+      "disposition": "Positive/resolved release evidence, negated old status, safe instructions, or search/classification vocabulary; not an unresolved model-publication placeholder."
+    },
+    {
+      "file": "docs/submission/FINAL_RECONCILIATION.md",
+      "line": 55,
+      "text": "- **Resolved/instructional/search vocabulary:** positive public-release statements, negated pending claims and audit search terms are not unresolved placeholders.",
+      "categories": [
+        "RESOLVED_OR_INSTRUCTIONAL"
+      ],
+      "disposition": "Positive/resolved release evidence, negated old status, safe instructions, or search/classification vocabulary; not an unresolved model-publication placeholder."
+    },
+    {
+      "file": "docs/submission/JUDGE_REVIEW.md",
+      "line": 11,
+      "text": "| Documentation & Demo | 3.5/5 | Can I obtain the model? Is there an actual video? | Auditable docs/figures and 3:30 storyboard now exist; public final-weight delivery/hash verification complete; recorded video remains incomplete |",
+      "categories": [
+        "MANUAL_SUBMISSION"
+      ],
+      "disposition": "Retain video/team/eligibility/Devpost/final-source-publication action; model delivery itself is complete."
+    },
+    {
+      "file": "docs/submission/JUDGE_REVIEW.md",
+      "line": 28,
+      "text": "1. **Model delivery resolved (2026-09-09):** [public EXP-020](https://huggingface.co/AryaErgin/gibc-v2-exp020); all 19 release files independently hash-matched via anonymous HTTPS. [Receipt](PUBLIC_RELEASE.md).",
+      "categories": [
+        "RESOLVED_OR_INSTRUCTIONAL"
+      ],
+      "disposition": "Positive/resolved release evidence, negated old status, safe instructions, or search/classification vocabulary; not an unresolved model-publication placeholder."
+    },
+    {
+      "file": "docs/submission/JUDGE_REVIEW.md",
+      "line": 34,
+      "text": "7. **Attribution:** [core primary-source audit](LICENSE_AUDIT.md) completed with explicit PIQA/WikiText license limitations; exploratory bibliography VERIFY entries remain historical and unverified.",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT",
+        "LICENSE_PROVENANCE_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion. Retain disclosed PIQA/WikiText rights or snapshot uncertainty; public hosting does not resolve it and no dataset is redistributed."
+    },
+    {
+      "file": "docs/submission/JUDGE_REVIEW.md",
+      "line": 36,
+      "text": "No benchmark result may trigger a model/checkpoint/training change. Submission is review-ready, not a claim that all publication/delivery steps have been completed.",
+      "categories": [
+        "RESOLVED_OR_INSTRUCTIONAL"
+      ],
+      "disposition": "Positive/resolved release evidence, negated old status, safe instructions, or search/classification vocabulary; not an unresolved model-publication placeholder."
+    },
+    {
+      "file": "docs/submission/LICENSE_AUDIT.md",
+      "line": 11,
+      "text": "| WikiText-103 — Merity et al. (2016), arXiv:1609.07843 | [Frozen-revision card](https://huggingface.co/datasets/Salesforce/wikitext/raw/b08601e04326c79dfdd32d625aee71d232d685c3/README.md) is internally inconsistent: metadata lists CC-BY-SA-3.0 and GFDL; prose links CC-BY-SA-4.0 | **Exact licensing-version discrepancy unresolved.** Credit Wikipedia/Salesforce; do not redistribute text under an assumed version. |",
+      "categories": [
+        "LICENSE_PROVENANCE_LIMIT"
+      ],
+      "disposition": "Retain disclosed PIQA/WikiText rights or snapshot uncertainty; public hosting does not resolve it and no dataset is redistributed."
+    },
+    {
+      "file": "docs/submission/LICENSE_AUDIT.md",
+      "line": 14,
+      "text": "| PIQA — Bisk, Zellers, Le Bras, Gao & Choi (AAAI 2020; arXiv:1911.11641) | [ybisk source card](https://huggingface.co/datasets/ybisk/piqa/raw/main/README.md): license **unknown** | **Unresolved**; do not invent a permissive license for the official `baber/piqa` mirror. No benchmark text bundled. |",
+      "categories": [
+        "LICENSE_PROVENANCE_LIMIT"
+      ],
+      "disposition": "Retain disclosed PIQA/WikiText rights or snapshot uncertainty; public hosting does not resolve it and no dataset is redistributed."
+    },
+    {
+      "file": "docs/submission/LICENSE_AUDIT.md",
+      "line": 40,
+      "text": "PIQA license and cross-snapshot identity, and the WikiText card's conflicting license-version statements, are unresolved. They do not justify rewriting frozen scores or relicensing/distributing benchmark data. The package redistributes none of those datasets. Exploratory bibliography entries marked PROVISIONAL remain historical research notes, not verified final-recipe citations or external numerical claims. Core dataset/benchmark and runtime citations are maintained in `REFERENCES.bib`.",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT",
+        "LICENSE_PROVENANCE_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion. Retain disclosed PIQA/WikiText rights or snapshot uncertainty; public hosting does not resolve it and no dataset is redistributed."
+    },
+    {
+      "file": "docs/submission/PREPUBLICATION_SMOKE.md",
+      "line": 3,
+      "text": "> Historical smoke receipt. [Public delivery completed subsequently](PUBLIC_RELEASE.md); the observations and package hashes below are preserved.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "docs/submission/PREPUBLICATION_SMOKE.md",
+      "line": 98,
+      "text": "This task adds this report and its JSON evidence only; it does not replace earlier packaging-time no-inference records, which describe an earlier phase. Public upload and final submission actions remain separate manual decisions. Fresh-user usability is verified for the documented Python 3.11 Linux/WSL installation, not asserted for untested operating systems.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "docs/submission/PUBLIC_RELEASE.md",
+      "line": 25,
+      "text": "Follow the [pinned download/install/verification instructions](EXP020_RELEASE.md). Exclude Hub-added `.gitattributes` when downloading the strict 19-file package; existing verifier semantics already ignore client cache metadata. No Transformers AutoModel support or hosted inference endpoint is claimed: this is public weight delivery for local custom-PyTorch inference.",
+      "categories": [
+        "RESOLVED_OR_INSTRUCTIONAL"
+      ],
+      "disposition": "Positive/resolved release evidence, negated old status, safe instructions, or search/classification vocabulary; not an unresolved model-publication placeholder."
+    },
+    {
+      "file": "docs/submission/PUBLIC_RELEASE.md",
+      "line": 27,
+      "text": "The packaged README and evidence remain frozen snapshots of the original export. Current source-repository documentation records subsequent smoke and publication events; it does not silently rewrite package manifests or historical no-inference observations. Public delivery changes no benchmark score, selected checkpoint, model weight, scientific gate or license limitation.",
+      "categories": [
+        "RESOLVED_OR_INSTRUCTIONAL"
+      ],
+      "disposition": "Positive/resolved release evidence, negated old status, safe instructions, or search/classification vocabulary; not an unresolved model-publication placeholder."
+    },
+    {
+      "file": "docs/submission/PUBLIC_RELEASE.md",
+      "line": 29,
+      "text": "Model delivery is complete. Final source commit/tag/push, demo video, team/eligibility and Devpost completion remain separate human actions. No upload, source publication or model execution was performed in this reconciliation.",
+      "categories": [
+        "MANUAL_SUBMISSION"
+      ],
+      "disposition": "Retain video/team/eligibility/Devpost/final-source-publication action; model delivery itself is complete."
+    },
+    {
+      "file": "docs/submission/REPRODUCIBILITY.md",
+      "line": 88,
+      "text": "The [scoped license audit](LICENSE_AUDIT.md) covers core datasets/dependencies and recorded code reuse. PIQA licensing/snapshot equivalence and the WikiText card's licensing-version discrepancy remain explicit. Exploratory bibliography entries labeled VERIFY remain historical research notes, not verified final-recipe claims.",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT",
+        "LICENSE_PROVENANCE_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion. Retain disclosed PIQA/WikiText rights or snapshot uncertainty; public hosting does not resolve it and no dataset is redistributed."
+    },
+    {
+      "file": "docs/submission/WORK_PLAN.md",
+      "line": 3,
+      "text": "> Historical completed packaging plan, not current publication status. Subsequent [clean-environment smoke](PREPUBLICATION_SMOKE.md) and [public model delivery](PUBLIC_RELEASE.md) passed. Its original scope below is preserved.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "docs/submission/WORK_PLAN.md",
+      "line": 14,
+      "text": "No public artifact upload or assertion of judge download access is included. Model delivery and the recorded video remain human release tasks.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "DATA_SOURCES.md",
+      "line": 52,
+      "text": "FineWeb, FineWeb-Edu, their upstream filtering and annotation, Hugging Face tooling, and the benchmark authors are credited in [SOURCE_LEDGER.md](SOURCE_LEDGER.md) and [CODE_ATTRIBUTION.md](CODE_ATTRIBUTION.md). The repository code license does not override upstream data terms; the [scoped license audit](docs/submission/LICENSE_AUDIT.md) records upstream terms and unresolved PIQA/WikiText limits. Public weight delivery does not establish blanket clearance of underlying webpage or benchmark rights; no corpus or benchmark text is redistributed.",
+      "categories": [
+        "LICENSE_PROVENANCE_LIMIT"
+      ],
+      "disposition": "Retain disclosed PIQA/WikiText rights or snapshot uncertainty; public hosting does not resolve it and no dataset is redistributed."
+    },
+    {
+      "file": "EXPERIMENT_LOG.md",
+      "line": 13,
+      "text": "Entries below preserve the project’s chronological decision evidence. “Promoted,” “pending,” “not launched,” and permissions refer to the stage when an entry was written. In particular, WSD’s EXP-013 proxy promotion was superseded by EXP-017A, and EXP-012 is now the historical reference. These entries are not current execution instructions.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "EXPERIMENT_LOG.md",
+      "line": 49,
+      "text": "Status: training complete; final-checkpoint baseline evaluation pending EXP-001D.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "EXPERIMENT_LOG.md",
+      "line": 51,
+      "text": "The approved run at `fd99d1035c6c3d1e677620875426eb8a4cfcda93` completed 3,052 updates and 100,007,936 prediction tokens. Source-of-truth training record: `results/EXP-001-summary.md`. The final checkpoint is local-only at `artifacts/exp001-full/checkpoints/checkpoint-step-3052.pt`; do not resume or modify it.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "PROJECT_PLAN.md",
+      "line": 29,
+      "text": "- Model delivery is complete: [public EXP-020 package](https://huggingface.co/AryaErgin/gibc-v2-exp020); [anonymous remote hash verification](docs/submission/PUBLIC_RELEASE.md) passed.",
+      "categories": [
+        "RESOLVED_OR_INSTRUCTIONAL"
+      ],
+      "disposition": "Positive/resolved release evidence, negated old status, safe instructions, or search/classification vocabulary; not an unresolved model-publication placeholder."
+    },
+    {
+      "file": "README.md",
+      "line": 5,
+      "text": "**[Download the frozen EXP-020 model, tokenizer and inference package](https://huggingface.co/AryaErgin/gibc-v2-exp020)** · [Pinned release and hash verification](docs/submission/PUBLIC_RELEASE.md)",
+      "categories": [
+        "RESOLVED_OR_INSTRUCTIONAL"
+      ],
+      "disposition": "Positive/resolved release evidence, negated old status, safe instructions, or search/classification vocabulary; not an unresolved model-publication placeholder."
+    },
+    {
+      "file": "README.md",
+      "line": 80,
+      "text": "Do not change an existing qualified evaluation environment. The **[public inference-only safetensors package](https://huggingface.co/AryaErgin/gibc-v2-exp020)** includes the exact frozen weights, tokenizer/config, CPU loader, parameter/hash verifier, model card and provenance—no dataset or optimizer state. A separate [clean-environment smoke](docs/submission/PREPUBLICATION_SMOKE.md) passed offline loading and one deterministic non-benchmark generation. [Pinned download and verification instructions](docs/submission/EXP020_RELEASE.md). Once downloaded:",
+      "categories": [
+        "RESOLVED_OR_INSTRUCTIONAL"
+      ],
+      "disposition": "Positive/resolved release evidence, negated old status, safe instructions, or search/classification vocabulary; not an unresolved model-publication placeholder."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 4,
+      "text": "% against the primary source. Entries marked PROVISIONAL intentionally use",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 125,
+      "text": "  note={PROVISIONAL author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 134,
+      "text": "  note={PROVISIONAL author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 175,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 184,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 193,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 218,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 227,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 236,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 245,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 262,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 271,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 280,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 289,
+      "text": "  note={Project consulted arXiv v3; PROVISIONAL full author metadata}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 314,
+      "text": "  note={Project followed v2 Algorithm 1; PROVISIONAL full author metadata}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 323,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 332,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 341,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 350,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 359,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 368,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 377,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 386,
+      "text": "  note={ADana; PROVISIONAL full author metadata}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 395,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 404,
+      "text": "  note={LoRA-Pre; PROVISIONAL full author metadata}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 413,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 422,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 431,
+      "text": "  note={PROVISIONAL author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 440,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 449,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 458,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 467,
+      "text": "  note={PROVISIONAL: replace author field from primary metadata before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 476,
+      "text": "  note={PROVISIONAL author formatting; verify full names before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 485,
+      "text": "  note={PROVISIONAL full author metadata; verify before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "REFERENCES.bib",
+      "line": 511,
+      "text": "  note={PROVISIONAL: replace author metadata from ACL Anthology before publication}",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "SOURCE_LEDGER.md",
+      "line": 7,
+      "text": "**Source-of-truth rule:** for claims about our own experiments, use repository experiment/provenance records. For external scientific claims, cite the original paper/project rather than AI-generated research summaries. If metadata below is marked `VERIFY`, verify it against the primary source before camera-ready publication.",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "SOURCE_LEDGER.md",
+      "line": 55,
+      "text": "| Multilingual small-model scaling-law study | **VERIFY exact paper metadata before citation** | Consulted in Deep Research as ~85M+ evidence that mixture/sampling relationships can transfer across scale |",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "SOURCE_LEDGER.md",
+      "line": 56,
+      "text": "| Decoder-only translation scaling study | **VERIFY exact paper metadata before citation** | Consulted as ~70M+ depth/width scaling evidence in a different task |",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "SOURCE_LEDGER.md",
+      "line": 76,
+      "text": "| DoReMi | **VERIFY exact paper metadata before citation** | Considered as learned-domain-weighting prior art; not implemented because it creates another optimization loop and scale mismatch |",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "SOURCE_LEDGER.md",
+      "line": 86,
+      "text": "| Huang et al., *Over-Tokenized Transformer* | **VERIFY exact identifier before citation** | Larger-vocabulary mechanism explored and rejected under total-parameter cap |",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "SOURCE_LEDGER.md",
+      "line": 88,
+      "text": "| Length-MAX | **VERIFY exact paper title/identifier before citation** | Consulted as an 8K tokenizer redesign candidate; not implemented |",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "SOURCE_LEDGER.md",
+      "line": 129,
+      "text": "| Adam-mini | **VERIFY exact source metadata before citation** | Considered in optimizer search, not implemented |",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "SOURCE_LEDGER.md",
+      "line": 140,
+      "text": "| *Sequence Length Matters in Data Scheduling for Accelerating Language Model Pretraining* | **VERIFY exact OpenReview/arXiv identifier before citation** | Direct ~60M scheduling evidence; supportive only, not implemented |",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "SOURCE_LEDGER.md",
+      "line": 155,
+      "text": "| L20-Edu-135M | **VERIFY exact project/paper metadata before citation** | Recent single-GPU resource comparator; above cap and later post-training makes final scores non-comparable |",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "SOURCE_LEDGER.md",
+      "line": 166,
+      "text": "| Multi-token prediction / MTP broader literature | **VERIFY any exact additional papers used before final citation** | Candidate research only; no MTP model was trained in this project |",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "SOURCE_LEDGER.md",
+      "line": 287,
+      "text": "The final [core license/bibliography audit](docs/submission/LICENSE_AUDIT.md) verifies primary source terms for the submitted model's data/evaluation/dependencies, with explicit PIQA/WikiText limitations. Exploratory entries marked VERIFY remain incomplete; no external numerical superiority claim relies on them.",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "docs/EXP-012-INFERENCE-PUBLICATION.md",
+      "line": 1,
+      "text": "> **Archived snapshot — not current execution guidance (submission review, 2026-09-08).** The text below records its original period. Its “current,” “final,” “pending” and authorization wording does not apply to the frozen EXP-020 submission. See [current RESULTS](../RESULTS.md). No historical measurement or decision has been rewritten.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "docs/EXP-012-INFERENCE-PUBLICATION.md",
+      "line": 14,
+      "text": "No public model repository, release, tag, account connection, or upload is",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "docs/drafts/EXP-011-result-report.md",
+      "line": 1,
+      "text": "> **Archived snapshot — not current execution guidance (submission review, 2026-09-08).** The text below records its original period. Its “current,” “final,” “pending” and authorization wording does not apply to the frozen EXP-020 submission. See [current RESULTS](../../RESULTS.md). No historical measurement or decision has been rewritten.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "docs/drafts/OFFICIAL-EVALUATION-READINESS.md",
+      "line": 1,
+      "text": "> **Archived snapshot — not current execution guidance (submission review, 2026-09-08).** The text below records its original period. Its “current,” “final,” “pending” and authorization wording does not apply to the frozen EXP-020 submission. See [current RESULTS](../../RESULTS.md). No historical measurement or decision has been rewritten.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "docs/storage-manifest-2026-08-30.md",
+      "line": 1,
+      "text": "> **Archived snapshot — not current execution guidance (submission review, 2026-09-08).** The text below records its original period. Its “current,” “final,” “pending” and authorization wording does not apply to the frozen EXP-020 submission. See [current RESULTS](../RESULTS.md). No historical measurement or decision has been rewritten.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "docs/superpowers/plans/2026-08-23-exp001a-implementation.md",
+      "line": 1,
+      "text": "> **Archived snapshot — not current execution guidance (submission review, 2026-09-08).** The text below records its original period. Its “current,” “final,” “pending” and authorization wording does not apply to the frozen EXP-020 submission. See [current RESULTS](../../../RESULTS.md). No historical measurement or decision has been rewritten.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "docs/superpowers/plans/2026-08-24-exp005-architecture-preflight.md",
+      "line": 1,
+      "text": "> **Archived snapshot — not current execution guidance (submission review, 2026-09-08).** The text below records its original period. Its “current,” “final,” “pending” and authorization wording does not apply to the frozen EXP-020 submission. See [current RESULTS](../../../RESULTS.md). No historical measurement or decision has been rewritten.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "docs/superpowers/plans/2026-08-24-exp006-preparation.md",
+      "line": 1,
+      "text": "> **Archived snapshot — not current execution guidance (submission review, 2026-09-08).** The text below records its original period. Its “current,” “final,” “pending” and authorization wording does not apply to the frozen EXP-020 submission. See [current RESULTS](../../../RESULTS.md). No historical measurement or decision has been rewritten.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "docs/superpowers/plans/2026-08-25-exp007-preflight.md",
+      "line": 1,
+      "text": "> **Archived snapshot — not current execution guidance (submission review, 2026-09-08).** The text below records its original period. Its “current,” “final,” “pending” and authorization wording does not apply to the frozen EXP-020 submission. See [current RESULTS](../../../RESULTS.md). No historical measurement or decision has been rewritten.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "docs/superpowers/plans/2026-08-26-exp011-long-horizon-preparation.md",
+      "line": 1,
+      "text": "> **Archived snapshot — not current execution guidance (submission review, 2026-09-08).** The text below records its original period. Its “current,” “final,” “pending” and authorization wording does not apply to the frozen EXP-020 submission. See [current RESULTS](../../../RESULTS.md). No historical measurement or decision has been rewritten.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "docs/superpowers/plans/2026-08-26-exp011-long-horizon-preparation.md",
+      "line": 20,
+      "text": "- EXP-006 remains immutable; checkpoint/artifact files are local-only.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "docs/superpowers/plans/2026-08-28-exp013-wsd-ablation.md",
+      "line": 1,
+      "text": "> **Archived snapshot — not current execution guidance (submission review, 2026-09-08).** The text below records its original period. Its “current,” “final,” “pending” and authorization wording does not apply to the frozen EXP-020 submission. See [current RESULTS](../../../RESULTS.md). No historical measurement or decision has been rewritten.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "docs/superpowers/plans/2026-08-30-exp017a-thermal-recovery.md",
+      "line": 1,
+      "text": "> **Archived snapshot — not current execution guidance (submission review, 2026-09-08).** The text below records its original period. Its “current,” “final,” “pending” and authorization wording does not apply to the frozen EXP-020 submission. See [current RESULTS](../../../RESULTS.md). No historical measurement or decision has been rewritten.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "docs/superpowers/plans/2026-08-30-exp017a-thermal-recovery.md",
+      "line": 58,
+      "text": "- [ ] Create the provisional paper skeleton. It records WSD’s replicated 300M positive, LLR negative transfer, fixed-example curriculum specialization tradeoff, Magma negative transfer, and EXP-017A pending. It excludes universal and novelty claims.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "docs/superpowers/specs/2026-08-23-exp001a-design.md",
+      "line": 1,
+      "text": "> **Archived snapshot — not current execution guidance (submission review, 2026-09-08).** The text below records its original period. Its “current,” “final,” “pending” and authorization wording does not apply to the frozen EXP-020 submission. See [current RESULTS](../../../RESULTS.md). No historical measurement or decision has been rewritten.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "docs/superpowers/specs/2026-08-23-exp001a-design.md",
+      "line": 45,
+      "text": "`ARCHITECTURE.md` maps mathematical parameter terms to code. `DATA_SOURCES.md` stores resolved FineWeb and benchmark provenance plus deterministic/decontamination protocol. `EXPERIMENT_LOG.md` and `experiments/EXP-001.md` remain explicitly in-progress/infrastructure-validated pending research-chat review. Run results are JSONL plus a small committed summary; raw data, caches, shards, checkpoints, and large results remain ignored.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "experiments/EXP-001.md",
+      "line": 9,
+      "text": "EXP-001 training completed at source commit `fd99d1035c6c3d1e677620875426eb8a4cfcda93`: 3,052 updates x 32,768 prediction tokens = 100,007,936 prediction tokens, with the frozen configuration in `configs/exp001.yaml`. Final internal held-out FineWeb validation loss/PPL were 4.4311341643333435 / 84.02666293188594. See `results/EXP-001-summary.md` for exact checkpoint, provenance, hardware, validation trajectory, and measured training evidence. Official benchmark evaluation is pending EXP-001D.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "experiments/EXP-009.md",
+      "line": 37,
+      "text": "The split guard is not triggered: the only lower-combined candidate (EXP-009B) improved both general and Edu losses relative to control. This closes EXP-009 only. Official benchmarks and all training beyond this controlled 300M ablation remain unauthorized pending research review.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "experiments/EXP-012-official-evaluation.md",
+      "line": 13,
+      "text": "- No pretrained weights are loaded: evaluation constructs only the configured random-initialized architecture then loads the selected local checkpoint.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "paper/outline.md",
+      "line": 13,
+      "text": "EXP-020 is complete/immutable; EXP-017A is not pending. [Claims ledger](claims_and_evidence.md) and [summary](../results/EXP-020-summary.md) constrain the prose. Bibliography VERIFY entries remain unsuitable for unqualified scholarly citation.",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "paper/related_work.md",
+      "line": 7,
+      "text": "Internal validation guides selection; required benchmark results describe the frozen model. Exploratory bibliography VERIFY entries remain provenance, not final numerical claims. The full third-party copied-code/license audit is still a human publication checklist item.",
+      "categories": [
+        "BIBLIOGRAPHY_LIMIT"
+      ],
+      "disposition": "Retain explicitly provisional exploratory metadata/checklist; not a verified final-recipe numerical claim or silent citation completion."
+    },
+    {
+      "file": "paper/reviewer_risks.md",
+      "line": 11,
+      "text": "- [Public model delivery](https://huggingface.co/AryaErgin/gibc-v2-exp020) and remote hash verification are complete; recorded video and final source publication remain human actions.",
+      "categories": [
+        "MANUAL_SUBMISSION"
+      ],
+      "disposition": "Retain video/team/eligibility/Devpost/final-source-publication action; model delivery itself is complete."
+    },
+    {
+      "file": "results/EXP-001C-summary.md",
+      "line": 46,
+      "text": "No official benchmarks were evaluated during training. All generated artifacts, caches, checkpoints, and logs remain ignored and local-only.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "results/EXP-001D-summary.md",
+      "line": 3,
+      "text": "Status: PASS. Final checkpoint only: `artifacts/exp001-full/checkpoints/checkpoint-step-3052.pt`. Raw machine-readable lm-eval outputs are local-only in `artifacts/exp001-full/eval/`.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "results/EXP-002A-summary.md",
+      "line": 3,
+      "text": "Status: complete. Protocol: lm-eval 0.4.9.1, zero-shot (`num_fewshot=0`), batch size 16, final checkpoint `artifacts/exp002-full/run/checkpoints/checkpoint-step-9156.pt`, frozen tokenizer SHA-256 `c5592fba176c3d2f7915a3812559a24d7a669206f4a22484b053c8a9ce08be14`, and data manifest SHA-256 `ab36ea1ffae92e3e93d3a57c4d369240c33456da93d7672919874ee157033779`. Raw JSON remains local-only in `artifacts/exp002-full/eval/`.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    },
+    {
+      "file": "results/EXP-004A-summary.md",
+      "line": 3,
+      "text": "Status: complete. This promoted evaluation used only the final EXP-004 checkpoint, `artifacts/exp004-full/run/checkpoints/checkpoint-step-9156.pt`, produced by training source commit `7edfcb03e44d3f6dd3dcfcae12644ba41ada44f5`. The checkpoint and raw evaluation outputs remain local-only artifacts.",
+      "categories": [
+        "HISTORICAL"
+      ],
+      "disposition": "Preserve the original period-specific statement; explicit experiment/archive/receipt scope, not current EXP-020 status."
+    }
+  ]
+}

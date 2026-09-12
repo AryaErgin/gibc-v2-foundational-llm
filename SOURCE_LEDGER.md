@@ -169,9 +169,9 @@ This file is the project's over-inclusive attribution and provenance ledger. It 
 
 # J. Benchmarks and evaluation
 
-The benchmark datasets were used both for final evaluation and, where public splits were available, for contamination-index construction. Exact Hugging Face revisions used by the project are recorded in `provenance/exp001-benchmark-revisions.json`.
+Public benchmark text was used for exclusion screening and the benchmarks were also evaluated under separate protocols. The revisions in the table below are the project's historical contamination/source pins from `provenance/exp001-benchmark-revisions.json`, not proof that every official harness task loaded a byte-identical snapshot. EXP-020's actual task definitions and recorded runtime are preserved in [the submission digest](results/exp020-submission-evidence.json); PIQA uses `baber/piqa` there. Exact cross-snapshot equivalence is not established. WikiText-103's independent evaluator records its explicit revision.
 
-| Benchmark | Canonical source | Exact project dataset revision |
+| Benchmark | Canonical source | Historical contamination/source revision |
 |---|---|---|
 | HellaSwag | Zellers et al., *HellaSwag: Can a Machine Really Finish Your Sentence?*, arXiv:1905.07830 — https://arxiv.org/abs/1905.07830 | `218ec52e09a7e7462a5400043bb9a69a41d06b76` |
 | ARC / ARC-Easy | Clark et al., *Think You Have Solved Question Answering? Try ARC, the AI2 Reasoning Challenge*, arXiv:1803.05457 — https://arxiv.org/abs/1803.05457 | `210d026faf9955653af8916fad021475a3f00453` |
@@ -279,3 +279,9 @@ Before any paper/submission release:
 - [ ] Keep rejected/null results attributed to their originating methods without implying those methods universally fail.
 
 Last substantive reconstruction: 2026-09-04.
+
+## Final submission status — 2026-09-08
+
+EXP-020 is the frozen 49,860,480-parameter, 7.2B-token competition model with completed official CPU FP32 evaluation. [RESULTS](RESULTS.md) is the current numerical source; earlier ledger dates are attribution snapshots. [AI_ASSISTANCE](AI_ASSISTANCE.md) discloses research, learning, planning, code, paper and submission support. Pillow was used only to render recorded-data submission figures; fonts remain locally installed, not redistributed.
+
+The final [core license/bibliography audit](docs/submission/LICENSE_AUDIT.md) verifies primary source terms for the submitted model's data/evaluation/dependencies, with explicit PIQA/WikiText limitations. Exploratory entries marked VERIFY remain incomplete; no external numerical superiority claim relies on them.

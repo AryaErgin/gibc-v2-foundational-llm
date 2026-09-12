@@ -202,3 +202,9 @@ Before final publication/submission:
 - [ ] Ensure AI-assistance disclosure matches actual assistance through the deadline.
 
 Last substantive reconstruction: 2026-09-04.
+
+## Final submission status — 2026-09-08
+
+EXP-020 is frozen and officially evaluated; WSD/QK-Norm/CWD are not enabled in its final recipe. Current result/provenance pointers are in [RESULTS](RESULTS.md). [AI_ASSISTANCE](AI_ASSISTANCE.md) now covers explanation/learning, planning, code drafting/review/debugging, paper support and submission packaging in addition to prior assistance. Pillow and existing local fonts rendered the derivative figures; no font files were vendored.
+
+The original checklist records the earlier state. The 2026-09-08 [scoped release audit](docs/submission/LICENSE_AUDIT.md) now covers final dependencies, primary license evidence, recorded reuse and a tracked source-marker scan (no additional marked snippets found). It is not a claim of exhaustive cross-repository line-by-line comparison. The exact released model/loader source is byte-checked against commit `37332797909df963ca7c77a945cea8752b60d481`; no third-party source or benchmark text is bundled. AI disclosure includes this packaging work. PIQA license and WikiText card version ambiguity remain explicit.

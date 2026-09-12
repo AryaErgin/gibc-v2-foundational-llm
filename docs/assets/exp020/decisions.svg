@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img">
+<title>Evidence funnel | Keep the controls, keep the failures</title>
+<desc>Each decision uses its own preregistered horizon/control—not a pooled method leaderboard.</desc>
+<rect width="1280" height="720" fill="#f5f8fa"/>
+<text x="48" y="52.6" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="32" font-weight="700" fill="#152c40">Evidence funnel | Keep the controls, keep the failures</text>
+<text x="48" y="89.4" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="18" font-weight="400" fill="#53687a">Each decision uses its own preregistered horizon/control—not a pooled method leaderboard.</text>
+<rect x="48" y="126" width="1184" height="68" fill="#ffffff"/>
+<rect x="48" y="126" width="6" height="68" fill="#087f83"/>
+<text x="70" y="156.6" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="22" font-weight="700" fill="#152c40">Recipe development</text>
+<text x="440" y="159.0" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="20" font-weight="400" fill="#152c40">2:1 mixture + SwiGLU</text>
+<text x="994" y="158.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="16" font-weight="700" fill="#087f83">RETAINED</text>
+<rect x="48" y="208" width="1184" height="68" fill="#ffffff"/>
+<rect x="48" y="208" width="6" height="68" fill="#ab4348"/>
+<text x="70" y="238.6" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="22" font-weight="700" fill="#152c40">WSD · EXP-013 → 017</text>
+<text x="440" y="241.0" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="20" font-weight="400" fill="#152c40">Replicated 300M win; 2.4B gate missed</text>
+<text x="994" y="240.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="16" font-weight="700" fill="#ab4348">REJECTED AT SCALE</text>
+<rect x="48" y="290" width="1184" height="68" fill="#ffffff"/>
+<rect x="48" y="290" width="6" height="68" fill="#ab4348"/>
+<text x="70" y="320.6" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="22" font-weight="700" fill="#152c40">LLR / curriculum / Magma</text>
+<text x="440" y="323.0" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="20" font-weight="400" fill="#152c40">Frozen internal gates not met</text>
+<text x="994" y="322.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="16" font-weight="700" fill="#ab4348">NOT PROMOTED</text>
+<rect x="48" y="372" width="1184" height="68" fill="#ffffff"/>
+<rect x="48" y="372" width="6" height="68" fill="#ab4348"/>
+<text x="70" y="402.6" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="22" font-weight="700" fill="#152c40">QK-Norm · EXP-018</text>
+<text x="440" y="405.0" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="20" font-weight="400" fill="#152c40">1.5B Δ NLL -0.01216; required ≤ −0.015</text>
+<text x="994" y="404.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="16" font-weight="700" fill="#ab4348">NOT PROMOTED</text>
+<rect x="48" y="454" width="1184" height="68" fill="#ffffff"/>
+<rect x="48" y="454" width="6" height="68" fill="#ab4348"/>
+<text x="70" y="484.6" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="22" font-weight="700" fill="#152c40">CWD · EXP-019</text>
+<text x="440" y="487.0" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="20" font-weight="400" fill="#152c40">Intermediate win → 1.5B Δ +0.00627</text>
+<text x="994" y="486.8" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="16" font-weight="700" fill="#ab4348">REJECTED</text>
+<rect x="48" y="565" width="1184" height="67" fill="#152c40"/>
+<text x="70" y="603.2" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="24" font-weight="700" fill="#ffffff">EXP-020: Recipe-v3 + ordinary AdamW + full-horizon cosine · 7.2B unique-data stream</text>
+<text x="48" y="667.4" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="18" font-weight="400" fill="#53687a">Innovation: controlled evidence, transparent gates and horizon sensitivity—not invention of standard components.</text>
+<text x="48" y="699.0" font-family="Segoe UI, DejaVu Sans, sans-serif" font-size="15" font-weight="400" fill="#53687a">Sources: RESULTS.md; EXP-004/008/013–016 summaries; EXP-017/018/019 closure records.</text>
+</svg>

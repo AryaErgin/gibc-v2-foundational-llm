@@ -1,0 +1,23 @@
+{
+  "evidence_sha256": "5b28b43edd81c7e1f574b4723e2de31b514dfb336464a68d5ab612bf11d65469",
+  "renderer_sha256": "818c1803065d2bd0f997d042eafc695782037c7b1e0e24da4f25072adf39d103",
+  "pillow_version": "12.3.0",
+  "font_sha256": "8134dbcd09e7b123c9a7f229d49cffbcb01352cc72ea5e1076b65d0dca9f73cd",
+  "bold_font_sha256": "aeb9e4a6ec5cc59f4d72df8189032d7dbb28f45161cf1552174818b5465dac4e",
+  "font_note": "Locally installed fonts; not redistributed. PNG rendered at 2x and downsampled.",
+  "inputs": {
+    "results/EXP-001D-summary.md": "7ff4839f01bf2fe400a3749d624920e93265a156c8f0a01b87fc3853de55508f",
+    "provenance/exp018-closure.json": "80aa8f4fda8b2f235c08383abc6b5ddfe6c5ae92c34a0cda572234929d5cc238",
+    "provenance/exp019-closure.json": "bb7f6475a5081cf8c189ce67717da7a6ea4528bdb2af98a603add9a04dec8a16"
+  },
+  "outputs": {
+    "decisions.png": "cdbce7b9a7948003742c371d9c4da31f62308a525b2f5c64bfa1c2763e59db1f",
+    "decisions.svg": "cc10f07fb1bb9c4a3ae654a7049365faf0df0f813d0f79374fd0944314c093f3",
+    "pipeline.png": "eaa526bdd79215c0f8b9171d7a6328a1050b5efcd321f19dcf19aa1a8217fd7a",
+    "pipeline.svg": "869a7011ef6840db9ce98eef97d4fa4bae1d4e4e680cb7bdc2f040360952df46",
+    "progression.png": "dc7b68d8434ddd5cd768fc053a60876599cc94c5f133dc8c7ec410c76cc3083b",
+    "progression.svg": "a372ac91b5a22d496271e50b1a088a87701fa01959fd15f5f9e8b328e6efa0b8",
+    "trajectory.png": "4400135804e9561b10eb9704168a14d73aab3393a56bcd49b49a8eb80164ecae",
+    "trajectory.svg": "af3064e60da4f07160bfa2451a5055b356e0206de82273457bd49ced460c92be"
+  }
+}

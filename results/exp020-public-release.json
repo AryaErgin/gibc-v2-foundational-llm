@@ -1,0 +1,108 @@
+{
+  "schema": 1,
+  "verification_date": "2026-09-09",
+  "experiment": "EXP-020",
+  "repository_url": "https://huggingface.co/AryaErgin/gibc-v2-exp020",
+  "hub_revision": "80703cd304d1d1b16abf6539dcb0ebe83386f0ca",
+  "private": false,
+  "gated": false,
+  "package_directory": "/home/aryae/gibc-v2-foundational-llm/artifacts/exp020-public-inference-20260908-release",
+  "source_checkpoint_sha256": "95338530dcfa660acb149c94d72c07173c14dece6de7da4a22d7aa856723ce89",
+  "released_weights_sha256": "4c4f97801ce0c3d0cee52172bfe851b57690b81d153775a33107b8aaed1bc129",
+  "original_publication_report": {
+    "source": "explicit user report on 2026-09-09",
+    "remote_round_trip_safetensors_sha256": "4c4f97801ce0c3d0cee52172bfe851b57690b81d153775a33107b8aaed1bc129",
+    "status": "PASS"
+  },
+  "independent_verification": {
+    "status": "PASS",
+    "method": "Anonymous HTTPS API lookup followed by resolve/<immutable-revision>/<path>; stream every file in 4 MiB chunks through SHA-256, compare byte count and digest against unchanged local release.",
+    "file_count": 19,
+    "bytes": 200166267,
+    "credentials_used": false,
+    "cache_used": false,
+    "download_saved_to_disk": false,
+    "model_loaded": false,
+    "model_executed": false,
+    "files": {
+      "README.md": {
+        "sha256": "a955db3abfa5db32ffb814bf898923a26f08664cd61037bc7b5b8988b3e26d90",
+        "bytes": 6688
+      },
+      "verify.py": {
+        "sha256": "d9ba4d70e8eba59c5366d917c996c457be9f0f1da1773d9e4008110ebba613fa",
+        "bytes": 507
+      },
+      "THIRD_PARTY_NOTICES.md": {
+        "sha256": "54ef4c57a628ff0ef05657f641667663c426acdacb5e1feeb0ad0c39eb3c2ac7",
+        "bytes": 6050
+      },
+      "manifest.json": {
+        "sha256": "b3f9cdadce6757d7134834303b76c254caa3433c667fb2f191e4c21375c2fe2e",
+        "bytes": 2403
+      },
+      "LICENSE": {
+        "sha256": "bb28c48e3e078166e91cfc2b6db7ffebb8a0973b9e23b3df060561292d8d69ec",
+        "bytes": 10140
+      },
+      "tokenizer.json": {
+        "sha256": "c5592fba176c3d2f7915a3812559a24d7a669206f4a22484b053c8a9ce08be14",
+        "bytes": 546551
+      },
+      "model.safetensors": {
+        "sha256": "4c4f97801ce0c3d0cee52172bfe851b57690b81d153775a33107b8aaed1bc129",
+        "bytes": 199450256
+      },
+      "training-evaluation-evidence.json": {
+        "sha256": "5b28b43edd81c7e1f574b4723e2de31b514dfb336464a68d5ab612bf11d65469",
+        "bytes": 77843
+      },
+      "generate.py": {
+        "sha256": "6cc8fb86826c10d9f58d7d87a7c6432afa1855b6de4902d061ba3005d9ab3008",
+        "bytes": 1299
+      },
+      "evaluation-source-provenance.json": {
+        "sha256": "a2ce9059eff790af479cb3eff9ad5670fb617e0456b03061761839efd9e85ef6",
+        "bytes": 1363
+      },
+      "requirements.txt": {
+        "sha256": "edffc86cd36d0447f0b8780f0aa43c4954d8b6db65aaadf97f56a2d687937915",
+        "bytes": 145
+      },
+      "provenance.json": {
+        "sha256": "7d35581a5fbf04691fe289c8f505686992715988f859e94180917b7c98ea2a85",
+        "bytes": 22393
+      },
+      "config.yaml": {
+        "sha256": "25f473f27a3ba673d3e32cb10845e47bf7f4abf0dd47e891db812d6871c3bace",
+        "bytes": 1962
+      },
+      "SHA256SUMS": {
+        "sha256": "43973f18e07d60cc37ea3fd40dfe8ce8ea2c0cf01441867a0bca92ca5fd0d407",
+        "bytes": 1521
+      },
+      "gibc_llm/utils.py": {
+        "sha256": "3a66a3c9e228811e5c56b12696eab66b434750c28ccfa1c1167dfa207f811b78",
+        "bytes": 17418
+      },
+      "gibc_llm/generation.py": {
+        "sha256": "15368ac8c1772c0a27de57922f1e96fbeaed93fae849f2222e25f4e920b6ccf7",
+        "bytes": 1481
+      },
+      "gibc_llm/inference_release.py": {
+        "sha256": "070252f8dd5d2aa3ed04b5bcb7cee9a7f2402772ab9cb359965c709e3fb367b2",
+        "bytes": 6825
+      },
+      "gibc_llm/__init__.py": {
+        "sha256": "6130348373ba4b8cb420af8dfd07033cd52d34942720662913a55fe3d72f8e50",
+        "bytes": 141
+      },
+      "gibc_llm/model.py": {
+        "sha256": "882d05e028788c38842fb0d26c34d287d0d8431cd57feef0e9aa185e5b99930e",
+        "bytes": 11281
+      }
+    }
+  },
+  "source_repository_head_at_verification": "37332797909df963ca7c77a945cea8752b60d481",
+  "immutable_artifact_policy": "No frozen package, model, config, tokenizer, training-data or evaluation artifact changed. This new receipt supplements—not overwrites—the existing release and smoke evidence."
+}

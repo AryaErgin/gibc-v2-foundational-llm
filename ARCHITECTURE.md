@@ -1,19 +1,41 @@
-# Architecture Record
+# Architecture — frozen EXP-020
 
-Decoder-only causal Transformer: vocab 8192, d_model 256, 8 blocks, 8 heads of 32 dimensions, d_ff 1024, exact GELU, pre-RMSNorm, no bias/dropout, tied embedding/output, and context 512. RMSNorm is `x * rsqrt(mean(x^2)+1e-5) * scale`; each scale is the only norm parameter. RoPE uses theta 10000, all 32 head dimensions, adjacent-pair rotation, and no scaling/trainable parameters. SDPA uses `is_causal=True`.
+EXP-020 uses Recipe v3 with **49,860,480 trainable parameters**, 139,520 below the 50,000,000 cap. Its checkpoint SHA-256 is `95338530dcfa660acb149c94d72c07173c14dece6de7da4a22d7aa856723ce89`. The [submission evidence](results/exp020-submission-evidence.json) independently counts stored FP32 tensors with tied storage counted once; historical [Recipe-v3 accounting](results/exp012-parameter-count.json) agrees.
 
-Parameter mapping in `src/gibc_llm/model.py`: embedding `8192*256=2,097,152`; attention `8*4*256*256=2,097,152`; MLP `8*(256*1024+1024*256)=4,194,304`; norm scales `8*2*256+256=4,352`; tied output additional `0`; total **8,392,960**. Initialization is Normal(0,0.02) for embeddings/linears and 1 for norm scales under seed 42.
+| Component | Frozen setting |
+|---|---|
+| Decoder blocks / width | 9 / 640 |
+| Vocabulary / context | 8,192 / 512 |
+| Attention | 20 heads × 32 dimensions; causal native PyTorch SDPA |
+| Position | RoPE, theta 10,000; adjacent-pair rotation over all 32 head dimensions |
+| MLP | Bias-free SwiGLU: SiLU gate; intermediate width 1,728 |
+| Normalization | Pre-RMSNorm, epsilon 1e-5; final RMSNorm |
+| Embeddings / output | Shared weight matrix |
+| Bias / dropout | None / 0 |
+| Initialization | Fresh seed 42; existing Normal(0, 0.02) linear/embedding initialization; norm scales 1 |
+| Excluded methods | QK-Norm off; CWD off; no WSD, LLR, curriculum or Magma in final run |
 
-## Near-Cap Architecture Recipe v2
+Each block applies pre-normalized causal attention plus a residual connection, then pre-normalized SwiGLU plus a residual connection. The final norm precedes the tied output projection. RoPE is parameter-free. SDPA retains its standard head-dimension scale.
 
-EXP-007 freezes the production near-cap recipe as EXP-007B: vocabulary 8,192; d_model 640; 9 decoder blocks; 20 heads with head dimension and rotary dimension 32; d_ff 2,560; exact GELU; pre-RMSNorm eps 1e-5; standard causal SDPA; RoPE theta 10,000; tied input/output embeddings; no linear bias; dropout zero; context 512; initialization Normal(0,0.02); seed 42. The exact trainable parameter count is **49,491,840**, including all norm scales and the tied output treatment.
+## Exact budget
 
-EXP-007A's final combined validation loss was numerically lower, but B-A was only +0.0056269169 nats, inside the predeclared 0.02-nat engineering-tie region. Recipe v2 therefore selects EXP-007B using its higher throughput and lower allocated-memory measurements, not a claim of lower validation loss.
+| Tensor family | Calculation | Parameters |
+|---|---|---:|
+| Token embedding | 8,192 × 640 | 5,242,880 |
+| Q/K/V/output attention projections | 9 × 4 × 640 × 640 | 14,745,600 |
+| SwiGLU projections | 9 × 3 × 640 × 1,728 | 29,859,840 |
+| RMSNorm scales | (9 × 2 + 1) × 640 | 12,160 |
+| Tied output additional | Shares embedding | 0 |
+| **Total** | | **49,860,480** |
 
-## Near-Cap Architecture Recipe v3
+Implementation: [model.py](src/gibc_llm/model.py). Configuration: [frozen EXP-020 YAML](configs/exp020-final-7p2b-cosine.yaml). Independent command: `python scripts/count_parameters.py --config configs/exp020-final-7p2b-cosine.yaml --expected-total 49860480 --json`.
 
-EXP-008 freezes the production near-cap recipe as EXP-008A: vocabulary 8,192; d_model 640; 9 decoder blocks; 20 heads with head dimension and rotary dimension 32; bias-free SwiGLU MLP with SiLU gate and d_ff 1,728; pre-RMSNorm eps 1e-5; standard causal SDPA; RoPE theta 10,000; tied input/output embeddings; dropout zero; context 512; initialization Normal(0,0.02); seed 42. The exact trainable parameter count is **49,860,480**, including all norm scales and the tied output treatment.
+## Optimization
 
-Against the frozen Recipe v2 GELU control, this allocation lowered final combined validation loss from 3.4314021170 to 3.4013358206. The candidate-minus-control difference was -0.0300662965 nats, exceeding the predeclared 0.02-nat capability threshold. Recipe v3 therefore replaces Recipe v2 on capability, not a systems optimization claim.
+Ordinary AdamW: betas 0.9/0.95, epsilon 1e-8; weight decay 0.1 on matrix parameters including tied embedding, no decay on norm scales; gradient clipping 1.0. Peak/minimum LR 6e-4/6e-5, warmup 100 updates, cosine over the entire 219,726-update horizon. BF16 forward/autocast; FP32 parameters and optimizer state. Microbatch 32, accumulation 2, 32,768 prediction tokens per update. Operational pacing adds wall time, not scheduler steps.
 
-EXP-009 retained the Recipe v3 `6e-4` peak / `6e-5` minimum LR after its 8e-4 candidate improved inside the predeclared 0.01-nat tie band. EXP-010 tested a 608-width, 10-layer SwiGLU allocation and retained Recipe v3 under its committed engineering tiebreak. EXP-011 and EXP-012 completed fresh 1.5B and 2.4B-class fixed-horizon calibrations of Recipe v3. The validation-selected EXP-012 terminal checkpoint subsequently completed the frozen official evaluation on 2026-08-28; the results remain evidence, not permission to alter the architecture or select another checkpoint.
+## Evidence for the allocation
+
+EXP-001 began at 8,392,960 parameters (256 width, 8 blocks, GELU). EXP-007B selected the 49,491,840-parameter GELU Recipe v2 by a preregistered engineering tiebreak. EXP-008's SwiGLU allocation improved Combined internal NLL by 0.0300662965 and became Recipe v3. EXP-009 retained the original LR under its tie rule; EXP-010's alternative depth/width allocation lost the engineering tiebreak. EXP-020 kept Recipe v3 unchanged and increased the fresh cosine training horizon.
+
+These components are established methods, not inventions of this project. Their sources are credited in [SOURCE_LEDGER.md](SOURCE_LEDGER.md) and [CODE_ATTRIBUTION.md](CODE_ATTRIBUTION.md).

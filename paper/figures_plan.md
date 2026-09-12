@@ -1,10 +1,5 @@
-# Figure plan (provisional)
+# Submission figures — implemented
 
-1. Controlled-intervention matrix with predeclared gates and decisions.
-2. WSD seed-42/43 300M internal-validation trajectory and endpoint table.
-3. EXP-015 General/Edu Pareto plane for fixed-example placement.
-4. EXP-016 control-versus-Magma endpoint comparison, including throughput.
-5. EXP-017A horizon plot only after a valid terminal result exists.
+The four [PNG/SVG figures](../docs/assets/exp020/README.md) cover full-run loss/internal validation, EXP-001→012→020 progression, intervention decisions and the data/model/freeze/evaluation pipeline.
 
-No figure should contain Attempt 1 partial loss or any unrun official
-benchmark result.
+Source hashes and render provenance bind the recorded evidence. Full captions explain comparison limits. Any later paper figure must also use saved evidence; no new training or evaluation is authorized.

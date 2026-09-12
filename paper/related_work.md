@@ -1,13 +1,7 @@
-# Related work notes
+# Related work — attribution scope
 
-- Learning-rate scheduling and warmup/stable/decay schedules: position WSD as
-  a controlled recipe choice, not a novel contribution.
-- Optimizer and update-masking interventions: describe LLR and Magma only in
-  relation to their cited sources and this constrained-system transfer test.
-- Curriculum and data-order work: frame EXP-015 as fixed-example temporal
-  placement, not as a novel curriculum algorithm.
-- Small-language-model scaling: distinguish internal held-out validation from
-  the competition’s official benchmark protocol.
+Use the existing [source ledger](../SOURCE_LEDGER.md), [code-attribution record](../CODE_ATTRIBUTION.md) and [bibliography](../REFERENCES.bib). This packaging adds no new external scientific claims.
 
-Citation extraction and wording remain pending a source-audited literature
-pass; this file makes no settled comparative claim.
+Transformer, RoPE, RMSNorm, SwiGLU, tying and AdamW are established components. WSD, LLR, curriculum, Magma, QK-Norm and CWD are attributed interventions, not inventions here. Local rejection is not universal failure. EXP-020 scaling is not an apples-to-apples external-model comparison.
+
+Internal validation guides selection; required benchmark results describe the frozen model. Exploratory bibliography VERIFY entries remain provenance, not final numerical claims. The full third-party copied-code/license audit is still a human publication checklist item.

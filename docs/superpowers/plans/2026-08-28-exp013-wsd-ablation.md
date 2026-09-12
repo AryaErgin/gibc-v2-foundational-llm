@@ -1,3 +1,5 @@
+> **Archived snapshot — not current execution guidance (submission review, 2026-09-08).** The text below records its original period. Its “current,” “final,” “pending” and authorization wording does not apply to the frozen EXP-020 submission. See [current RESULTS](../../../RESULTS.md). No historical measurement or decision has been rewritten.
+
 # EXP-013 WSD ablation implementation plan
 
 > **For the implementation agent:** execute in order and do not start model

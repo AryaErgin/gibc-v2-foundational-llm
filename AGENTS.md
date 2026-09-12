@@ -1,6 +1,12 @@
-# Repository guidance
+# Repository guidance — frozen submission phase
 
-- Follow the approved EXP-001 scientific specification. Do not silently change model mathematics, tokenizer definition, data source, contamination policy, or training objective.
-- Keep generated data, checkpoints, caches, local environments, credentials, and machine-specific artifacts out of Git.
-- Record every run with its exact Git commit, seed, configuration, provenance, and measured results.
-- Do not start the full 100M-token EXP-001 run without research-chat approval.
+EXP-020 is the immutable GIBC V2 Track 01 competition model. Current evidence is in [RESULTS.md](RESULTS.md) and [the audit](docs/submission/EVIDENCE_AUDIT.md). Historical experiments/plans are records, not launch authorization.
+
+- Do not train, resume, tune, rerun evaluation, or modify/overwrite frozen checkpoints, tokenizer, data, config or benchmark results.
+- No benchmark requests or dataset materialization during packaging.
+- Preserve negative results and historical chronology. Update current summaries without retrospectively changing old observations.
+- Keep weights, data, caches, credentials and environments out of Git.
+- The local repository is authoritative; no resets to remote state.
+- Preserve `src/gibc_v2_foundational_llm.egg-info/` untracked.
+- Documentation, recorded-data figures and offline checks are allowed. No commit, tag or push without authorization.
+- Disclose AI assistance; never invent evidence or imply AI assistants constitute the scratch-trained model.

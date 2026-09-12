@@ -1,3 +1,5 @@
+> **Archived snapshot — not current execution guidance (submission review, 2026-09-08).** The text below records its original period. Its “current,” “final,” “pending” and authorization wording does not apply to the frozen EXP-020 submission. See [current RESULTS](../../../RESULTS.md). No historical measurement or decision has been rewritten.
+
 # EXP-011 Long-Horizon Preparation Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
