@@ -1,6 +1,6 @@
 # Reproducibility and frozen-artifact map
 
-This is a read-only audit guide, not authorization to rerun training or official evaluation. The authoritative implementation is the local WSL repository `/home/aryae/gibc-v2-foundational-llm`; GitHub source is the publication artifact. Submission edits are uncommitted for human review.
+This is a read-only audit guide, not authorization to rerun training or official evaluation. The public competition source is tag `gibc-v2-track01-exp020-v1.0.0`, commit `69f56d7b1f4f377f94a30216a9945df8a6662cce`. Subsequent docs/media usability commits do not replace the frozen scientific source.
 
 ## Source and environment
 
@@ -16,7 +16,13 @@ This is a read-only audit guide, not authorization to rerun training or official
 
 Do not install/downgrade packages to copy historical Windows workarounds. EXP-012 used sacrebleu 1.5.1; the four accuracy tasks do not use its scoring metrics. Frozen raw task definitions are in the evidence digest.
 
-## Artifact map
+## Full official evaluation is separate from inference
+
+**Cost:** the completed CPU FP32 five-task suite took roughly 20 hours. Do not run it merely to verify the public weights. [README quickstart](../../README.md#run-the-public-model--no-gpu-or-benchmark-download) performs only release verification and a short non-benchmark generation.
+
+The historical guarded runner requires the original frozen training checkpoint, training summary, runtime/selection provenance and pinned benchmark sources described in the [official protocol](../EXP020_OFFICIAL_EVALUATION_PROTOCOL.md). Those owner artifacts are **not all distributed** in the inference package. The public safetensors package is sufficient for inference, but is not a drop-in replacement for the original `.pt` checkpoint expected by that guarded runner. Exact owner-side replay therefore requires obtaining the listed artifacts and using a new output directory; no one-command public replay is claimed. Do not bypass identity gates or overwrite historical results. The evaluator implementation and aggregate results are public for inspection.
+
+## Artifact map (historical owner storage, not quickstart paths)
 
 Let `BASE=/mnt/c/Users/aryae/Desktop/gibc_v2`. Equivalent Windows root: `C:\Users\aryae\Desktop\gibc_v2`.
 
@@ -83,6 +89,6 @@ For an artifact owner wishing to repeat the read-only audit, the exporter requir
 
 The code for training, exact parameter counting, tokenizer, builder and guarded CPU evaluators remains intact. This package does not execute those workflows. See [architecture](../../ARCHITECTURE.md), [data](../../DATA_SOURCES.md), [protocol](../EXP020_OFFICIAL_EVALUATION_PROTOCOL.md), [credits](../../SOURCE_LEDGER.md).
 
-The exact inference-only [safetensors package is public](https://huggingface.co/AryaErgin/gibc-v2-exp020). [Pinned release instructions](EXP020_RELEASE.md) and [anonymous remote hash evidence](PUBLIC_RELEASE.md) bind it to revision `80703cd304d1d1b16abf6539dcb0ebe83386f0ca` and the unchanged frozen checkpoint. The separate [clean-environment smoke](PREPUBLICATION_SMOKE.md) passed. Raw training data/checkpoints remain outside Git; final source publication still requires human authorization.
+The exact inference-only [safetensors package is public](https://huggingface.co/AryaErgin/gibc-v2-exp020). [Pinned release instructions](EXP020_RELEASE.md) and [anonymous remote hash evidence](PUBLIC_RELEASE.md) bind it to revision `80703cd304d1d1b16abf6539dcb0ebe83386f0ca` and the unchanged frozen checkpoint. The separate [clean-environment smoke](PREPUBLICATION_SMOKE.md) passed. Raw training data/checkpoints remain outside Git; the competition source is already public at the frozen tag above.
 
 The [scoped license audit](LICENSE_AUDIT.md) covers core datasets/dependencies and recorded code reuse. PIQA licensing/snapshot equivalence and the WikiText card's licensing-version discrepancy remain explicit. Exploratory bibliography entries labeled VERIFY remain historical research notes, not verified final-recipe claims.

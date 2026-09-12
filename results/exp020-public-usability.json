@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "audit_date_utc": "2026-09-12",
+  "frozen_commit": "69f56d7b1f4f377f94a30216a9945df8a6662cce",
+  "frozen_tag": "gibc-v2-track01-exp020-v1.0.0",
+  "original_hf_revision": "80703cd304d1d1b16abf6539dcb0ebe83386f0ca",
+  "weights_sha256": "4c4f97801ce0c3d0cee52172bfe851b57690b81d153775a33107b8aaed1bc129",
+  "source_checkpoint_sha256": "95338530dcfa660acb149c94d72c07173c14dece6de7da4a22d7aa856723ce89",
+  "parameter_count": 49860480,
+  "tensor_count": 83,
+  "github_clean_test": {
+    "verify_seconds": 5.203837566999937,
+    "generation_seconds": 4.284234147999996,
+    "pass": true
+  },
+  "hf_clean_test": {
+    "verify_seconds": 5.184783174000017,
+    "generation_seconds": 4.250126025999975,
+    "pass": true
+  },
+  "prompt": "The small robot moved",
+  "temperature": 0,
+  "max_new_tokens": 12,
+  "output": "The small robot moved from the ground to the ground, and the robot was",
+  "benchmark_requests": 0,
+  "training_runs": 0,
+  "private_path_network_guard": "PASS",
+  "hf_documentation_payload_changes": [
+    "README.md"
+  ],
+  "candidate_manifest_sha256": "4ade69e49833a4fe16582a7f0bc03715e8013f80a08994eacf91509dc1304363",
+  "hf_documentation_revision": "c341f396bfb62d263e90d023c319a9dcdf21db4c",
+  "targeted_tests": {
+    "passed": 20,
+    "failed": 0,
+    "initial_missing_document_failure_resolved": true
+  },
+  "source_parameter_count": {
+    "pass": true,
+    "total": 49860480,
+    "explicit_import_path": "PYTHONPATH=src"
+  },
+  "media_count": 7,
+  "media_dimensions": [
+    1800,
+    1200
+  ],
+  "final_public_round_trip": {
+    "revision": "c341f396bfb62d263e90d023c319a9dcdf21db4c",
+    "anonymous": true,
+    "ungated": true,
+    "files_verified": 19,
+    "total_bytes": 200168172,
+    "all_files_match_verified_candidate": true,
+    "changed_from_original": [
+      "README.md",
+      "manifest.json",
+      "SHA256SUMS"
+    ],
+    "weights_unchanged": true
+  }
+}

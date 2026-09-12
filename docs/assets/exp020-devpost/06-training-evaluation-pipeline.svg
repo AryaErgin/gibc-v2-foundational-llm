@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1200" viewBox="0 0 1800 1200" role="img">
+<title>Screened data, controlled selection and independent official reporting</title>
+<rect width="1800" height="1200" fill="#F5F3ED"/>
+<text x="90.000" y="109.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="29" font-weight="700">EXP-020  /  GIBC TRACK 01</text>
+<text x="1432.008" y="109.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="24" font-weight="400">FINAL LANGUAGE MODEL</text>
+<text x="90.000" y="244.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="69" font-weight="700">One pipeline. Separate decisions.</text>
+<text x="90.000" y="314.000" fill="#126B63" font-family="Segoe UI, sans-serif" font-size="34" font-weight="700">Data screening protects training. Internal validation selects the model.</text>
+<text x="90.000" y="372.000" fill="#126B63" font-family="Segoe UI, sans-serif" font-size="34" font-weight="700">Official benchmarks report the frozen model’s performance.</text>
+<text x="90.000" y="493.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="27" font-weight="700">DATA</text>
+<text x="645.000" y="493.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="27" font-weight="700">TRAINING &amp; SELECTION</text>
+<text x="1200.000" y="493.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="27" font-weight="700">FINAL REPORTING</text>
+<text x="90.000" y="585.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="35" font-weight="700">FineWeb + FineWeb-Edu</text>
+<text x="90.000" y="644.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="30" font-weight="400">2:1 target mixture</text>
+<line x1="105" y1="684" x2="105" y2="735" stroke="#126B63" stroke-width="3"/>
+<line x1="105" y1="735" x2="98.28804245954116" y2="722.7138441335347" stroke="#126B63" stroke-width="3"/>
+<line x1="105" y1="735" x2="111.71195754045884" y2="722.7138441335347" stroke="#126B63" stroke-width="3"/>
+<text x="90.000" y="813.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="31" font-weight="700">Canonicalize. Deduplicate.</text>
+<text x="90.000" y="873.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="31" font-weight="700">Screen 13-gram overlaps.</text>
+<text x="90.000" y="941.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="25" font-weight="400">Scratch tokenizer → deterministic IDs</text>
+<text x="645.000" y="584.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="34" font-weight="700">Fresh 7.2B-token training</text>
+<text x="645.000" y="642.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="28" font-weight="400">Recipe-v3 / AdamW / cosine</text>
+<line x1="660" y1="684" x2="660" y2="735" stroke="#126B63" stroke-width="3"/>
+<line x1="660" y1="735" x2="653.2880424595412" y2="722.7138441335347" stroke="#126B63" stroke-width="3"/>
+<line x1="660" y1="735" x2="666.7119575404588" y2="722.7138441335347" stroke="#126B63" stroke-width="3"/>
+<text x="645.000" y="815.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="33" font-weight="700">Internal General / Edu</text>
+<text x="645.000" y="875.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="33" font-weight="700">Select the checkpoint.</text>
+<text x="645.000" y="941.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="25" font-weight="400">Frozen validation and selection rule</text>
+<text x="1200.000" y="587.000" fill="#126B63" font-family="Segoe UI, sans-serif" font-size="37" font-weight="700">Checkpoint frozen</text>
+<text x="1200.000" y="640.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="26" font-weight="400">Step 219,726 / no score-led tuning</text>
+<line x1="1215" y1="684" x2="1215" y2="735" stroke="#126B63" stroke-width="3"/>
+<line x1="1215" y1="735" x2="1208.2880424595412" y2="722.7138441335347" stroke="#126B63" stroke-width="3"/>
+<line x1="1215" y1="735" x2="1221.7119575404588" y2="722.7138441335347" stroke="#126B63" stroke-width="3"/>
+<text x="1200.000" y="819.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="37" font-weight="700">Official evaluation</text>
+<text x="1200.000" y="868.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="26" font-weight="400">Four accuracy tasks + WikiText-103</text>
+<text x="1200.000" y="941.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="25" font-weight="400">CPU FP32 / zero-shot accuracy tasks</text>
+<line x1="580" y1="866" x2="610" y2="866" stroke="#126B63" stroke-width="3"/>
+<line x1="610" y1="866" x2="610" y2="580" stroke="#126B63" stroke-width="3"/>
+<line x1="610" y1="580" x2="633" y2="580" stroke="#126B63" stroke-width="3"/>
+<line x1="633" y1="580" x2="620.7138441335347" y2="586.7119575404588" stroke="#126B63" stroke-width="3"/>
+<line x1="633" y1="580" x2="620.7138441335347" y2="573.2880424595412" stroke="#126B63" stroke-width="3"/>
+<line x1="1135" y1="866" x2="1165" y2="866" stroke="#126B63" stroke-width="3"/>
+<line x1="1165" y1="866" x2="1165" y2="580" stroke="#126B63" stroke-width="3"/>
+<line x1="1165" y1="580" x2="1188" y2="580" stroke="#126B63" stroke-width="3"/>
+<line x1="1188" y1="580" x2="1175.7138441335348" y2="586.7119575404588" stroke="#126B63" stroke-width="3"/>
+<line x1="1188" y1="580" x2="1175.7138441335348" y2="573.2880424595412" stroke="#126B63" stroke-width="3"/>
+<rect x="90" y="1021" width="1620" height="92" fill="#192C2B"/>
+<text x="117.000" y="1078.000" fill="#F5F3ED" font-family="Segoe UI, sans-serif" font-size="35" font-weight="700">EXP-020 checkpoint selection preceded its official benchmark scores.</text>
+</svg>

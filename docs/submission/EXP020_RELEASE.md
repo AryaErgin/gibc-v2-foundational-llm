@@ -4,7 +4,7 @@ This is an inference-only copy of the immutable step-219726 model, not a new mod
 
 ## Public package and immutable revision
 
-**[Download EXP-020 from Hugging Face](https://huggingface.co/AryaErgin/gibc-v2-exp020)**. Verified public, ungated revision: `80703cd304d1d1b16abf6539dcb0ebe83386f0ca`. [Release evidence](PUBLIC_RELEASE.md) records the user-reported round trip and an independent anonymous streamed hash comparison of all 19 package files.
+**[Download EXP-020 from Hugging Face](https://huggingface.co/AryaErgin/gibc-v2-exp020)**. Current documentation-polished public revision: `c341f396bfb62d263e90d023c319a9dcdf21db4c`. The original byte-frozen package remains at `80703cd304d1d1b16abf6539dcb0ebe83386f0ca`; only README and its checksums differ. [Latest clean-user audit](PUBLIC_USABILITY.md). [Release evidence](PUBLIC_RELEASE.md) records the user-reported round trip and an independent anonymous streamed hash comparison of all 19 package files.
 
 ### Preserved local release copy
 
@@ -14,7 +14,7 @@ Release directory in the authoritative WSL tree:
 
 Verified package size: **200,166,267 bytes** (weights: 199,450,256 bytes). [Exact release hashes and file inventory](../../results/exp020-inference-release.json) · [Executed verification and changed-file list](COMPLIANCE_VALIDATION.md).
 
-This directory is ignored by Git. Do not stage weights/data. It remains byte-identical to the smoke-tested package and the 19 corresponding public files. The repository's evolving documentation does not rewrite this frozen package.
+This directory is ignored by Git. Do not stage weights/data. It remains byte-identical to the smoke-tested package and the 19 corresponding public files at the original `80703cd...` revision, not the later README/checksum revision. The repository's evolving documentation does not rewrite this frozen package.
 
 ## Exact content / no-inference verification
 
@@ -47,7 +47,7 @@ CUDA_VISIBLE_DEVICES="" OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS
 
 ## Judge verification / use
 
-Follow the package README for Python 3.11 and dependency installation. The [isolated judge smoke](PREPUBLICATION_SMOKE.md) passed installation, offline verification/loading and exactly one deterministic generation. With the package available:
+Use the copy-and-paste [root quickstart](../../README.md#run-the-public-model--no-gpu-or-benchmark-download), or the standalone package README, for Python 3.11 installation/download/verification/generation. The [isolated judge smoke](PREPUBLICATION_SMOKE.md) passed installation, offline verification/loading and exactly one deterministic generation. With the package available:
 
 ```bash
 CUDA_VISIBLE_DEVICES="" python -B /path/to/package/verify.py
@@ -63,7 +63,7 @@ In an environment with the [Hub CLI](https://huggingface.co/docs/huggingface_hub
 
 ```bash
 hf download AryaErgin/gibc-v2-exp020 \
-  --revision 80703cd304d1d1b16abf6539dcb0ebe83386f0ca \
+  --revision c341f396bfb62d263e90d023c319a9dcdf21db4c \
   --local-dir ./exp020-package \
   --exclude .gitattributes
 cd exp020-package
@@ -75,4 +75,4 @@ Released `model.safetensors` SHA-256:
 `4c4f97801ce0c3d0cee52172bfe851b57690b81d153775a33107b8aaed1bc129`.
 Compare all payload hashes with the [source release receipt](../../results/exp020-inference-release.json) and [public receipt](../../results/exp020-public-release.json). The command excludes Hub-added `.gitattributes`, which the exact-inventory verifier would otherwise reject. Client `.cache/` metadata is already excluded by the frozen verifier; neither is part of the 19-file package manifest. Do not overwrite the owner's original release directory with a download.
 
-Public model delivery is complete. Final source commit/tag/push and Devpost/video/team actions still require human authorization/completion; see [compliance checklist](COMPLIANCE.md). No upload is needed in this reconciliation.
+Public model delivery is complete. Competition source is published at tag `gibc-v2-track01-exp020-v1.0.0` / `69f56d7b1f4f377f94a30216a9945df8a6662cce`. Devpost/video/team actions remain user-managed; see [compliance checklist](COMPLIANCE.md). No upload is needed in this reconciliation.

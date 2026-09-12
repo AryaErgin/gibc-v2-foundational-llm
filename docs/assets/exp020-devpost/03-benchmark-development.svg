@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1200" viewBox="0 0 1800 1200" role="img">
+<title>Three required benchmarks improved across development</title>
+<rect width="1800" height="1200" fill="#F5F3ED"/>
+<text x="90.000" y="109.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="29" font-weight="700">EXP-020  /  GIBC TRACK 01</text>
+<text x="1432.008" y="109.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="24" font-weight="400">FINAL LANGUAGE MODEL</text>
+<text x="90.000" y="245.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="69" font-weight="700">Three benchmarks moved forward.</text>
+<text x="90.000" y="310.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="35" font-weight="400">EXP-001 → EXP-012 → EXP-020</text>
+<text x="1271.516" y="357.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="26" font-weight="400">Accuracy (%) / each panel spans 16 pp</text>
+<text x="110.000" y="442.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="36" font-weight="700">HellaSwag</text>
+<text x="110.000" y="532.000" fill="#126B63" font-family="Segoe UI, sans-serif" font-size="69" font-weight="700">+4.710</text>
+<text x="110.000" y="582.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="23" font-weight="400">percentage-point change</text>
+<text x="110.000" y="631.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="24" font-weight="400">acc_norm / range 22–38%</text>
+<line x1="135" y1="980.0" x2="440" y2="980.0" stroke="#C9CFCA" stroke-width="1"/>
+<text x="103.000" y="987.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="19" font-weight="400">22</text>
+<line x1="135" y1="830.0" x2="440" y2="830.0" stroke="#C9CFCA" stroke-width="1"/>
+<text x="103.000" y="837.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="19" font-weight="400">30</text>
+<line x1="135" y1="680.0" x2="440" y2="680.0" stroke="#C9CFCA" stroke-width="1"/>
+<text x="103.000" y="687.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="19" font-weight="400">38</text>
+<line x1="149" y1="915.2544313881697" x2="271" y2="853.2647878908583" stroke="#126B63" stroke-width="4"/>
+<line x1="271" y1="853.2647878908583" x2="393" y2="826.9378609838677" stroke="#126B63" stroke-width="4"/>
+<circle cx="149" cy="915.2544313881697" r="8" fill="#62716D"/>
+<text x="105.250" y="958.254" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="28" font-weight="700">25.453</text>
+<text x="106.750" y="1043.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="23" font-weight="400">EXP-001</text>
+<circle cx="271" cy="853.2647878908583" r="8" fill="#617D92"/>
+<text x="281.000" y="896.265" fill="#617D92" font-family="Segoe UI, sans-serif" font-size="28" font-weight="700">28.759</text>
+<text x="228.750" y="1043.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="23" font-weight="400">EXP-012</text>
+<circle cx="393" cy="826.9378609838677" r="8" fill="#126B63"/>
+<text x="349.250" y="807.938" fill="#126B63" font-family="Segoe UI, sans-serif" font-size="28" font-weight="700">30.163</text>
+<text x="350.750" y="1043.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="23" font-weight="400">EXP-020</text>
+<text x="515.000" y="442.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="36" font-weight="700">ARC-Easy</text>
+<text x="515.000" y="532.000" fill="#126B63" font-family="Segoe UI, sans-serif" font-size="69" font-weight="700">+11.195</text>
+<text x="515.000" y="582.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="23" font-weight="400">percentage-point change</text>
+<text x="515.000" y="631.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="24" font-weight="400">acc_norm / range 25–41%</text>
+<line x1="540" y1="980.0" x2="845" y2="980.0" stroke="#C9CFCA" stroke-width="1"/>
+<text x="508.000" y="987.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="19" font-weight="400">25</text>
+<line x1="540" y1="830.0" x2="845" y2="830.0" stroke="#C9CFCA" stroke-width="1"/>
+<text x="508.000" y="837.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="19" font-weight="400">33</text>
+<line x1="540" y1="680.0" x2="845" y2="680.0" stroke="#C9CFCA" stroke-width="1"/>
+<text x="508.000" y="687.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="19" font-weight="400">41</text>
+<line x1="554" y1="924.7601010101009" x2="676" y2="765.3535353535353" stroke="#126B63" stroke-width="4"/>
+<line x1="676" y1="765.3535353535353" x2="798" y2="714.8484848484848" stroke="#126B63" stroke-width="4"/>
+<circle cx="554" cy="924.7601010101009" r="8" fill="#62716D"/>
+<text x="510.250" y="967.760" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="28" font-weight="700">27.946</text>
+<text x="511.750" y="1043.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="23" font-weight="400">EXP-001</text>
+<circle cx="676" cy="765.3535353535353" r="8" fill="#617D92"/>
+<text x="686.000" y="808.354" fill="#617D92" font-family="Segoe UI, sans-serif" font-size="28" font-weight="700">36.448</text>
+<text x="633.750" y="1043.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="23" font-weight="400">EXP-012</text>
+<circle cx="798" cy="714.8484848484848" r="8" fill="#126B63"/>
+<text x="754.250" y="695.848" fill="#126B63" font-family="Segoe UI, sans-serif" font-size="28" font-weight="700">39.141</text>
+<text x="755.750" y="1043.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="23" font-weight="400">EXP-020</text>
+<text x="920.000" y="442.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="36" font-weight="700">PIQA</text>
+<text x="920.000" y="532.000" fill="#126B63" font-family="Segoe UI, sans-serif" font-size="69" font-weight="700">+7.835</text>
+<text x="920.000" y="582.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="23" font-weight="400">percentage-point change</text>
+<text x="920.000" y="631.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="24" font-weight="400">acc_norm / range 48–64%</text>
+<line x1="945" y1="980.0" x2="1250" y2="980.0" stroke="#C9CFCA" stroke-width="1"/>
+<text x="913.000" y="987.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="19" font-weight="400">48</text>
+<line x1="945" y1="830.0" x2="1250" y2="830.0" stroke="#C9CFCA" stroke-width="1"/>
+<text x="913.000" y="837.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="19" font-weight="400">56</text>
+<line x1="945" y1="680.0" x2="1250" y2="680.0" stroke="#C9CFCA" stroke-width="1"/>
+<text x="913.000" y="687.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="19" font-weight="400">64</text>
+<line x1="959" y1="893.5337323177367" x2="1081" y2="750.715451577802" stroke="#126B63" stroke-width="4"/>
+<line x1="1081" y1="750.715451577802" x2="1203" y2="746.6349292709467" stroke="#126B63" stroke-width="4"/>
+<circle cx="959" cy="893.5337323177367" r="8" fill="#62716D"/>
+<text x="915.250" y="936.534" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="28" font-weight="700">52.612</text>
+<text x="916.750" y="1043.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="23" font-weight="400">EXP-001</text>
+<circle cx="1081" cy="750.715451577802" r="8" fill="#617D92"/>
+<text x="1091.000" y="793.715" fill="#617D92" font-family="Segoe UI, sans-serif" font-size="28" font-weight="700">60.229</text>
+<text x="1038.750" y="1043.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="23" font-weight="400">EXP-012</text>
+<circle cx="1203" cy="746.6349292709467" r="8" fill="#126B63"/>
+<text x="1159.250" y="727.635" fill="#126B63" font-family="Segoe UI, sans-serif" font-size="28" font-weight="700">60.446</text>
+<text x="1160.750" y="1043.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="23" font-weight="400">EXP-020</text>
+<text x="1325.000" y="442.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="36" font-weight="700">WinoGrande</text>
+<text x="1325.000" y="532.000" fill="#A44B38" font-family="Segoe UI, sans-serif" font-size="69" font-weight="700">−0.079</text>
+<text x="1325.000" y="582.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="23" font-weight="400">percentage-point change</text>
+<text x="1325.000" y="631.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="24" font-weight="400">acc / range 44–60%</text>
+<line x1="1350" y1="980.0" x2="1655" y2="980.0" stroke="#C9CFCA" stroke-width="1"/>
+<text x="1318.000" y="987.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="19" font-weight="400">44</text>
+<line x1="1350" y1="830.0" x2="1655" y2="830.0" stroke="#C9CFCA" stroke-width="1"/>
+<text x="1318.000" y="837.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="19" font-weight="400">52</text>
+<line x1="1350" y1="680.0" x2="1655" y2="680.0" stroke="#C9CFCA" stroke-width="1"/>
+<text x="1318.000" y="687.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="19" font-weight="400">60</text>
+<line x1="1364" y1="888.9581689029202" x2="1486" y2="860.8405682715075" stroke="#62716D" stroke-width="4"/>
+<line x1="1486" y1="860.8405682715075" x2="1608" y2="890.4380426203631" stroke="#62716D" stroke-width="4"/>
+<circle cx="1364" cy="888.9581689029202" r="8" fill="#62716D"/>
+<text x="1320.250" y="931.958" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="28" font-weight="700">48.856</text>
+<text x="1321.750" y="1043.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="23" font-weight="400">EXP-001</text>
+<circle cx="1486" cy="860.8405682715075" r="8" fill="#617D92"/>
+<text x="1442.250" y="841.841" fill="#617D92" font-family="Segoe UI, sans-serif" font-size="28" font-weight="700">50.355</text>
+<text x="1443.750" y="1043.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="23" font-weight="400">EXP-012</text>
+<circle cx="1608" cy="890.4380426203631" r="8" fill="#A44B38"/>
+<text x="1564.250" y="871.438" fill="#A44B38" font-family="Segoe UI, sans-serif" font-size="28" font-weight="700">48.777</text>
+<text x="1565.750" y="1043.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="23" font-weight="400">EXP-020</text>
+<text x="90.000" y="1106.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="25" font-weight="400">Development history; architecture, training budget and recipe changed. Not a controlled scaling ablation.</text>
+</svg>

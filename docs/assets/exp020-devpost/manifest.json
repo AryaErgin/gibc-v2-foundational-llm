@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "width": 1800,
+  "height": 1200,
+  "frozen_source": "69f56d7b1f4f377f94a30216a9945df8a6662cce",
+  "files": {
+    "01-exp020-final-results.png": {
+      "bytes": 243811,
+      "sha256": "2ae2a11317bffef88eb22e4efa637ab9236f5a6e652245e308383812b70a51c1",
+      "svg_sha256": "d21ad4f4baa0c9d88f8415ef481ea382728f8d4452e1e7269ad4e886da494aff"
+    },
+    "02-horizon-dependent-findings.png": {
+      "bytes": 274714,
+      "sha256": "f0209b1735ccb0b09f4896e3f88199596e0a4063e9d6bad17a1615fb3b664505",
+      "svg_sha256": "85e7148621e74becd5fccaf558f82c39f199c52ed57406abda5ab74b9dcb59b2"
+    },
+    "03-benchmark-development.png": {
+      "bytes": 266999,
+      "sha256": "af8ae12bf932b7db412d82fcd46b09cfcad875c650286703d6811c4c614dd31e",
+      "svg_sha256": "4f476beac51489f5f9b322c06a7be6063c00243a9d2fbd212697358228b41a6f"
+    },
+    "04-validation-trajectory.png": {
+      "bytes": 249578,
+      "sha256": "20d496fa750dfc76637b3cd42d02709d6e95de9b8c766e41fb3f75fd0aac0a87",
+      "svg_sha256": "0a282b310891c48ecb24d0d6c155c4ec7c27c48a7c489b7ece3e5043ea3d6730"
+    },
+    "05-training-efficiency.png": {
+      "bytes": 251547,
+      "sha256": "f3abf2f7f4c25eda89850c9d48de11f2f7c456b46d09192137e129eeb4dffdbc",
+      "svg_sha256": "bbb1042e3ada79a5e2dcb9fce4242b4d791b9919ec6889fec7c55d9e0b11719d"
+    },
+    "06-training-evaluation-pipeline.png": {
+      "bytes": 316362,
+      "sha256": "73a888a30010e5b15e624dc884b2001e6469444ba2d55bd3a9a137e854dfe656",
+      "svg_sha256": "61f4955c82c07c5744e8842a7c2c6fd53a95cfb4d04f98cd4213bb70a27715b9"
+    },
+    "07-public-model-verification.png": {
+      "bytes": 282608,
+      "sha256": "7490f9c5d26e207bdcf8148098bf1c55264918bf63e20850d58b13e50d04d8aa",
+      "svg_sha256": "76d668844a4cfdda8d2a47ed39f6f7360cbd7234f1d60f97fbda3e0511afb877"
+    }
+  }
+}

@@ -1,0 +1,2 @@
+# Preserve exact approved Windows SVG export bytes; CRLF is intentional here.
+docs/assets/exp020-devpost/*.svg -text whitespace=cr-at-eol

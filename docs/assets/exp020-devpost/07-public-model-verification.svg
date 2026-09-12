@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1200" viewBox="0 0 1800 1200" role="img">
+<title>Exact model, public weights and reproducible evidence</title>
+<rect width="1800" height="1200" fill="#F5F3ED"/>
+<text x="90.000" y="109.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="29" font-weight="700">EXP-020  /  GIBC TRACK 01</text>
+<text x="1432.008" y="109.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="24" font-weight="400">FINAL LANGUAGE MODEL</text>
+<text x="90.000" y="246.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="73" font-weight="700">Exact model. Public weights.</text>
+<text x="90.000" y="339.000" fill="#126B63" font-family="Segoe UI, sans-serif" font-size="61" font-weight="700">Reproducible evidence.</text>
+<text x="90.000" y="479.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="36" font-weight="700">7.2B</text>
+<text x="90.000" y="533.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="31" font-weight="400">training</text>
+<line x1="293" y1="492" x2="337" y2="492" stroke="#62716D" stroke-width="3"/>
+<line x1="337" y1="492" x2="324.7138441335348" y2="498.71195754045885" stroke="#62716D" stroke-width="3"/>
+<line x1="337" y1="492" x2="324.7138441335348" y2="485.28804245954115" stroke="#62716D" stroke-width="3"/>
+<text x="360.000" y="479.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="36" font-weight="700">Selected</text>
+<text x="360.000" y="533.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="31" font-weight="400">checkpoint</text>
+<line x1="563" y1="492" x2="607" y2="492" stroke="#62716D" stroke-width="3"/>
+<line x1="607" y1="492" x2="594.7138441335347" y2="498.71195754045885" stroke="#62716D" stroke-width="3"/>
+<line x1="607" y1="492" x2="594.7138441335347" y2="485.28804245954115" stroke="#62716D" stroke-width="3"/>
+<text x="630.000" y="479.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="36" font-weight="700">Official</text>
+<text x="630.000" y="533.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="31" font-weight="400">evaluation</text>
+<line x1="833" y1="492" x2="877" y2="492" stroke="#62716D" stroke-width="3"/>
+<line x1="877" y1="492" x2="864.7138441335347" y2="498.71195754045885" stroke="#62716D" stroke-width="3"/>
+<line x1="877" y1="492" x2="864.7138441335347" y2="485.28804245954115" stroke="#62716D" stroke-width="3"/>
+<text x="900.000" y="479.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="36" font-weight="700">Exact</text>
+<text x="900.000" y="533.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="31" font-weight="400">safetensors</text>
+<line x1="1103" y1="492" x2="1147" y2="492" stroke="#62716D" stroke-width="3"/>
+<line x1="1147" y1="492" x2="1134.7138441335348" y2="498.71195754045885" stroke="#62716D" stroke-width="3"/>
+<line x1="1147" y1="492" x2="1134.7138441335348" y2="485.28804245954115" stroke="#62716D" stroke-width="3"/>
+<text x="1170.000" y="479.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="36" font-weight="700">Public</text>
+<text x="1170.000" y="533.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="31" font-weight="400">HF model</text>
+<line x1="1373" y1="492" x2="1417" y2="492" stroke="#62716D" stroke-width="3"/>
+<line x1="1417" y1="492" x2="1404.7138441335348" y2="498.71195754045885" stroke="#62716D" stroke-width="3"/>
+<line x1="1417" y1="492" x2="1404.7138441335348" y2="485.28804245954115" stroke="#62716D" stroke-width="3"/>
+<text x="1440.000" y="479.000" fill="#126B63" font-family="Segoe UI, sans-serif" font-size="36" font-weight="700">SHA-256</text>
+<text x="1440.000" y="533.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="31" font-weight="400">match</text>
+<text x="90.000" y="698.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="74" font-weight="700">49,860,480</text>
+<text x="90.000" y="752.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="32" font-weight="400">parameters</text>
+<text x="740.000" y="726.000" fill="#126B63" font-family="Segoe UI, sans-serif" font-size="102" font-weight="700">83</text>
+<text x="905.000" y="679.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="37" font-weight="700">tensors exactly verified</text>
+<text x="905.000" y="738.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="27" font-weight="400">Names, shapes, dtypes and bits match.</text>
+<text x="90.000" y="854.000" fill="#126B63" font-family="Segoe UI, sans-serif" font-size="40" font-weight="700">Clean-environment inference passed.</text>
+<text x="90.000" y="916.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="29" font-weight="400">Checkpoint selection preceded EXP-020 official benchmark scores.</text>
+<rect x="90" y="973" width="1620" height="80" fill="#192C2B"/>
+<text x="117.000" y="1026.000" fill="#F5F3ED" font-family="Segoe UI, sans-serif" font-size="39" font-weight="700">huggingface.co/AryaErgin/gibc-v2-exp020</text>
+<text x="90.000" y="1105.000" fill="#126B63" font-family="Segoe UI, sans-serif" font-size="31" font-weight="700">Downloaded model = released model / exact SHA-256 match</text>
+</svg>

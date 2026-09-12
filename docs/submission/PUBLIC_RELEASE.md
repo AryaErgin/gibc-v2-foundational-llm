@@ -27,3 +27,9 @@ Follow the [pinned download/install/verification instructions](EXP020_RELEASE.md
 The packaged README and evidence remain frozen snapshots of the original export. Current source-repository documentation records subsequent smoke and publication events; it does not silently rewrite package manifests or historical no-inference observations. Public delivery changes no benchmark score, selected checkpoint, model weight, scientific gate or license limitation.
 
 Model delivery is complete. Final source commit/tag/push, demo video, team/eligibility and Devpost completion remain separate human actions. No upload, source publication or model execution was performed in this reconciliation.
+
+## Subsequent public-user audit
+
+The original receipt above is historical and remains unchanged. The frozen competition source is tag `gibc-v2-track01-exp020-v1.0.0`, commit `69f56d7b1f4f377f94a30216a9945df8a6662cce`. See [the latest public-usability audit](PUBLIC_USABILITY.md) for current installation tests and any documentation-only Hub revision. Model weights, config, tokenizer and executable package modules are unchanged.
+
+The documentation-only Hub revision is `c341f396bfb62d263e90d023c319a9dcdf21db4c`; its manifest SHA is `4ade69e49833a4fe16582a7f0bc03715e8013f80a08994eacf91509dc1304363`. Only README.md and its manifest/SHA256SUMS metadata changed. The old receipt's hashes describe the original release, not this revised model card. Every weight, tokenizer, config, code and scientific evidence payload is unchanged.

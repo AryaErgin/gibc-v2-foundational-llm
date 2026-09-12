@@ -21,10 +21,10 @@ EXP-020 is a decoder-only base language model with 49,860,480 trainable paramete
 | Criterion | Claim supported here | Evidence to show | Limit |
 |---|---|---|---|
 | Perplexity & Accuracy | WikiText-103 token PPL 31.783; HellaSwag acc_norm 30.163%; ARC-Easy acc_norm 39.141%; PIQA acc_norm 60.446%; WinoGrande acc 48.777% | [RESULTS](../../RESULTS.md), task hashes and metric definitions in [digest](../../results/exp020-submission-evidence.json) | Single final seed; no SOTA or statistical-significance claim |
-| Reasoning Performance | HellaSwag/ARC-Easy improve versus EXP-012; PIQA is roughly stable; WinoGrande regresses | [Progression figure](../assets/exp020/progression.png), explicit +1.404/+2.694/+0.218/−1.579 percentage-point changes | These task scores are limited proxies, not evidence of universal reasoning gains |
+| Reasoning Performance | HellaSwag/ARC-Easy improve versus EXP-012; PIQA is roughly stable; WinoGrande regresses | [Progression figure](../assets/exp020-devpost/03-benchmark-development.png), explicit +1.404/+2.694/+0.218/−1.579 percentage-point changes | These task scores are limited proxies, not evidence of universal reasoning gains |
 | Training Efficiency | Final 7.2B run completes in 37.94h on one RTX 5090 Laptop GPU; 8.680GB peak reserved VRAM | [Final summary](../../results/EXP-020-summary.md), wall-time/active/paced distinctions | Final run only, not all experiments/data/evaluation; no measured energy claim |
-| Innovation | Controlled horizon-dependent intervention evaluation, preregistered gates, retained negative results, benchmark-blind final checkpoint selection, exact contamination/provenance controls | [Decision figure](../assets/exp020/decisions.png), [experiment log](../../EXPERIMENT_LOG.md), preregistrations | Standard Transformer components and named methods are credited, not claimed as inventions |
-| Documentation & Demo | Readable architecture, source counts, artifact hashes, reproducible figures and offline verification | [README](../../README.md), [pipeline](../assets/exp020/pipeline.png), [storyboard](DEMO_STORYBOARD.md) | Public weights and hash verification complete; video and final source publication remain human actions |
+| Innovation | Controlled horizon-dependent intervention evaluation, preregistered gates, retained negative results, benchmark-blind final checkpoint selection, exact contamination/provenance controls | [Decision figure](../assets/exp020-devpost/02-horizon-dependent-findings.png), [experiment log](../../EXPERIMENT_LOG.md), preregistrations | Standard Transformer components and named methods are credited, not claimed as inventions |
+| Documentation & Demo | Readable architecture, source counts, artifact hashes, reproducible figures and offline verification | [README](../../README.md), [pipeline](../assets/exp020-devpost/06-training-evaluation-pipeline.png), [storyboard](DEMO_STORYBOARD.md) | Public weights and hash verification complete; competition source is published at the frozen tag; video remains a human action |
 
 ## How we built it
 
@@ -40,7 +40,7 @@ WSD's replicated proxy improvement missed its longer-horizon gate. QK-Norm impro
 
 ## Honest limitations / what is next
 
-The final benchmark profile is mixed, especially WinoGrande. Exact n-gram filtering is not proof of absence of all semantic overlap. The full evaluator source commit is resolved; PIQA evaluation/exclusion snapshot equivalence remains unproved. There is no fresh training, tuning or checkpoint change planned from these scores. The [frozen model is public](https://huggingface.co/AryaErgin/gibc-v2-exp020); next actions are human review, final source publication and video recording—not another experiment.
+The final benchmark profile is mixed, especially WinoGrande. Exact n-gram filtering is not proof of absence of all semantic overlap. The full evaluator source commit is resolved; PIQA evaluation/exclusion snapshot equivalence remains unproved. There is no fresh training, tuning or checkpoint change planned from these scores. The [frozen model is public](https://huggingface.co/AryaErgin/gibc-v2-exp020); the frozen source is published; next actions are human review and video recording—not another experiment.
 
 ## Built with / assistance
 

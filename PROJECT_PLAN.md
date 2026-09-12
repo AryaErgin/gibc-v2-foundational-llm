@@ -13,7 +13,7 @@
 | Final corpus | Deterministic 7.2B rebuild from zero; historical prefix hashes passed |
 | Final model | One fresh EXP-020 ordinary-AdamW/cosine run; fixed operational pacing |
 | Selection and reporting | Internal-validation selection, then five required official benchmarks |
-| Submission packaging | Evidence digest, documentation, four reproducible figures, Devpost draft and timed storyboard |
+| Submission packaging | Evidence digest, documentation, seven native 3:2 judge figures, preserved scientific figures, Devpost draft and timed storyboard |
 
 The definitive current results are [RESULTS.md](RESULTS.md). Earlier authorizations in the historical [experiment log](EXPERIMENT_LOG.md) are records of their time, not current instructions.
 
@@ -29,10 +29,10 @@ The final run used WSL2 on one RTX 5090 Laptop GPU, BF16 forward with FP32 model
 - Model delivery is complete: [public EXP-020 package](https://huggingface.co/AryaErgin/gibc-v2-exp020); [anonymous remote hash verification](docs/submission/PUBLIC_RELEASE.md) passed.
 - Record and edit the [3:30 demo](docs/submission/DEMO_STORYBOARD.md); upload the existing figures.
 - Confirm team information, rights/notices and submission fields against current organizer requirements.
-- Authorize final source publication separately. This task does not commit, tag, push, publish artifacts or submit Devpost.
+- Competition source is published at `gibc-v2-track01-exp020-v1.0.0` / `69f56d7b1f4f377f94a30216a9945df8a6662cce`. Subsequent docs/media polish does not move this frozen tag.
 
 No training, resume, method search, benchmark rerun or result-driven checkpoint selection is a remaining project task.
 
 ## Final compliance handoff
 
-Exact inference-only weights are publicly available without changing the frozen checkpoint; see [release guide](docs/submission/EXP020_RELEASE.md). Final source commit/tag/push, demo recording and team eligibility/Devpost entry remain human actions. [Six-component checklist](docs/submission/COMPLIANCE.md) and [license limits](docs/submission/LICENSE_AUDIT.md) are current. The earlier smoke ran one authorized generation; no new training, inference or benchmark evaluation occurred during this reconciliation.
+Exact inference-only weights are publicly available without changing the frozen checkpoint; see [release guide](docs/submission/EXP020_RELEASE.md). Frozen source publication is complete; demo recording and team eligibility/Devpost entry remain human actions. [Six-component checklist](docs/submission/COMPLIANCE.md) and [license limits](docs/submission/LICENSE_AUDIT.md) are current. The [public-user audit](docs/submission/PUBLIC_USABILITY.md) records isolated verification and short authorized non-benchmark generation. No training or official benchmark rerun occurred.

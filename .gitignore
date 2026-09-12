@@ -1,4 +1,6 @@
 # Python and local environments
+.judge-venv/
+/exp020-package/
 .venv/
 venv/
 __pycache__/

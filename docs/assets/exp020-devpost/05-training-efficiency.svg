@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1200" viewBox="0 0 1800 1200" role="img">
+<title>7.2B tokens in 37.94 hours on one laptop GPU</title>
+<rect width="1800" height="1200" fill="#F5F3ED"/>
+<text x="90.000" y="109.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="29" font-weight="700">EXP-020  /  GIBC TRACK 01</text>
+<text x="1432.008" y="109.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="24" font-weight="400">FINAL LANGUAGE MODEL</text>
+<text x="90.000" y="317.000" fill="#126B63" font-family="Segoe UI, sans-serif" font-size="122" font-weight="700">7.2B tokens.</text>
+<text x="1257.000" y="317.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="122" font-weight="700">37.94 h.</text>
+<text x="90.000" y="472.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="77" font-weight="700">One RTX 5090 Laptop GPU.</text>
+<text x="90.000" y="566.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="32" font-weight="400">The complete final training run, including deliberate thermal pacing.</text>
+<text x="90.000" y="755.000" fill="#126B63" font-family="Segoe UI, sans-serif" font-size="94" font-weight="700">104,140</text>
+<text x="1010.000" y="755.000" fill="#126B63" font-family="Segoe UI, sans-serif" font-size="94" font-weight="700">52,713</text>
+<text x="90.000" y="821.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="32" font-weight="700">active-compute tokens / second</text>
+<text x="1010.000" y="821.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="32" font-weight="700">end-to-end tokens / second</text>
+<text x="90.000" y="886.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="27" font-weight="400">Mean logged active-update throughput.</text>
+<text x="1010.000" y="886.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="27" font-weight="400">Total tokens / full recorded wall time.</text>
+<text x="90.000" y="988.000" fill="#192C2B" font-family="Segoe UI, sans-serif" font-size="31" font-weight="700">BF16 forward  /  FP32 state  /  Fixed 0.300 s inter-update pacing</text>
+<text x="90.000" y="1056.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="26" font-weight="400">~2.154e18 FLOPs: theoretical 6NT estimate, not measured energy or hardware FLOPs.</text>
+<text x="90.000" y="1105.000" fill="#62716D" font-family="Segoe UI, sans-serif" font-size="25" font-weight="400">Final run only; excludes earlier experiments, data preparation and official evaluation.</text>
+</svg>

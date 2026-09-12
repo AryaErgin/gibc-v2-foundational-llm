@@ -27,6 +27,6 @@ python scripts/verify_submission_package.py
 python -m json.tool results/exp020-submission-evidence.json
 ```
 
-The JSON viewer only displays stored metadata; navigate to summary/official_results/sources. Do not display credentials, private logs or benchmark prompts. Open these saved files: `docs/assets/exp020/{trajectory,progression,decisions,pipeline}.png`.
+The JSON viewer only displays stored metadata; navigate to summary/official_results/sources. Do not display credentials, private logs or benchmark prompts. Open these saved files: the seven ordered 1800×1200 PNGs listed in [the current figure gallery](../assets/exp020-devpost/README.md). The original scientific figures remain preserved.
 
 Do not show training/evaluation commands being executed, simulated model answers, or a fabricated live inference demo. The end card can show [the verified public model URL](https://huggingface.co/AryaErgin/gibc-v2-exp020); the final published source revision still requires human confirmation. The script does not imply video production or publication is already complete.
